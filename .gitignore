@@ -1,0 +1,27 @@
+# Android / Kotlin
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# Secrets - ne jamais committer
+google-services.json
+local.properties
+*.keystore
+*.jks
+
+# Kotlin
+*.class
+*.jar
+*.war
+*.ear
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
