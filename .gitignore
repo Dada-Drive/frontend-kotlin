@@ -8,14 +8,17 @@
 /captures/
 .externalNativeBuild/
 .cxx/
+*.orig
 
 # Secrets - ne jamais committer
 google-services.json
 local.properties
 *.keystore
 *.jks
+secrets.properties
+*.env
 
-# Kotlin
+# Kotlin / Java
 *.class
 *.jar
 *.war
@@ -25,3 +28,17 @@ local.properties
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+.DS_Store
+*~
+
+# APK / AAB outputs
+*.apk
+*.aab
+
+# Test results
+app/build/reports/
+
+# Gradle cache
+.gradle/
+build/
+app/build/

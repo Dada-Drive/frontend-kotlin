@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Treat missing translations as warnings, not errors -->
+    <issue id="MissingTranslation" severity="warning" />
+
+    <!-- Enforce using typed resources -->
+    <issue id="HardcodedText" severity="error" />
+
+    <!-- Treat obsolete SDK suppression as informational -->
+    <issue id="ObsoleteSdkInt" severity="informational" />
+
+    <!-- Enforce content descriptions on images for accessibility -->
+    <issue id="ContentDescription" severity="error" />
+
+    <!-- Warn when using deprecated APIs -->
+    <issue id="Deprecated" severity="warning" />
+
+    <!-- Enforce proper use of vector drawables -->
+    <issue id="VectorDrawableCompat" severity="warning" />
+
+    <!-- Ignore generated code -->
+    <issue id="all">
+        <ignore path="**/build/**" />
+    </issue>
+</lint>
