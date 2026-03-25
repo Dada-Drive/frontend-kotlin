@@ -18,6 +18,18 @@ class AuthRepositoryImpl : AuthRepository {
         )
     }
 
+    override suspend fun loginWithPhone(phoneNumber: String): Result<User> {
+        delay(1200)
+        return Result.success(
+            User(
+                id = "phone-${System.currentTimeMillis()}",
+                fullName = "Utilisateur DadaDrive",
+                email = "",
+                phoneNumber = phoneNumber
+            )
+        )
+    }
+
     override suspend fun signup(
         fullName: String,
         email: String,

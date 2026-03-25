@@ -11,4 +11,5 @@ interface AuthRepository {
         phoneNumber: String,
         profilePictureUri: String?
     ): Result<User>
+    suspend fun loginWithPhone(phoneNumber: String): Result<User>
 }
