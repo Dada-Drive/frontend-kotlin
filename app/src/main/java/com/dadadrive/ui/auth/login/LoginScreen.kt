@@ -185,10 +185,10 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
-                    disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
+                    containerColor = Color.Black,
+                    contentColor = Color.White,
+                    disabledContainerColor = Color.Black.copy(alpha = 0.4f),
+                    disabledContentColor = Color.White.copy(alpha = 0.6f)
                 )
             ) {
                 Text(text = "SIGN IN  →", fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)

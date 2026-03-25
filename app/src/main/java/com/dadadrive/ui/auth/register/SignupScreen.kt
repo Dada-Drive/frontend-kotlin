@@ -1,6 +1,7 @@
 package com.dadadrive.ui.auth.register
 
 import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.Color
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -223,10 +224,10 @@ fun SignupScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
-                    disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
+                    containerColor = Color.Black,
+                    contentColor = Color.White,
+                    disabledContainerColor = Color.Black.copy(alpha = 0.4f),
+                    disabledContentColor = Color.White.copy(alpha = 0.6f)
                 )
             ) {
                 Text("Sign Up", fontSize = 16.sp, fontWeight = FontWeight.Bold)
