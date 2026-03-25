@@ -518,7 +518,7 @@ private fun OnboardingButton(label: String, onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().height(56.dp),
         shape = RoundedCornerShape(28.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = DadaDriveGreen, contentColor = Color.White)
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)
     ) {
         Text(text = label, fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
     }
