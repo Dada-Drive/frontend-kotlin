@@ -3,6 +3,7 @@ package com.dadadrive.ui.auth.login
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -75,6 +76,9 @@ fun LoginScreen(
 
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
+    val isDark = isSystemInDarkTheme()
+    val btnBg = if (isDark) Color.White else Color.Black
+    val btnFg = if (isDark) Color.Black else Color.White
 
     fun validate(): Boolean {
         var ok = true
@@ -185,10 +189,10 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White,
-                    disabledContainerColor = Color.Black.copy(alpha = 0.4f),
-                    disabledContentColor = Color.White.copy(alpha = 0.6f)
+                    containerColor = btnBg,
+                    contentColor = btnFg,
+                    disabledContainerColor = btnBg.copy(alpha = 0.4f),
+                    disabledContentColor = btnFg.copy(alpha = 0.6f)
                 )
             ) {
                 Text(text = "SIGN IN  →", fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)

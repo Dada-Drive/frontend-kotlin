@@ -1,6 +1,7 @@
 package com.dadadrive.ui.auth.register
 
 import android.graphics.BitmapFactory
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -91,6 +92,9 @@ fun SignupScreen(
 
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
+    val isDark = isSystemInDarkTheme()
+    val btnBg = if (isDark) Color.White else Color.Black
+    val btnFg = if (isDark) Color.Black else Color.White
 
     fun validate(): Boolean {
         var ok = true
@@ -224,10 +228,10 @@ fun SignupScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White,
-                    disabledContainerColor = Color.Black.copy(alpha = 0.4f),
-                    disabledContentColor = Color.White.copy(alpha = 0.6f)
+                    containerColor = btnBg,
+                    contentColor = btnFg,
+                    disabledContainerColor = btnBg.copy(alpha = 0.4f),
+                    disabledContentColor = btnFg.copy(alpha = 0.6f)
                 )
             ) {
                 Text("Sign Up", fontSize = 16.sp, fontWeight = FontWeight.Bold)
