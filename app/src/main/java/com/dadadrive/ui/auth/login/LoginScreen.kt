@@ -58,6 +58,8 @@ import com.dadadrive.ui.auth.AuthViewModel
 import com.dadadrive.ui.theme.FacebookBlue
 import com.dadadrive.ui.theme.GoogleRed
 
+private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
@@ -68,9 +70,26 @@ fun LoginScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
+
+    fun validate(): Boolean {
+        var ok = true
+        emailError = when {
+            email.isBlank() -> { ok = false; "Email address is required" }
+            !EMAIL_REGEX.matches(email.trim()) -> { ok = false; "Invalid email format (e.g. name@example.com)" }
+            else -> null
+        }
+        passwordError = when {
+            password.isBlank() -> { ok = false; "Password is required" }
+            password.length < 6 -> { ok = false; "Minimum 6 characters required" }
+            else -> null
+        }
+        return ok
+    }
 
     LaunchedEffect(authState) {
         when (val state = authState) {
@@ -110,18 +129,20 @@ fun LoginScreen(
 
             AuthInputField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { email = it; if (emailError != null) emailError = null },
                 label = "Email Address",
                 placeholder = "name@example.com",
-                keyboardType = KeyboardType.Email
+                keyboardType = KeyboardType.Email,
+                errorMessage = emailError
             )
             Spacer(Modifier.height(28.dp))
             AuthInputField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = { password = it; if (passwordError != null) passwordError = null },
                 label = "Password",
                 placeholder = "Enter your password",
-                isPassword = true
+                isPassword = true,
+                errorMessage = passwordError
             )
             Spacer(Modifier.height(12.dp))
             Text(
@@ -159,7 +180,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
-                onClick = { authViewModel.login(email, password) },
+                onClick = { if (validate()) authViewModel.login(email, password) },
                 enabled = authState !is AuthState.Loading,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
