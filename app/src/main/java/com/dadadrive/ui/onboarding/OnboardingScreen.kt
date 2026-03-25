@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,7 +47,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,14 +75,27 @@ import com.dadadrive.ui.theme.DadaDriveGreen
 
 @Composable
 fun OnboardingScreen(onFinished: () -> Unit) {
-    var currentPage by remember { mutableStateOf(0) }
-    val goNext: () -> Unit = { if (currentPage < 3) currentPage++ else onFinished() }
+    val pagerState = rememberPagerState(pageCount = { 4 })
+    val scope = rememberCoroutineScope()
 
-    when (currentPage) {
-        0 -> PageRapide(page = 0, onNext = goNext, onSkip = onFinished)
-        1 -> PageSecurite(page = 1, onNext = goNext, onSkip = onFinished)
-        2 -> PagePrix(page = 2, onNext = goNext, onSkip = onFinished)
-        3 -> PageLocalisation(onActivate = onFinished, onSkip = onFinished)
+    val goNext: () -> Unit = {
+        if (pagerState.currentPage < 3) {
+            scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+        } else {
+            onFinished()
+        }
+    }
+
+    HorizontalPager(
+        state = pagerState,
+        modifier = Modifier.fillMaxSize()
+    ) { page ->
+        when (page) {
+            0 -> PageRapide(page = page, onNext = goNext, onSkip = onFinished)
+            1 -> PageSecurite(page = page, onNext = goNext, onSkip = onFinished)
+            2 -> PagePrix(page = page, onNext = goNext, onSkip = onFinished)
+            3 -> PageLocalisation(onActivate = onFinished, onSkip = onFinished)
+        }
     }
 }
 
