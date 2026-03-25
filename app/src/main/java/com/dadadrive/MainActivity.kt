@@ -17,10 +17,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.dadadrive.ui.auth.AuthViewModel
 import com.dadadrive.ui.auth.login.LoginScreen
 import com.dadadrive.ui.auth.register.SignupScreen
+import com.dadadrive.ui.onboarding.OnboardingScreen
 import com.dadadrive.ui.splash.SplashScreen
 import com.dadadrive.ui.theme.Black
 import com.dadadrive.ui.theme.DadaDriveTheme
@@ -28,6 +30,7 @@ import com.dadadrive.ui.theme.White
 
 sealed class Screen {
     object Splash : Screen()
+    object Onboarding : Screen()
     object Login : Screen()
     object Signup : Screen()
     object Home : Screen()
@@ -54,7 +57,11 @@ private fun DadaDriveNavHost(authViewModel: AuthViewModel) {
 
     when (currentScreen) {
         Screen.Splash -> SplashScreen(
-            onSplashFinished = { currentScreen = Screen.Login }
+            onSplashFinished = { currentScreen = Screen.Onboarding }
+        )
+
+        Screen.Onboarding -> OnboardingScreen(
+            onFinished = { currentScreen = Screen.Login }
         )
 
         Screen.Login -> LoginScreen(
@@ -86,7 +93,7 @@ private fun HomePlaceholder() {
             color = White,
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            textAlign = TextAlign.Center,
             lineHeight = 38.sp
         )
     }
