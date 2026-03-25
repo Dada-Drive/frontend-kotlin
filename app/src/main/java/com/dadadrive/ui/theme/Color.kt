@@ -2,11 +2,22 @@ package com.dadadrive.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+// Brand
+val DadaDriveGreen = Color(0xFF80C000)
+val DadaDriveGreenDisabled = Color(0xFFA8D860)
+
+// Dark theme
 val Black = Color(0xFF000000)
 val DarkSurface = Color(0xFF111111)
 val DarkInput = Color(0xFF1A1A1A)
+
+// Light theme
 val White = Color(0xFFFFFFFF)
-val GreyHint = Color(0xFF666666)
+val LightSurface = Color(0xFFF5F5F5)
+val LightInput = Color(0xFFEEEEEE)
+
+// Shared
+val GreyHint = Color(0xFF888888)
 val GreyLabel = Color(0xFF9E9E9E)
 val DividerGrey = Color(0xFF2A2A2A)
 val InputUnderline = Color(0xFF444444)

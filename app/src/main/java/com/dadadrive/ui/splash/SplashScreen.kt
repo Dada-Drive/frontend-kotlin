@@ -2,15 +2,15 @@ package com.dadadrive.ui.splash
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,14 +18,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dadadrive.ui.theme.Black
-import com.dadadrive.ui.theme.White
+import com.dadadrive.R
 import kotlinx.coroutines.delay
 
 @Composable
@@ -41,28 +41,34 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Black),
+            .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.alpha(alpha.value)
         ) {
-            DadaDriveLogoIcon(
-                modifier = Modifier.size(120.dp),
-                foreground = White,
-                cutout = Black
+            Image(
+                painter = painterResource(id = R.drawable.ic_dadadrive_logo),
+                contentDescription = "DadaDrive Logo",
+                modifier = Modifier
+                    .size(130.dp)
+                    .clip(RoundedCornerShape(28.dp))
             )
-            Spacer(modifier = Modifier.height(20.dp))
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             Text(
                 text = "DADA DRIVE",
-                color = White,
-                fontSize = 26.sp,
+                color = Color.White,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 6.sp,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(6.dp))
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = "Your ride, your way",
                 color = Color(0xFF666666),
@@ -70,42 +76,5 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
                 letterSpacing = 1.sp
             )
         }
-    }
-}
-
-@Composable
-fun DadaDriveLogoIcon(
-    modifier: Modifier = Modifier,
-    foreground: Color = White,
-    cutout: Color = Black
-) {
-    Canvas(modifier = modifier.aspectRatio(1f)) {
-        val w = size.width
-        val h = size.height
-
-        // Outer D shape
-        val dPath = Path().apply {
-            moveTo(w * 0.12f, h * 0.06f)
-            lineTo(w * 0.52f, h * 0.06f)
-            cubicTo(w * 0.90f, h * 0.06f, w * 0.96f, h * 0.28f, w * 0.96f, h * 0.50f)
-            cubicTo(w * 0.96f, h * 0.72f, w * 0.90f, h * 0.94f, w * 0.52f, h * 0.94f)
-            lineTo(w * 0.12f, h * 0.94f)
-            close()
-        }
-        drawPath(dPath, color = foreground)
-
-        // Lightning bolt cutout through the D
-        val boltPath = Path().apply {
-            moveTo(w * 0.63f, h * 0.06f)
-            lineTo(w * 0.38f, h * 0.46f)
-            lineTo(w * 0.52f, h * 0.46f)
-            lineTo(w * 0.28f, h * 0.94f)
-            lineTo(w * 0.40f, h * 0.94f)
-            lineTo(w * 0.64f, h * 0.54f)
-            lineTo(w * 0.50f, h * 0.54f)
-            lineTo(w * 0.75f, h * 0.06f)
-            close()
-        }
-        drawPath(boltPath, color = cutout)
     }
 }

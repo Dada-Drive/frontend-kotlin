@@ -1,5 +1,6 @@
 package com.dadadrive.ui.auth.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -35,10 +37,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,18 +51,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dadadrive.R
 import com.dadadrive.ui.auth.AuthState
 import com.dadadrive.ui.auth.AuthViewModel
-import com.dadadrive.ui.splash.DadaDriveLogoIcon
-import com.dadadrive.ui.theme.Black
-import com.dadadrive.ui.theme.DividerGrey
-import com.dadadrive.ui.theme.ErrorRed
 import com.dadadrive.ui.theme.FacebookBlue
 import com.dadadrive.ui.theme.GoogleRed
-import com.dadadrive.ui.theme.GreyHint
-import com.dadadrive.ui.theme.GreyLabel
-import com.dadadrive.ui.theme.InputUnderline
-import com.dadadrive.ui.theme.White
 
 @Composable
 fun LoginScreen(
@@ -70,6 +67,9 @@ fun LoginScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val onBackground = MaterialTheme.colorScheme.onBackground
 
     LaunchedEffect(authState) {
         when (val state = authState) {
@@ -88,7 +88,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Black)
+            .background(backgroundColor)
     ) {
         Column(
             modifier = Modifier
@@ -99,13 +99,20 @@ fun LoginScreen(
         ) {
             Spacer(modifier = Modifier.height(72.dp))
 
-            DadaDriveLogoIcon(modifier = Modifier.size(80.dp), foreground = White, cutout = Black)
+            // Logo officiel DadaDrive
+            Image(
+                painter = painterResource(id = R.drawable.ic_dadadrive_logo),
+                contentDescription = "DadaDrive Logo",
+                modifier = Modifier
+                    .size(90.dp)
+                    .clip(RoundedCornerShape(20.dp))
+            )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = "DADA DRIVE",
-                color = White,
+                color = onBackground,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 5.sp
@@ -135,7 +142,7 @@ fun LoginScreen(
 
             Text(
                 text = "Forgot Password?",
-                color = White,
+                color = onBackground,
                 fontSize = 13.sp,
                 modifier = Modifier
                     .align(Alignment.End)
@@ -152,17 +159,9 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                SocialButton(
-                    label = "f",
-                    backgroundColor = FacebookBlue,
-                    onClick = {}
-                )
+                SocialButton(label = "f", backgroundColor = FacebookBlue, onClick = {})
                 Spacer(modifier = Modifier.width(20.dp))
-                SocialButton(
-                    label = "G",
-                    backgroundColor = GoogleRed,
-                    onClick = {}
-                )
+                SocialButton(label = "G", backgroundColor = GoogleRed, onClick = {})
             }
 
             Spacer(modifier = Modifier.height(36.dp))
@@ -175,10 +174,10 @@ fun LoginScreen(
                     .height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = White,
-                    contentColor = Black,
-                    disabledContainerColor = Color(0xFFCCCCCC),
-                    disabledContentColor = Color(0xFF888888)
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                    disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
                 )
             ) {
                 Text(
@@ -194,12 +193,12 @@ fun LoginScreen(
             Row {
                 Text(
                     text = "Don't have an account? ",
-                    color = GreyLabel,
+                    color = onBackground.copy(alpha = 0.6f),
                     fontSize = 14.sp
                 )
                 Text(
                     text = "Sign Up",
-                    color = White,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable { onNavigateToSignup() }
@@ -213,10 +212,10 @@ fun LoginScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
+                    .background(backgroundColor.copy(alpha = 0.7f)),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = White)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
 
@@ -237,10 +236,15 @@ fun AuthInputField(
     isPassword: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
+    val onBackground = MaterialTheme.colorScheme.onBackground
+    val underlineColor = onBackground.copy(alpha = 0.25f)
+    val hintColor = onBackground.copy(alpha = 0.4f)
+    val primaryColor = MaterialTheme.colorScheme.primary
+
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = label,
-            color = White,
+            color = onBackground,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = 0.5.sp
@@ -250,8 +254,8 @@ fun AuthInputField(
             value = value,
             onValueChange = onValueChange,
             singleLine = true,
-            textStyle = TextStyle(color = White, fontSize = 16.sp),
-            cursorBrush = SolidColor(White),
+            textStyle = TextStyle(color = onBackground, fontSize = 16.sp),
+            cursorBrush = SolidColor(primaryColor),
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             modifier = Modifier
@@ -259,7 +263,7 @@ fun AuthInputField(
                 .drawBehind {
                     val y = size.height
                     drawLine(
-                        color = InputUnderline,
+                        color = underlineColor,
                         start = Offset(0f, y),
                         end = Offset(size.width, y),
                         strokeWidth = 1.dp.toPx()
@@ -268,7 +272,7 @@ fun AuthInputField(
                 .padding(bottom = 10.dp),
             decorationBox = { innerTextField ->
                 if (value.isEmpty()) {
-                    Text(text = placeholder, color = GreyHint, fontSize = 16.sp)
+                    Text(text = placeholder, color = hintColor, fontSize = 16.sp)
                 }
                 innerTextField()
             }
@@ -278,23 +282,24 @@ fun AuthInputField(
 
 @Composable
 private fun SocialDivider() {
+    val onBackground = MaterialTheme.colorScheme.onBackground
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         HorizontalDivider(
             modifier = Modifier.weight(1f),
-            color = DividerGrey
+            color = onBackground.copy(alpha = 0.15f)
         )
         Text(
             text = "  Sign in with social  ",
-            color = GreyLabel,
+            color = onBackground.copy(alpha = 0.5f),
             fontSize = 13.sp,
             textAlign = TextAlign.Center
         )
         HorizontalDivider(
             modifier = Modifier.weight(1f),
-            color = DividerGrey
+            color = onBackground.copy(alpha = 0.15f)
         )
     }
 }
@@ -314,7 +319,7 @@ private fun SocialButton(
     ) {
         Text(
             text = label,
-            color = White,
+            color = Color.White,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
