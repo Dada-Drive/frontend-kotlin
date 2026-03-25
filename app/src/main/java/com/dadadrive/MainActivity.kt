@@ -20,8 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.dadadrive.ui.auth.AuthViewModel
-import com.dadadrive.ui.auth.login.LoginScreen
-import com.dadadrive.ui.auth.register.SignupScreen
+import com.dadadrive.ui.auth.PhoneScreen
+import com.dadadrive.ui.auth.WelcomeScreen
 import com.dadadrive.ui.onboarding.OnboardingScreen
 import com.dadadrive.ui.splash.SplashScreen
 import com.dadadrive.ui.theme.Black
@@ -31,8 +31,8 @@ import com.dadadrive.ui.theme.White
 sealed class Screen {
     object Splash : Screen()
     object Onboarding : Screen()
-    object Login : Screen()
-    object Signup : Screen()
+    object Welcome : Screen()
+    object Phone : Screen()
     object Home : Screen()
 }
 
@@ -61,19 +61,18 @@ private fun DadaDriveNavHost(authViewModel: AuthViewModel) {
         )
 
         Screen.Onboarding -> OnboardingScreen(
-            onFinished = { currentScreen = Screen.Login }
+            onFinished = { currentScreen = Screen.Welcome }
         )
 
-        Screen.Login -> LoginScreen(
-            authViewModel = authViewModel,
-            onNavigateToSignup = { currentScreen = Screen.Signup },
-            onLoginSuccess = { currentScreen = Screen.Home }
+        Screen.Welcome -> WelcomeScreen(
+            onPhoneClick = { currentScreen = Screen.Phone },
+            onGoogleClick = { /* TODO: Google Auth */ }
         )
 
-        Screen.Signup -> SignupScreen(
+        Screen.Phone -> PhoneScreen(
             authViewModel = authViewModel,
-            onBack = { currentScreen = Screen.Login },
-            onSignupSuccess = { currentScreen = Screen.Home }
+            onBack = { currentScreen = Screen.Welcome },
+            onSuccess = { currentScreen = Screen.Home }
         )
 
         Screen.Home -> HomePlaceholder()

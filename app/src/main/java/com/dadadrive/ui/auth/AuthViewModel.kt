@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.dadadrive.data.repository.AuthRepositoryImpl
 import com.dadadrive.domain.repository.AuthRepository
 import com.dadadrive.domain.usecase.LoginUseCase
+import com.dadadrive.domain.usecase.LoginWithPhoneUseCase
 import com.dadadrive.domain.usecase.SignupUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +17,7 @@ class AuthViewModel : ViewModel() {
     private val repository: AuthRepository = AuthRepositoryImpl()
     private val loginUseCase = LoginUseCase(repository)
     private val signupUseCase = SignupUseCase(repository)
+    private val loginWithPhoneUseCase = LoginWithPhoneUseCase(repository)
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
@@ -44,6 +46,17 @@ class AuthViewModel : ViewModel() {
             _authState.value = result.fold(
                 onSuccess = { user -> AuthState.Success(user) },
                 onFailure = { e -> AuthState.Error(e.message ?: "Signup failed") }
+            )
+        }
+    }
+
+    fun loginWithPhone(phoneNumber: String) {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            val result = loginWithPhoneUseCase(phoneNumber)
+            _authState.value = result.fold(
+                onSuccess = { user -> AuthState.Success(user) },
+                onFailure = { e -> AuthState.Error(e.message ?: "Erreur de connexion") }
             )
         }
     }
