@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -107,6 +108,8 @@ fun PhoneScreen(
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
     val isDark = isSystemInDarkTheme()
+    val btnBg = if (isDark) Color.White else Color.Black
+    val btnFg = if (isDark) Color.Black else Color.White
     val isLoading = authState is AuthState.Loading
     val canSubmit = phoneNumber.isNotBlank() && !isLoading
 
@@ -134,11 +137,12 @@ fun PhoneScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(bottom = 140.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(8.dp))
 
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour", tint = fg)
@@ -282,10 +286,10 @@ fun PhoneScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = DadaDriveGreen,
-                    contentColor = Color.Black,
-                    disabledContainerColor = DadaDriveGreen.copy(alpha = 0.35f),
-                    disabledContentColor = Color.Black.copy(alpha = 0.5f)
+                    containerColor = btnBg,
+                    contentColor = btnFg,
+                    disabledContainerColor = btnBg.copy(alpha = 0.35f),
+                    disabledContentColor = btnFg.copy(alpha = 0.5f)
                 )
             ) {
                 if (isLoading) {
