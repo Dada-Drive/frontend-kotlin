@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -70,10 +72,7 @@ import com.dadadrive.ui.theme.DadaDriveGreen
 @Composable
 fun OnboardingScreen(onFinished: () -> Unit) {
     var currentPage by remember { mutableStateOf(0) }
-
-    val goNext: () -> Unit = {
-        if (currentPage < 3) currentPage++ else onFinished()
-    }
+    val goNext: () -> Unit = { if (currentPage < 3) currentPage++ else onFinished() }
 
     when (currentPage) {
         0 -> PageRapide(page = 0, onNext = goNext, onSkip = onFinished)
@@ -92,63 +91,57 @@ private fun PageRapide(page: Int, onNext: () -> Unit, onSkip: () -> Unit) {
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bg)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(Modifier.height(52.dp))
+    Box(modifier = Modifier.fillMaxSize().background(bg)) {
 
-        OnboardingHeader(page = page, onSkip = onSkip)
-
-        Spacer(Modifier.height(20.dp))
-
-        // Vraie image avec badge intégré
-        Image(
-            painter = painterResource(id = R.drawable.rapiditer),
-            contentDescription = "Rapidité",
-            contentScale = ContentScale.Crop,
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(260.dp)
-                .clip(RoundedCornerShape(24.dp))
-        )
+                .fillMaxSize()
+                .padding(bottom = 148.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(Modifier.height(52.dp))
+            OnboardingHeader(page = page, onSkip = onSkip)
+            Spacer(Modifier.height(20.dp))
 
-        Spacer(Modifier.height(32.dp))
+            Image(
+                painter = painterResource(id = R.drawable.rapiditer),
+                contentDescription = "Rapidité",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(260.dp)
+                    .clip(RoundedCornerShape(24.dp))
+            )
 
-        Text(
-            text = "RAPIDE.\nSIMPLE.\nSANS TRACAS.",
-            color = fg,
-            fontSize = 42.sp,
-            fontWeight = FontWeight.ExtraBold,
-            lineHeight = 48.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Spacer(Modifier.height(32.dp))
+            Text(
+                text = "RAPIDE.\nSIMPLE.\nSANS TRACAS.",
+                color = fg,
+                fontSize = 42.sp,
+                fontWeight = FontWeight.ExtraBold,
+                lineHeight = 48.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(14.dp))
+            Text(
+                text = "Dada Drive vous emmène là où vous devez être, en un clin d'œil.",
+                color = fg.copy(alpha = 0.6f),
+                fontSize = 15.sp,
+                lineHeight = 22.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(24.dp))
+        }
 
-        Spacer(Modifier.height(16.dp))
-
-        Text(
-            text = "Dada Drive vous emmène là où vous devez être, en un clin d'œil.",
-            color = fg.copy(alpha = 0.6f),
-            fontSize = 15.sp,
-            lineHeight = 22.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(36.dp))
-
-        OnboardingButton(label = "SUIVANT  →", onClick = onNext)
-
-        Spacer(Modifier.height(16.dp))
-
-        SkipLink(label = "PASSER L'INTRODUCTION", onClick = onSkip)
-
-        Spacer(Modifier.height(32.dp))
+        BottomButtonSection(bg = bg, modifier = Modifier.align(Alignment.BottomCenter)) {
+            OnboardingButton(label = "SUIVANT  →", onClick = onNext)
+            Spacer(Modifier.height(12.dp))
+            SkipLink(label = "PASSER L'INTRODUCTION", onClick = onSkip)
+        }
     }
 }
 
@@ -161,72 +154,56 @@ private fun PageSecurite(page: Int, onNext: () -> Unit, onSkip: () -> Unit) {
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bg)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(Modifier.height(52.dp))
+    Box(modifier = Modifier.fillMaxSize().background(bg)) {
 
-        // Vraie image avec badge "LA CONFIANCE" intégré
-        Image(
-            painter = painterResource(id = R.drawable.confiance),
-            contentDescription = "La confiance",
-            contentScale = ContentScale.Crop,
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(280.dp)
-                .clip(RoundedCornerShape(24.dp))
-        )
+                .fillMaxSize()
+                .padding(bottom = 148.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(Modifier.height(52.dp))
 
-        Spacer(Modifier.height(28.dp))
+            Image(
+                painter = painterResource(id = R.drawable.confiance),
+                contentDescription = "La confiance",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(280.dp)
+                    .clip(RoundedCornerShape(24.dp))
+            )
 
-        Text(
-            text = "Votre sécurité,\nnotre priorité.",
-            color = fg,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 40.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Spacer(Modifier.height(28.dp))
+            Text(
+                text = "Votre sécurité,\nnotre priorité.",
+                color = fg,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 40.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(24.dp))
 
-        Spacer(Modifier.height(24.dp))
+            FeatureItem(Icons.Default.Shield, "Chauffeurs certifiés", "Vérification rigoureuse et continue.")
+            Spacer(Modifier.height(16.dp))
+            FeatureItem(Icons.Default.LocationOn, "Suivi en temps réel", "Partagez votre trajet avec vos proches.")
+            Spacer(Modifier.height(16.dp))
+            FeatureItem(Icons.Default.Phone, "Assistance 24/7", "Une équipe dédiée à votre écoute.")
+            Spacer(Modifier.height(24.dp))
 
-        FeatureItem(
-            icon = Icons.Default.Shield,
-            title = "Chauffeurs certifiés",
-            subtitle = "Vérification rigoureuse et continue."
-        )
-        Spacer(Modifier.height(16.dp))
-        FeatureItem(
-            icon = Icons.Default.LocationOn,
-            title = "Suivi en temps réel",
-            subtitle = "Partagez votre trajet avec vos proches."
-        )
-        Spacer(Modifier.height(16.dp))
-        FeatureItem(
-            icon = Icons.Default.Phone,
-            title = "Assistance 24/7",
-            subtitle = "Une équipe dédiée à votre écoute."
-        )
+            DotsIndicator(totalDots = 4, selectedIndex = page)
+            Spacer(Modifier.height(24.dp))
+        }
 
-        Spacer(Modifier.height(28.dp))
-
-        DotsIndicator(totalDots = 4, selectedIndex = page)
-
-        Spacer(Modifier.height(20.dp))
-
-        OnboardingButton(label = "CONTINUER", onClick = onNext)
-
-        Spacer(Modifier.height(16.dp))
-
-        SkipLink(label = "Ignorer", onClick = onSkip)
-
-        Spacer(Modifier.height(32.dp))
+        BottomButtonSection(bg = bg, modifier = Modifier.align(Alignment.BottomCenter)) {
+            OnboardingButton(label = "CONTINUER", onClick = onNext)
+            Spacer(Modifier.height(12.dp))
+            SkipLink(label = "Ignorer", onClick = onSkip)
+        }
     }
 }
 
@@ -239,54 +216,47 @@ private fun PagePrix(page: Int, onNext: () -> Unit, onSkip: () -> Unit) {
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bg)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(Modifier.height(52.dp))
+    Box(modifier = Modifier.fillMaxSize().background(bg)) {
 
-        ReceiptCard()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 148.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(Modifier.height(52.dp))
+            ReceiptCard()
+            Spacer(Modifier.height(32.dp))
+            Text(
+                text = "Pas de mauvaises surprises.",
+                color = fg,
+                fontSize = 34.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 42.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(14.dp))
+            Text(
+                text = "Le prix est fixé avant même de commander. Vous savez exactement ce que vous payez, peu importe le trafic.",
+                color = fg.copy(alpha = 0.6f),
+                fontSize = 15.sp,
+                lineHeight = 22.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(24.dp))
+            DotsIndicator(totalDots = 4, selectedIndex = page)
+            Spacer(Modifier.height(24.dp))
+        }
 
-        Spacer(Modifier.height(32.dp))
-
-        Text(
-            text = "Pas de mauvaises surprises.",
-            color = fg,
-            fontSize = 34.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 42.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        Text(
-            text = "Le prix est fixé avant même de commander. Vous savez exactement ce que vous payez, peu importe le trafic.",
-            color = fg.copy(alpha = 0.6f),
-            fontSize = 15.sp,
-            lineHeight = 22.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(28.dp))
-
-        DotsIndicator(totalDots = 4, selectedIndex = page)
-
-        Spacer(Modifier.height(20.dp))
-
-        OnboardingButton(label = "COMPRIS  →", onClick = onNext)
-
-        Spacer(Modifier.height(16.dp))
-
-        SkipLink(label = "Ignorer", onClick = onSkip)
-
-        Spacer(Modifier.height(32.dp))
+        BottomButtonSection(bg = bg, modifier = Modifier.align(Alignment.BottomCenter)) {
+            OnboardingButton(label = "COMPRIS  →", onClick = onNext)
+            Spacer(Modifier.height(12.dp))
+            SkipLink(label = "Ignorer", onClick = onSkip)
+        }
     }
 }
 
@@ -299,90 +269,104 @@ private fun PageLocalisation(onActivate: () -> Unit, onSkip: () -> Unit) {
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bg)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(Modifier.height(28.dp))
+    Box(modifier = Modifier.fillMaxSize().background(bg)) {
 
-        // Top bar: back + étape
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 160.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            IconButton(onClick = onSkip) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = fg
+            Spacer(Modifier.height(28.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onSkip) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = fg
+                    )
+                }
+                Text(
+                    text = "ÉTAPE 04/04",
+                    color = fg.copy(alpha = 0.5f),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.sp
                 )
             }
+            Spacer(Modifier.height(32.dp))
+            RadarAnimation(modifier = Modifier.size(220.dp))
+            Spacer(Modifier.height(40.dp))
             Text(
-                text = "ÉTAPE 04/04",
-                color = fg.copy(alpha = 0.5f),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 1.sp
+                text = "ON Y VA ?",
+                color = fg,
+                fontSize = 52.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 2.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
+            Spacer(Modifier.height(14.dp))
+            Text(
+                text = "Autorisez l'accès à votre position pour que nous puissions vous trouver rapidement.",
+                color = fg.copy(alpha = 0.6f),
+                fontSize = 15.sp,
+                lineHeight = 22.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(24.dp))
+            Text(
+                text = "SÉCURITÉ  ·  PROXIMITÉ  ·  DADA DRIVE",
+                color = fg.copy(alpha = 0.3f),
+                fontSize = 11.sp,
+                letterSpacing = 1.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(24.dp))
         }
 
-        Spacer(Modifier.height(32.dp))
-
-        RadarAnimation(modifier = Modifier.size(220.dp))
-
-        Spacer(Modifier.height(40.dp))
-
-        Text(
-            text = "ON Y VA ?",
-            color = fg,
-            fontSize = 52.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 2.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        Text(
-            text = "Autorisez l'accès à votre position pour que nous puissions vous trouver rapidement.",
-            color = fg.copy(alpha = 0.6f),
-            fontSize = 15.sp,
-            lineHeight = 22.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(40.dp))
-
-        OnboardingButton(label = "ACTIVER LA LOCALISATION  ▶", onClick = onActivate)
-
-        Spacer(Modifier.height(16.dp))
-
-        SkipLink(label = "PLUS TARD", onClick = onSkip)
-
-        Spacer(Modifier.height(32.dp))
-
-        Text(
-            text = "SÉCURITÉ  ·  PROXIMITÉ  ·  DADA DRIVE",
-            color = fg.copy(alpha = 0.3f),
-            fontSize = 11.sp,
-            letterSpacing = 1.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(24.dp))
+        BottomButtonSection(bg = bg, modifier = Modifier.align(Alignment.BottomCenter)) {
+            OnboardingButton(label = "ACTIVER LA LOCALISATION  ▶", onClick = onActivate)
+            Spacer(Modifier.height(12.dp))
+            SkipLink(label = "PLUS TARD", onClick = onSkip)
+        }
     }
 }
 
 // ─────────────────────────────────────────────────────────
 // SHARED COMPONENTS
 // ─────────────────────────────────────────────────────────
+
+/** Fixed bottom area — gradient fade + button content */
+@Composable
+private fun BottomButtonSection(
+    bg: Color,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(bg.copy(alpha = 0f), bg, bg),
+                    startY = 0f,
+                    endY = 120f
+                )
+            )
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 36.dp, top = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        content = content
+    )
+}
 
 @Composable
 private fun OnboardingHeader(page: Int, onSkip: () -> Unit) {
@@ -395,9 +379,7 @@ private fun OnboardingHeader(page: Int, onSkip: () -> Unit) {
             Image(
                 painter = painterResource(id = R.drawable.ic_dadadrive_logo),
                 contentDescription = "Logo",
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(7.dp))
+                modifier = Modifier.size(32.dp).clip(RoundedCornerShape(7.dp))
             )
             Spacer(Modifier.width(8.dp))
             Text(
@@ -412,25 +394,21 @@ private fun OnboardingHeader(page: Int, onSkip: () -> Unit) {
 }
 
 @Composable
-private fun DotsIndicator(
-    totalDots: Int,
-    selectedIndex: Int,
-    modifier: Modifier = Modifier
-) {
+private fun DotsIndicator(totalDots: Int, selectedIndex: Int, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         repeat(totalDots) { index ->
-            val isSelected = index == selectedIndex
+            val selected = index == selectedIndex
             Box(
                 modifier = Modifier
                     .height(6.dp)
-                    .width(if (isSelected) 22.dp else 6.dp)
+                    .width(if (selected) 22.dp else 6.dp)
                     .clip(RoundedCornerShape(3.dp))
                     .background(
-                        if (isSelected) DadaDriveGreen
+                        if (selected) DadaDriveGreen
                         else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
                     )
             )
@@ -440,37 +418,19 @@ private fun DotsIndicator(
 
 @Composable
 private fun FeatureItem(icon: ImageVector, title: String, subtitle: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
-    ) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
         Box(
             modifier = Modifier
                 .size(42.dp)
                 .background(DadaDriveGreen.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = DadaDriveGreen,
-                modifier = Modifier.size(20.dp)
-            )
+            Icon(imageVector = icon, contentDescription = null, tint = DadaDriveGreen, modifier = Modifier.size(20.dp))
         }
         Spacer(Modifier.width(14.dp))
         Column {
-            Text(
-                text = title,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = subtitle,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
-                fontSize = 13.sp,
-                lineHeight = 18.sp
-            )
+            Text(text = title, color = MaterialTheme.colorScheme.onBackground, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            Text(text = subtitle, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f), fontSize = 13.sp, lineHeight = 18.sp)
         }
     }
 }
@@ -478,7 +438,6 @@ private fun FeatureItem(icon: ImageVector, title: String, subtitle: String) {
 @Composable
 private fun ReceiptCard() {
     val fg = MaterialTheme.colorScheme.onBackground
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -486,30 +445,13 @@ private fun ReceiptCard() {
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
                 Column {
-                    Text(
-                        text = "DADA",
-                        color = fg,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 2.sp
-                    )
-                    Text(
-                        text = "le n° 8929-K.",
-                        color = fg.copy(alpha = 0.4f),
-                        fontSize = 12.sp,
-                        fontStyle = FontStyle.Italic
-                    )
+                    Text("DADA", color = fg, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
+                    Text("le n° 8929-K.", color = fg.copy(alpha = 0.4f), fontSize = 12.sp, fontStyle = FontStyle.Italic)
                 }
                 Box(
-                    modifier = Modifier
-                        .background(DadaDriveGreen, RoundedCornerShape(12.dp))
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    modifier = Modifier.background(DadaDriveGreen, RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -519,60 +461,27 @@ private fun ReceiptCard() {
                     }
                 }
             }
-
             Spacer(Modifier.height(16.dp))
             HorizontalDivider(color = fg.copy(alpha = 0.1f))
             Spacer(Modifier.height(12.dp))
-
-            ReceiptRow(label = "Trajet Standard", amount = "24.50€", fg = fg)
+            ReceiptRow("Trajet Standard", "24.50€", fg)
             Spacer(Modifier.height(8.dp))
-            ReceiptRow(label = "Frais d'accès", amount = "0.00€", fg = fg)
-
+            ReceiptRow("Frais d'accès", "0.00€", fg)
             Spacer(Modifier.height(12.dp))
             HorizontalDivider(color = fg.copy(alpha = 0.1f))
             Spacer(Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "TOTAL FIXÉ",
-                    color = fg,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
-                )
-                Text(
-                    text = "24.50€",
-                    color = fg,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("TOTAL FIXÉ", color = fg, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+                Text("24.50€", color = fg, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
             }
-
             Spacer(Modifier.height(14.dp))
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .background(DadaDriveGreen.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                modifier = Modifier.background(DadaDriveGreen.copy(alpha = 0.1f), RoundedCornerShape(8.dp)).padding(horizontal = 10.dp, vertical = 6.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Verified,
-                    contentDescription = null,
-                    tint = DadaDriveGreen,
-                    modifier = Modifier.size(16.dp)
-                )
+                Icon(Icons.Default.Verified, null, tint = DadaDriveGreen, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text(
-                    text = "PRIX GARANTI",
-                    color = DadaDriveGreen,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text("PRIX GARANTI", color = DadaDriveGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -580,10 +489,7 @@ private fun ReceiptCard() {
 
 @Composable
 private fun ReceiptRow(label: String, amount: String, fg: Color) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(text = label, color = fg.copy(alpha = 0.6f), fontSize = 14.sp)
         Text(text = amount, color = fg, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
     }
@@ -593,21 +499,11 @@ private fun ReceiptRow(label: String, amount: String, fg: Color) {
 private fun OnboardingButton(label: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp),
+        modifier = Modifier.fillMaxWidth().height(56.dp),
         shape = RoundedCornerShape(28.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = DadaDriveGreen,
-            contentColor = Color.White
-        )
+        colors = ButtonDefaults.buttonColors(containerColor = DadaDriveGreen, contentColor = Color.White)
     ) {
-        Text(
-            text = label,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp
-        )
+        Text(text = label, fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
     }
 }
 
@@ -625,66 +521,24 @@ private fun SkipLink(label: String, onClick: () -> Unit) {
 }
 
 // ─────────────────────────────────────────────────────────
-// CANVAS — RADAR ANIMATION (PAGE 4)
+// CANVAS — RADAR ANIMATION
 // ─────────────────────────────────────────────────────────
 
 @Composable
 private fun RadarAnimation(modifier: Modifier = Modifier) {
-    val infiniteTransition = rememberInfiniteTransition(label = "radar")
-
-    val scale1 by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2400, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ), label = "s1"
-    )
-    val scale2 by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2400, delayMillis = 800, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ), label = "s2"
-    )
-    val scale3 by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2400, delayMillis = 1600, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ), label = "s3"
-    )
+    val tr = rememberInfiniteTransition(label = "radar")
+    val s1 by tr.animateFloat(0f, 1f, infiniteRepeatable(tween(2400, easing = LinearEasing), RepeatMode.Restart), label = "s1")
+    val s2 by tr.animateFloat(0f, 1f, infiniteRepeatable(tween(2400, delayMillis = 800, easing = LinearEasing), RepeatMode.Restart), label = "s2")
+    val s3 by tr.animateFloat(0f, 1f, infiniteRepeatable(tween(2400, delayMillis = 1600, easing = LinearEasing), RepeatMode.Restart), label = "s3")
 
     Canvas(modifier = modifier) {
         val center = Offset(size.width / 2f, size.height / 2f)
         val maxR = size.minDimension / 2f
-
-        listOf(scale1, scale2, scale3).forEach { s ->
-            drawCircle(
-                color = DadaDriveGreen.copy(alpha = (1f - s) * 0.5f),
-                radius = maxR * s,
-                center = center,
-                style = Stroke(width = 2.dp.toPx())
-            )
+        listOf(s1, s2, s3).forEach { s ->
+            drawCircle(color = DadaDriveGreen.copy(alpha = (1f - s) * 0.5f), radius = maxR * s, center = center, style = Stroke(width = 2.dp.toPx()))
         }
-
-        drawCircle(
-            color = DadaDriveGreen.copy(alpha = 0.15f),
-            radius = maxR * 0.25f,
-            center = center
-        )
-
-        drawCircle(
-            color = DadaDriveGreen,
-            radius = 10.dp.toPx(),
-            center = center
-        )
-
-        drawLine(
-            color = DadaDriveGreen,
-            start = center,
-            end = Offset(center.x, center.y + 18.dp.toPx()),
-            strokeWidth = 3.dp.toPx(),
-            cap = StrokeCap.Round
-        )
+        drawCircle(color = DadaDriveGreen.copy(alpha = 0.15f), radius = maxR * 0.25f, center = center)
+        drawCircle(color = DadaDriveGreen, radius = 10.dp.toPx(), center = center)
+        drawLine(color = DadaDriveGreen, start = center, end = Offset(center.x, center.y + 18.dp.toPx()), strokeWidth = 3.dp.toPx(), cap = StrokeCap.Round)
     }
 }

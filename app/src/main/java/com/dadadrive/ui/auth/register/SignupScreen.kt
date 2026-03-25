@@ -45,13 +45,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.ui.auth.AuthState
@@ -70,7 +71,6 @@ fun SignupScreen(
     val authState by authViewModel.authState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Fields
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -78,7 +78,6 @@ fun SignupScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var profilePictureUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Errors (null = no error)
     var fullNameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
     var phoneError by remember { mutableStateOf<String?>(null) }
@@ -86,92 +85,69 @@ fun SignupScreen(
     var confirmPasswordError by remember { mutableStateOf<String?>(null) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        ActivityResultContracts.GetContent()
     ) { uri -> profilePictureUri = uri }
 
-    val backgroundColor = MaterialTheme.colorScheme.background
-    val onBackground = MaterialTheme.colorScheme.onBackground
+    val bg = MaterialTheme.colorScheme.background
+    val fg = MaterialTheme.colorScheme.onBackground
 
-    // Local validation — returns true if all fields are valid
     fun validate(): Boolean {
-        var valid = true
-
-        fullNameError = if (fullName.isBlank()) {
-            valid = false; "Full name is required"
-        } else null
-
+        var ok = true
+        fullNameError = if (fullName.isBlank()) { ok = false; "Full name is required" } else null
         emailError = when {
-            email.isBlank() -> { valid = false; "Email address is required" }
-            !EMAIL_REGEX.matches(email.trim()) -> { valid = false; "Invalid email format (e.g. name@example.com)" }
+            email.isBlank() -> { ok = false; "Email address is required" }
+            !EMAIL_REGEX.matches(email.trim()) -> { ok = false; "Invalid email format (e.g. name@example.com)" }
             else -> null
         }
-
         phoneError = when {
-            phoneNumber.isBlank() -> { valid = false; "Phone number is required" }
-            !PHONE_REGEX.matches(phoneNumber.trim()) -> { valid = false; "Invalid phone number (8–15 digits)" }
+            phoneNumber.isBlank() -> { ok = false; "Phone number is required" }
+            !PHONE_REGEX.matches(phoneNumber.trim()) -> { ok = false; "Invalid phone number (8–15 digits)" }
             else -> null
         }
-
         passwordError = when {
-            password.isBlank() -> { valid = false; "Password is required" }
-            password.length < 6 -> { valid = false; "Minimum 6 characters required" }
+            password.isBlank() -> { ok = false; "Password is required" }
+            password.length < 6 -> { ok = false; "Minimum 6 characters required" }
             else -> null
         }
-
         confirmPasswordError = when {
-            confirmPassword.isBlank() -> { valid = false; "Please confirm your password" }
-            confirmPassword != password -> { valid = false; "Passwords do not match" }
+            confirmPassword.isBlank() -> { ok = false; "Please confirm your password" }
+            confirmPassword != password -> { ok = false; "Passwords do not match" }
             else -> null
         }
-
-        return valid
+        return ok
     }
 
     LaunchedEffect(authState) {
         when (val state = authState) {
-            is AuthState.Success -> {
-                onSignupSuccess()
-                authViewModel.resetState()
-            }
-            is AuthState.Error -> {
-                snackbarHostState.showSnackbar(state.message)
-                authViewModel.resetState()
-            }
+            is AuthState.Success -> { onSignupSuccess(); authViewModel.resetState() }
+            is AuthState.Error -> { snackbarHostState.showSnackbar(state.message); authViewModel.resetState() }
             else -> Unit
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
+    Box(modifier = Modifier.fillMaxSize().background(bg)) {
+
+        // ── Scrollable content ──
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 28.dp)
-                .verticalScroll(rememberScrollState()),
+                .padding(bottom = 120.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-            // Back button — stays left
             Row(modifier = Modifier.fillMaxWidth()) {
                 IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = onBackground
-                    )
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = fg)
                 }
             }
+            Spacer(Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Title — centered, single line
             Text(
                 text = "Create new account",
-                color = onBackground,
+                color = fg,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -179,108 +155,72 @@ fun SignupScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(Modifier.height(28.dp))
 
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // Profile picture — centered
-            ProfilePicturePicker(
-                uri = profilePictureUri,
-                onPickImage = { imagePickerLauncher.launch("image/*") }
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // --- FIELDS ---
+            ProfilePicturePicker(uri = profilePictureUri, onPickImage = { imagePickerLauncher.launch("image/*") })
+            Spacer(Modifier.height(28.dp))
 
             AuthInputField(
                 value = fullName,
-                onValueChange = {
-                    fullName = it
-                    if (fullNameError != null) fullNameError = null
-                },
-                label = "Full Name",
-                placeholder = "Enter your name",
+                onValueChange = { fullName = it; if (fullNameError != null) fullNameError = null },
+                label = "Full Name", placeholder = "Enter your name",
                 errorMessage = fullNameError
             )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
+            Spacer(Modifier.height(20.dp))
             AuthInputField(
                 value = email,
-                onValueChange = {
-                    email = it
-                    if (emailError != null) emailError = null
-                },
-                label = "Email Address",
-                placeholder = "name@example.com",
-                keyboardType = KeyboardType.Email,
-                errorMessage = emailError
+                onValueChange = { email = it; if (emailError != null) emailError = null },
+                label = "Email Address", placeholder = "name@example.com",
+                keyboardType = KeyboardType.Email, errorMessage = emailError
             )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
+            Spacer(Modifier.height(20.dp))
             AuthInputField(
                 value = phoneNumber,
-                onValueChange = {
-                    phoneNumber = it
-                    if (phoneError != null) phoneError = null
-                },
-                label = "Phone Number",
-                placeholder = "+1 234 567 8900",
-                keyboardType = KeyboardType.Phone,
-                errorMessage = phoneError
+                onValueChange = { phoneNumber = it; if (phoneError != null) phoneError = null },
+                label = "Phone Number", placeholder = "+1 234 567 8900",
+                keyboardType = KeyboardType.Phone, errorMessage = phoneError
             )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
+            Spacer(Modifier.height(20.dp))
             AuthInputField(
                 value = password,
                 onValueChange = {
                     password = it
                     if (passwordError != null) passwordError = null
-                    // Re-check confirm if already filled
-                    if (confirmPasswordError != null && confirmPassword == it) {
-                        confirmPasswordError = null
-                    }
+                    if (confirmPasswordError != null && confirmPassword == it) confirmPasswordError = null
                 },
-                label = "Create Password",
-                placeholder = "Enter your password",
-                isPassword = true,
-                errorMessage = passwordError
+                label = "Create Password", placeholder = "Enter your password",
+                isPassword = true, errorMessage = passwordError
             )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
+            Spacer(Modifier.height(20.dp))
             AuthInputField(
                 value = confirmPassword,
-                onValueChange = {
-                    confirmPassword = it
-                    if (confirmPasswordError != null) confirmPasswordError = null
-                },
-                label = "Confirm Password",
-                placeholder = "Repeat your password",
-                isPassword = true,
-                errorMessage = confirmPasswordError
+                onValueChange = { confirmPassword = it; if (confirmPasswordError != null) confirmPasswordError = null },
+                label = "Confirm Password", placeholder = "Repeat your password",
+                isPassword = true, errorMessage = confirmPasswordError
             )
+            Spacer(Modifier.height(24.dp))
+        }
 
-            Spacer(modifier = Modifier.height(36.dp))
-
+        // ── Fixed bottom: Sign Up button ──
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(bg.copy(alpha = 0f), bg, bg),
+                        startY = 0f,
+                        endY = 80f
+                    )
+                )
+                .padding(horizontal = 28.dp)
+                .padding(bottom = 36.dp, top = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Button(
-                onClick = {
-                    if (validate()) {
-                        authViewModel.signup(
-                            fullName = fullName,
-                            email = email,
-                            password = password,
-                            phoneNumber = phoneNumber,
-                            profilePictureUri = profilePictureUri?.toString()
-                        )
-                    }
-                },
+                onClick = { if (validate()) authViewModel.signup(fullName, email, password, phoneNumber, profilePictureUri?.toString()) },
                 enabled = authState !is AuthState.Loading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -289,95 +229,52 @@ fun SignupScreen(
                     disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
                 )
             ) {
-                Text(
-                    text = "Sign Up",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text("Sign Up", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-
-            Spacer(modifier = Modifier.height(40.dp))
         }
 
+        // ── Loading overlay ──
         if (authState is AuthState.Loading) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(backgroundColor.copy(alpha = 0.7f)),
+                modifier = Modifier.fillMaxSize().background(bg.copy(alpha = 0.7f)),
                 contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
+            ) { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
         }
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
+// ─────────────────────────────────────────────────────────
+// PROFILE PICTURE PICKER
+// ─────────────────────────────────────────────────────────
+
 @Composable
-private fun ProfilePicturePicker(
-    uri: Uri?,
-    onPickImage: () -> Unit
-) {
+private fun ProfilePicturePicker(uri: Uri?, onPickImage: () -> Unit) {
     val context = LocalContext.current
     val bitmap = remember(uri) {
-        uri?.let {
-            context.contentResolver.openInputStream(it)?.use { stream ->
-                BitmapFactory.decodeStream(stream)?.asImageBitmap()
-            }
-        }
+        uri?.let { context.contentResolver.openInputStream(it)?.use { s -> BitmapFactory.decodeStream(s)?.asImageBitmap() } }
     }
 
-    val surfaceColor = MaterialTheme.colorScheme.surfaceVariant
-    val borderColor = MaterialTheme.colorScheme.outline
-    val iconTint = MaterialTheme.colorScheme.onSurfaceVariant
-    val labelColor = MaterialTheme.colorScheme.onBackground
-
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = "Profile Picture",
-            color = labelColor,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-
+        Text("Profile Picture", color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(12.dp))
         Box(
             modifier = Modifier
                 .size(90.dp)
                 .clip(CircleShape)
-                .background(surfaceColor)
-                .border(1.5.dp, borderColor, CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape)
                 .clickable { onPickImage() },
             contentAlignment = Alignment.Center
         ) {
             if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = "Profile picture",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(90.dp)
-                        .clip(CircleShape)
-                )
+                Image(bitmap = bitmap, contentDescription = "Profile picture", contentScale = ContentScale.Crop, modifier = Modifier.size(90.dp).clip(CircleShape))
             } else {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Icon(
-                        imageVector = Icons.Default.PhotoCamera,
-                        contentDescription = "Choose photo",
-                        tint = iconTint,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Default.Person, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(32.dp))
+                    Spacer(Modifier.height(4.dp))
+                    Icon(Icons.Default.PhotoCamera, "Choose photo", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                 }
             }
         }
