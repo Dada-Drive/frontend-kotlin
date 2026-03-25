@@ -10,6 +10,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -88,7 +89,9 @@ fun OnboardingScreen(onFinished: () -> Unit) {
 
     HorizontalPager(
         state = pagerState,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        userScrollEnabled = true,
+        beyondViewportPageCount = 1
     ) { page ->
         when (page) {
             0 -> PageRapide(page = page, onNext = goNext, onSkip = onFinished)
@@ -514,11 +517,20 @@ private fun ReceiptRow(label: String, amount: String, fg: Color) {
 
 @Composable
 private fun OnboardingButton(label: String, onClick: () -> Unit) {
+    val isDark = isSystemInDarkTheme()
+    val btnBg = if (isDark) Color.White else Color.Black
+    val btnFg = if (isDark) Color.Black else Color.White
+
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().height(56.dp),
         shape = RoundedCornerShape(28.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)
+        colors = ButtonDefaults.buttonColors(
+            containerColor = btnBg,
+            contentColor = btnFg,
+            disabledContainerColor = btnBg.copy(alpha = 0.4f),
+            disabledContentColor = btnFg.copy(alpha = 0.6f)
+        )
     ) {
         Text(text = label, fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
     }
