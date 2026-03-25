@@ -11,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -116,12 +117,13 @@ private fun PageRapide(page: Int, onNext: () -> Unit, onSkip: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(bottom = 148.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(52.dp))
+            Spacer(Modifier.height(12.dp))
             OnboardingHeader(page = page, onSkip = onSkip)
             Spacer(Modifier.height(20.dp))
 
@@ -179,12 +181,13 @@ private fun PageSecurite(page: Int, onNext: () -> Unit, onSkip: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(bottom = 148.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(52.dp))
+            Spacer(Modifier.height(12.dp))
 
             Image(
                 painter = painterResource(id = R.drawable.confiance),
@@ -241,12 +244,13 @@ private fun PagePrix(page: Int, onNext: () -> Unit, onSkip: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(bottom = 148.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(52.dp))
+            Spacer(Modifier.height(12.dp))
             ReceiptCard()
             Spacer(Modifier.height(32.dp))
             Text(
@@ -294,12 +298,13 @@ private fun PageLocalisation(onActivate: () -> Unit, onSkip: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(bottom = 160.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically

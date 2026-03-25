@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -53,6 +54,8 @@ fun WelcomeScreen(
     val isDark = isSystemInDarkTheme()
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
+    val btnBg = if (isDark) Color.White else Color.Black
+    val btnFg = if (isDark) Color.Black else Color.White
 
     Box(modifier = Modifier.fillMaxSize().background(bg)) {
 
@@ -63,19 +66,19 @@ fun WelcomeScreen(
                 .padding(bottom = 196.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Hero image with gradient overlay
+            // ── Hero image with gradient fade ──
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
+                    .height(320.dp)
             ) {
                 Image(
-                    painter = painterResource(R.drawable.confiance),
+                    painter = painterResource(R.drawable.welcomepage),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                // Fade into background at the bottom
+                // Gradient: transparent at top → background color at bottom
                 Box(
                     modifier = Modifier.fillMaxSize().background(
                         Brush.verticalGradient(
@@ -85,11 +88,12 @@ fun WelcomeScreen(
                         )
                     )
                 )
-                // Logo top-left
+                // ── Logo — positioned BELOW the status bar ──
                 Row(
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(top = 48.dp, start = 20.dp),
+                        .statusBarsPadding()
+                        .padding(horizontal = 20.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
@@ -108,10 +112,8 @@ fun WelcomeScreen(
                 }
             }
 
-            // Headline + subtitle + dots
-            Column(
-                modifier = Modifier.padding(horizontal = 24.dp)
-            ) {
+            // ── Headline + subtitle + dots ──
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Spacer(Modifier.height(16.dp))
                 Text(
                     text = buildAnnotatedString {
@@ -146,8 +148,7 @@ fun WelcomeScreen(
                                 .width(if (i == 0) 22.dp else 6.dp)
                                 .clip(RoundedCornerShape(3.dp))
                                 .background(
-                                    if (i == 0) DadaDriveGreen
-                                    else fg.copy(alpha = 0.2f)
+                                    if (i == 0) DadaDriveGreen else fg.copy(alpha = 0.2f)
                                 )
                         )
                         if (i < 2) Spacer(Modifier.width(5.dp))
@@ -156,7 +157,7 @@ fun WelcomeScreen(
             }
         }
 
-        // ── Fixed bottom: phone + google + legal ──
+        // ── Fixed bottom: boutons + texte légal ──
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -178,8 +179,8 @@ fun WelcomeScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = DadaDriveGreen,
-                    contentColor = Color.Black
+                    containerColor = btnBg,
+                    contentColor = btnFg
                 )
             ) {
                 Icon(Icons.Default.Phone, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -194,15 +195,10 @@ fun WelcomeScreen(
                 onClick = onGoogleClick,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(28.dp),
-                border = BorderStroke(1.dp, fg.copy(alpha = 0.2f)),
+                border = BorderStroke(1.dp, fg.copy(alpha = 0.25f)),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = fg)
             ) {
-                Text(
-                    text = "G",
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 18.sp,
-                    color = GoogleRed
-                )
+                Text("G", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = GoogleRed)
                 Spacer(Modifier.width(10.dp))
                 Text("Continuer avec Google", fontWeight = FontWeight.Medium, fontSize = 15.sp)
             }
