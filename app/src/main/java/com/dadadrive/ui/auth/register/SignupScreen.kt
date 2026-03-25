@@ -1,8 +1,10 @@
 package com.dadadrive.ui.auth.register
 
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,13 +23,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -41,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -49,15 +51,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.graphics.BitmapFactory
-import androidx.compose.foundation.Image
 import com.dadadrive.ui.auth.AuthState
 import com.dadadrive.ui.auth.AuthViewModel
 import com.dadadrive.ui.auth.login.AuthInputField
-import com.dadadrive.ui.theme.Black
-import com.dadadrive.ui.theme.DividerGrey
-import com.dadadrive.ui.theme.GreyHint
-import com.dadadrive.ui.theme.White
 
 @Composable
 fun SignupScreen(
@@ -78,6 +74,9 @@ fun SignupScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri -> profilePictureUri = uri }
 
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val onBackground = MaterialTheme.colorScheme.onBackground
+
     LaunchedEffect(authState) {
         when (val state = authState) {
             is AuthState.Success -> {
@@ -95,7 +94,7 @@ fun SignupScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Black)
+            .background(backgroundColor)
     ) {
         Column(
             modifier = Modifier
@@ -109,7 +108,7 @@ fun SignupScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = White
+                    tint = onBackground
                 )
             }
 
@@ -117,7 +116,7 @@ fun SignupScreen(
 
             Text(
                 text = "Create new\naccount",
-                color = White,
+                color = onBackground,
                 fontSize = 34.sp,
                 fontWeight = FontWeight.Bold,
                 lineHeight = 42.sp
@@ -125,7 +124,6 @@ fun SignupScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Profile picture picker
             ProfilePicturePicker(
                 uri = profilePictureUri,
                 onPickImage = { imagePickerLauncher.launch("image/*") }
@@ -188,10 +186,10 @@ fun SignupScreen(
                     .height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = White,
-                    contentColor = Black,
-                    disabledContainerColor = Color(0xFFCCCCCC),
-                    disabledContentColor = Color(0xFF888888)
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                    disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
                 )
             ) {
                 Text(
@@ -208,10 +206,10 @@ fun SignupScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
+                    .background(backgroundColor.copy(alpha = 0.7f)),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = White)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
 
@@ -236,10 +234,15 @@ private fun ProfilePicturePicker(
         }
     }
 
+    val surfaceColor = MaterialTheme.colorScheme.surfaceVariant
+    val borderColor = MaterialTheme.colorScheme.outline
+    val iconTint = MaterialTheme.colorScheme.onSurfaceVariant
+    val labelColor = MaterialTheme.colorScheme.onBackground
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = "Profile Picture",
-            color = White,
+            color = labelColor,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -249,8 +252,8 @@ private fun ProfilePicturePicker(
             modifier = Modifier
                 .size(90.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF1A1A1A))
-                .border(1.5.dp, DividerGrey, CircleShape)
+                .background(surfaceColor)
+                .border(1.5.dp, borderColor, CircleShape)
                 .clickable { onPickImage() },
             contentAlignment = Alignment.Center
         ) {
@@ -268,14 +271,14 @@ private fun ProfilePicturePicker(
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        tint = GreyHint,
+                        tint = iconTint,
                         modifier = Modifier.size(32.dp)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Icon(
-                        imageVector = Icons.Default.CameraAlt,
+                        imageVector = Icons.Default.PhotoCamera,
                         contentDescription = "Choose photo",
-                        tint = GreyHint,
+                        tint = iconTint,
                         modifier = Modifier.size(16.dp)
                     )
                 }
