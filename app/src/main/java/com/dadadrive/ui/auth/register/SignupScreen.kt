@@ -10,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,11 +50,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.ui.auth.AuthState
 import com.dadadrive.ui.auth.AuthViewModel
 import com.dadadrive.ui.auth.login.AuthInputField
+
+private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+private val PHONE_REGEX = Regex("^[+]?[0-9]{8,15}$")
 
 @Composable
 fun SignupScreen(
@@ -64,11 +70,20 @@ fun SignupScreen(
     val authState by authViewModel.authState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Fields
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var profilePictureUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Errors (null = no error)
+    var fullNameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var phoneError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -76,6 +91,41 @@ fun SignupScreen(
 
     val backgroundColor = MaterialTheme.colorScheme.background
     val onBackground = MaterialTheme.colorScheme.onBackground
+
+    // Local validation — returns true if all fields are valid
+    fun validate(): Boolean {
+        var valid = true
+
+        fullNameError = if (fullName.isBlank()) {
+            valid = false; "Full name is required"
+        } else null
+
+        emailError = when {
+            email.isBlank() -> { valid = false; "Email address is required" }
+            !EMAIL_REGEX.matches(email.trim()) -> { valid = false; "Invalid email format (e.g. name@example.com)" }
+            else -> null
+        }
+
+        phoneError = when {
+            phoneNumber.isBlank() -> { valid = false; "Phone number is required" }
+            !PHONE_REGEX.matches(phoneNumber.trim()) -> { valid = false; "Invalid phone number (8–15 digits)" }
+            else -> null
+        }
+
+        passwordError = when {
+            password.isBlank() -> { valid = false; "Password is required" }
+            password.length < 6 -> { valid = false; "Minimum 6 characters required" }
+            else -> null
+        }
+
+        confirmPasswordError = when {
+            confirmPassword.isBlank() -> { valid = false; "Please confirm your password" }
+            confirmPassword != password -> { valid = false; "Passwords do not match" }
+            else -> null
+        }
+
+        return valid
+    }
 
     LaunchedEffect(authState) {
         when (val state = authState) {
@@ -100,85 +150,132 @@ fun SignupScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 28.dp)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = onBackground
-                )
+            // Back button — stays left
+            Row(modifier = Modifier.fillMaxWidth()) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = onBackground
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
+            // Title — centered, single line
             Text(
-                text = "Create new\naccount",
+                text = "Create new account",
                 color = onBackground,
-                fontSize = 34.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
-                lineHeight = 42.sp
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
+            // Profile picture — centered
             ProfilePicturePicker(
                 uri = profilePictureUri,
                 onPickImage = { imagePickerLauncher.launch("image/*") }
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
+
+            // --- FIELDS ---
 
             AuthInputField(
                 value = fullName,
-                onValueChange = { fullName = it },
+                onValueChange = {
+                    fullName = it
+                    if (fullNameError != null) fullNameError = null
+                },
                 label = "Full Name",
-                placeholder = "Enter your name"
+                placeholder = "Enter your name",
+                errorMessage = fullNameError
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             AuthInputField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    if (emailError != null) emailError = null
+                },
                 label = "Email Address",
                 placeholder = "name@example.com",
-                keyboardType = KeyboardType.Email
+                keyboardType = KeyboardType.Email,
+                errorMessage = emailError
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             AuthInputField(
                 value = phoneNumber,
-                onValueChange = { phoneNumber = it },
+                onValueChange = {
+                    phoneNumber = it
+                    if (phoneError != null) phoneError = null
+                },
                 label = "Phone Number",
                 placeholder = "+1 234 567 8900",
-                keyboardType = KeyboardType.Phone
+                keyboardType = KeyboardType.Phone,
+                errorMessage = phoneError
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             AuthInputField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    if (passwordError != null) passwordError = null
+                    // Re-check confirm if already filled
+                    if (confirmPasswordError != null && confirmPassword == it) {
+                        confirmPasswordError = null
+                    }
+                },
                 label = "Create Password",
                 placeholder = "Enter your password",
-                isPassword = true
+                isPassword = true,
+                errorMessage = passwordError
             )
 
-            Spacer(modifier = Modifier.height(44.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            AuthInputField(
+                value = confirmPassword,
+                onValueChange = {
+                    confirmPassword = it
+                    if (confirmPasswordError != null) confirmPasswordError = null
+                },
+                label = "Confirm Password",
+                placeholder = "Repeat your password",
+                isPassword = true,
+                errorMessage = confirmPasswordError
+            )
+
+            Spacer(modifier = Modifier.height(36.dp))
 
             Button(
                 onClick = {
-                    authViewModel.signup(
-                        fullName = fullName,
-                        email = email,
-                        password = password,
-                        phoneNumber = phoneNumber,
-                        profilePictureUri = profilePictureUri?.toString()
-                    )
+                    if (validate()) {
+                        authViewModel.signup(
+                            fullName = fullName,
+                            email = email,
+                            password = password,
+                            phoneNumber = phoneNumber,
+                            profilePictureUri = profilePictureUri?.toString()
+                        )
+                    }
                 },
                 enabled = authState !is AuthState.Loading,
                 modifier = Modifier

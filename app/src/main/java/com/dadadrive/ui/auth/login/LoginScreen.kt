@@ -234,17 +234,22 @@ fun AuthInputField(
     placeholder: String,
     modifier: Modifier = Modifier,
     isPassword: Boolean = false,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    errorMessage: String? = null
 ) {
     val onBackground = MaterialTheme.colorScheme.onBackground
-    val underlineColor = onBackground.copy(alpha = 0.25f)
+    val hasError = errorMessage != null
+    val underlineColor = if (hasError)
+        MaterialTheme.colorScheme.error
+    else
+        onBackground.copy(alpha = 0.25f)
     val hintColor = onBackground.copy(alpha = 0.4f)
     val primaryColor = MaterialTheme.colorScheme.primary
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = label,
-            color = onBackground,
+            color = if (hasError) MaterialTheme.colorScheme.error else onBackground,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = 0.5.sp
@@ -266,7 +271,7 @@ fun AuthInputField(
                         color = underlineColor,
                         start = Offset(0f, y),
                         end = Offset(size.width, y),
-                        strokeWidth = 1.dp.toPx()
+                        strokeWidth = if (hasError) 1.5.dp.toPx() else 1.dp.toPx()
                     )
                 }
                 .padding(bottom = 10.dp),
@@ -277,6 +282,15 @@ fun AuthInputField(
                 innerTextField()
             }
         )
+        if (hasError) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = errorMessage!!,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Normal
+            )
+        }
     }
 }
 
