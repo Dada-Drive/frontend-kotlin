@@ -2,22 +2,22 @@ package com.dadadrive.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dadadrive.data.repository.AuthRepositoryImpl
-import com.dadadrive.domain.repository.AuthRepository
 import com.dadadrive.domain.usecase.LoginUseCase
 import com.dadadrive.domain.usecase.LoginWithPhoneUseCase
 import com.dadadrive.domain.usecase.SignupUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AuthViewModel : ViewModel() {
-
-    private val repository: AuthRepository = AuthRepositoryImpl()
-    private val loginUseCase = LoginUseCase(repository)
-    private val signupUseCase = SignupUseCase(repository)
-    private val loginWithPhoneUseCase = LoginWithPhoneUseCase(repository)
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val loginUseCase: LoginUseCase,
+    private val signupUseCase: SignupUseCase,
+    private val loginWithPhoneUseCase: LoginWithPhoneUseCase
+) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()

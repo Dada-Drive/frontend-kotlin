@@ -2,8 +2,9 @@ package com.dadadrive.domain.usecase
 
 import com.dadadrive.domain.model.User
 import com.dadadrive.domain.repository.AuthRepository
+import javax.inject.Inject
 
-class LoginWithPhoneUseCase(private val repository: AuthRepository) {
+class LoginWithPhoneUseCase @Inject constructor(private val repository: AuthRepository) {
 
     suspend operator fun invoke(phoneNumber: String): Result<User> {
         val clean = phoneNumber.replace(" ", "").replace("-", "").trim()

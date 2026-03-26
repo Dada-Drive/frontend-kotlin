@@ -3,8 +3,9 @@ package com.dadadrive.data.repository
 import com.dadadrive.domain.model.User
 import com.dadadrive.domain.repository.AuthRepository
 import kotlinx.coroutines.delay
+import javax.inject.Inject
 
-class AuthRepositoryImpl : AuthRepository {
+class AuthRepositoryImpl @Inject constructor() : AuthRepository {
 
     override suspend fun login(email: String, password: String): Result<User> {
         delay(1200)
