@@ -23,11 +23,13 @@ gradle/wrapper/
 # Secrets - ne jamais committer
 google-services.json
 local.properties
+client_secret_*.json
 *.keystore
 *.jks
 *.key
 
 # Kotlin
+.kotlin/
 *.class
 *.jar
 *.war

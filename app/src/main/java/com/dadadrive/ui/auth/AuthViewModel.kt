@@ -2,6 +2,7 @@ package com.dadadrive.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dadadrive.domain.usecase.GoogleAuthUseCase
 import com.dadadrive.domain.usecase.LoginUseCase
 import com.dadadrive.domain.usecase.LoginWithPhoneUseCase
 import com.dadadrive.domain.usecase.SignupUseCase
@@ -16,7 +17,8 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val signupUseCase: SignupUseCase,
-    private val loginWithPhoneUseCase: LoginWithPhoneUseCase
+    private val loginWithPhoneUseCase: LoginWithPhoneUseCase,
+    private val googleAuthUseCase: GoogleAuthUseCase
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
@@ -57,6 +59,17 @@ class AuthViewModel @Inject constructor(
             _authState.value = result.fold(
                 onSuccess = { user -> AuthState.Success(user) },
                 onFailure = { e -> AuthState.Error(e.message ?: "Erreur de connexion") }
+            )
+        }
+    }
+
+    fun loginWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            val result = googleAuthUseCase(idToken)
+            _authState.value = result.fold(
+                onSuccess = { user -> AuthState.Success(user) },
+                onFailure = { e -> AuthState.Error(e.message ?: "Erreur de connexion Google") }
             )
         }
     }

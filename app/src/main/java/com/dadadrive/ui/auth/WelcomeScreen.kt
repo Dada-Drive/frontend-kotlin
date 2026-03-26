@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -49,13 +50,16 @@ import com.dadadrive.ui.theme.GoogleRed
 @Composable
 fun WelcomeScreen(
     onPhoneClick: () -> Unit,
-    onGoogleClick: () -> Unit
+    onGoogleClick: () -> Unit,
+    authState: AuthState = AuthState.Idle
 ) {
     val isDark = isSystemInDarkTheme()
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
     val btnBg = if (isDark) Color.White else Color.Black
     val btnFg = if (isDark) Color.Black else Color.White
+    val isLoading = authState is AuthState.Loading
+    val errorMessage = (authState as? AuthState.Error)?.message
 
     Box(modifier = Modifier.fillMaxSize().background(bg)) {
 
@@ -78,7 +82,6 @@ fun WelcomeScreen(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                // Gradient: transparent at top → background color at bottom
                 Box(
                     modifier = Modifier.fillMaxSize().background(
                         Brush.verticalGradient(
@@ -88,7 +91,6 @@ fun WelcomeScreen(
                         )
                     )
                 )
-                // ── Logo — positioned BELOW the status bar ──
                 Row(
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -139,7 +141,6 @@ fun WelcomeScreen(
                     lineHeight = 22.sp
                 )
                 Spacer(Modifier.height(22.dp))
-                // Decorative dots indicator
                 Row {
                     repeat(3) { i ->
                         Box(
@@ -157,7 +158,7 @@ fun WelcomeScreen(
             }
         }
 
-        // ── Fixed bottom: boutons + texte légal ──
+        // ── Fixed bottom: boutons + message d'erreur + texte légal ──
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -173,14 +174,40 @@ fun WelcomeScreen(
                 .padding(bottom = 32.dp, top = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Message d'erreur visible si Google auth échoue
+            if (errorMessage != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color(0xFFFFEDED),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = errorMessage,
+                        color = Color(0xFFB00020),
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+            }
+
             // Continuer par téléphone
             Button(
                 onClick = onPhoneClick,
+                enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = btnBg,
-                    contentColor = btnFg
+                    contentColor = btnFg,
+                    disabledContainerColor = btnBg.copy(alpha = 0.4f),
+                    disabledContentColor = btnFg.copy(alpha = 0.5f)
                 )
             ) {
                 Icon(Icons.Default.Phone, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -193,14 +220,25 @@ fun WelcomeScreen(
             // Continuer avec Google
             OutlinedButton(
                 onClick = onGoogleClick,
+                enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(28.dp),
-                border = BorderStroke(1.dp, fg.copy(alpha = 0.25f)),
+                border = BorderStroke(1.dp, fg.copy(alpha = if (isLoading) 0.1f else 0.25f)),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = fg)
             ) {
-                Text("G", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = GoogleRed)
-                Spacer(Modifier.width(10.dp))
-                Text("Continuer avec Google", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = GoogleRed,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text("Connexion en cours...", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                } else {
+                    Text("G", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = GoogleRed)
+                    Spacer(Modifier.width(10.dp))
+                    Text("Continuer avec Google", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                }
             }
 
             Spacer(Modifier.height(14.dp))
