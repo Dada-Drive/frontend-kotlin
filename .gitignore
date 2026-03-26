@@ -17,7 +17,6 @@ gradle/wrapper/
 .cxx/
 
 # IDE
-.idea/
 *.iws
 *.ipr
 
