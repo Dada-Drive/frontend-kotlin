@@ -2,8 +2,9 @@ package com.dadadrive.domain.usecase
 
 import com.dadadrive.domain.model.User
 import com.dadadrive.domain.repository.AuthRepository
+import javax.inject.Inject
 
-class SignupUseCase(private val repository: AuthRepository) {
+class SignupUseCase @Inject constructor(private val repository: AuthRepository) {
 
     companion object {
         private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")

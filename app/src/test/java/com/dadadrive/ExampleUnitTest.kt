@@ -1,7 +1,6 @@
-package com.example.dadadrive
+package com.dadadrive
 
 import org.junit.Test
-
 import org.junit.Assert.*
 
 /**
