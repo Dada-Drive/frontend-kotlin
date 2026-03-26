@@ -1,6 +1,7 @@
 package com.dadadrive
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,30 +10,46 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.dadadrive.core.constants.Constants
+import com.dadadrive.ui.auth.AuthState
 import com.dadadrive.ui.auth.AuthViewModel
 import com.dadadrive.ui.auth.PhoneScreen
 import com.dadadrive.ui.auth.WelcomeScreen
 import com.dadadrive.ui.onboarding.OnboardingScreen
+import com.dadadrive.ui.pending.PendingScreen
 import com.dadadrive.ui.splash.SplashScreen
 import com.dadadrive.ui.theme.Black
 import com.dadadrive.ui.theme.DadaDriveTheme
 import com.dadadrive.ui.theme.White
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
     object Onboarding : Screen("onboarding")
     object Welcome : Screen("welcome")
     object Phone : Screen("phone")
+    object Pending : Screen("pending")
     object Home : Screen("home")
 }
 
@@ -79,9 +96,62 @@ private fun DadaDriveNavHost() {
         }
 
         composable(Screen.Welcome.route) {
+            val authViewModel: AuthViewModel = hiltViewModel()
+            val authState by authViewModel.authState.collectAsState()
+            val context = LocalContext.current
+            val scope = rememberCoroutineScope()
+
+            LaunchedEffect(authState) {
+                if (authState is AuthState.Success) {
+                    authViewModel.resetState()
+                    navController.navigate(Screen.Pending.route) {
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    }
+                }
+            }
+
             WelcomeScreen(
+                authState = authState,
                 onPhoneClick = { navController.navigate(Screen.Phone.route) },
-                onGoogleClick = { /* TODO: Google Auth */ }
+                onGoogleClick = {
+                    scope.launch {
+                        try {
+                            Log.d("GoogleAuth", "=== DÉBUT GOOGLE SIGN IN ===")
+
+                            val credentialManager = CredentialManager.create(context)
+
+                            val googleIdOption = GetGoogleIdOption.Builder()
+                                .setFilterByAuthorizedAccounts(false)
+                                .setServerClientId(Constants.GOOGLE_WEB_CLIENT_ID)
+                                .setAutoSelectEnabled(false)
+                                .build()
+
+                            val request = GetCredentialRequest.Builder()
+                                .addCredentialOption(googleIdOption)
+                                .build()
+
+                            val result = credentialManager.getCredential(context, request)
+                            val credential = result.credential
+
+                            // ✅ FIX — utiliser createFrom() au lieu du cast direct
+                            if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                                Log.d("GoogleAuth", "Token obtenu avec succès !")
+                                authViewModel.loginWithGoogle(googleIdTokenCredential.idToken)
+                            } else {
+                                Log.e("GoogleAuth", "Type de credential inconnu: ${credential.type}")
+                            }
+
+                        } catch (e: GetCredentialCancellationException) {
+                            Log.w("GoogleAuth", "Annulé par l'utilisateur")
+                        } catch (e: NoCredentialException) {
+                            Log.e("GoogleAuth", "Aucun compte Google: ${e.message}")
+                        } catch (e: Exception) {
+                            Log.e("GoogleAuth", "ERREUR: ${e::class.simpleName} — ${e.message}")
+                            Log.e("GoogleAuth", "Stack: ${e.stackTraceToString()}")
+                        }
+                    }
+                }
             )
         }
 
@@ -96,6 +166,10 @@ private fun DadaDriveNavHost() {
                     }
                 }
             )
+        }
+
+        composable(Screen.Pending.route) {
+            PendingScreen()
         }
 
         composable(Screen.Home.route) {
@@ -122,4 +196,3 @@ private fun HomePlaceholder() {
         )
     }
 }
-

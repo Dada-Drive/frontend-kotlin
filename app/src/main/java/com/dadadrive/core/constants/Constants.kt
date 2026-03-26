@@ -1,13 +1,11 @@
 package com.dadadrive.core.constants
 
-// ─────────────────────────────────────────────────────────
-// APP-WIDE CONSTANTS
-// ─────────────────────────────────────────────────────────
+import com.dadadrive.BuildConfig
 
 object Constants {
 
     // ── API ───────────────────────────────────────────────
-    const val BASE_URL = "https://api.dadadrive.com/"
+    val BASE_URL = BuildConfig.BASE_URL
     const val API_VERSION = "v1"
     const val CONNECT_TIMEOUT_SECONDS = 30L
     const val READ_TIMEOUT_SECONDS = 30L
@@ -17,6 +15,7 @@ object Constants {
     const val PREFS_REFRESH_TOKEN = "refresh_token"
     const val PREFS_USER_ID = "user_id"
     const val PHONE_CODE_LENGTH = 6
+    val GOOGLE_WEB_CLIENT_ID = BuildConfig.GOOGLE_WEB_CLIENT_ID
 
     // ── Navigation routes ─────────────────────────────────
     object Routes {
