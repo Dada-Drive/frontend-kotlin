@@ -9,6 +9,11 @@
 .externalNativeBuild/
 .cxx/
 
+# Gradle wrapper (generated files)
+gradlew
+gradlew.bat
+gradle/wrapper/gradle-wrapper.jar
+
 # Secrets - ne jamais committer
 google-services.json
 local.properties
@@ -25,3 +30,5 @@ local.properties
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+$RECYCLE.BIN/
+*.lnk
