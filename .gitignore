@@ -1,3 +1,8 @@
+# Gradle wrapper (generated files - should not be tracked)
+gradlew
+gradlew.bat
+gradle/wrapper/
+
 # Android / Kotlin
 *.iml
 .gradle/
@@ -5,15 +10,23 @@
 /.idea/
 .DS_Store
 /build/
+*.apk
+*.aar
 /captures/
 .externalNativeBuild/
 .cxx/
+
+# IDE
+.idea/
+*.iws
+*.ipr
 
 # Secrets - ne jamais committer
 google-services.json
 local.properties
 *.keystore
 *.jks
+*.key
 
 # Kotlin
 *.class
