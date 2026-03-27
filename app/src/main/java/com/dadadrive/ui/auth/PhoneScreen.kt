@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -61,34 +61,62 @@ import com.dadadrive.ui.theme.DadaDriveGreen
 // DATA
 // ─────────────────────────────────────────────────────────
 
-data class Country(val name: String, val flag: String, val dialCode: String)
+/**
+ * [dialCode]     : indicatif international avec le +
+ * [maxDigits]    : nombre de chiffres du numéro national (sans indicatif)
+ * [formatMask]   : masque d'affichage — '#' = chiffre, ' ' = espace auto-inséré
+ * [placeholder]  : exemple de numéro formaté affiché en hint
+ */
+data class Country(
+    val name: String,
+    val flag: String,
+    val dialCode: String,
+    val maxDigits: Int = 9,
+    val formatMask: String = "### ### ###",
+    val placeholder: String = "XXX XXX XXX"
+)
 
 val commonCountries = listOf(
-    Country("France", "🇫🇷", "+33"),
-    Country("Belgique", "🇧🇪", "+32"),
-    Country("Suisse", "🇨🇭", "+41"),
-    Country("Canada", "🇨🇦", "+1"),
-    Country("Maroc", "🇲🇦", "+212"),
-    Country("Algérie", "🇩🇿", "+213"),
-    Country("Tunisie", "🇹🇳", "+216"),
-    Country("Sénégal", "🇸🇳", "+221"),
-    Country("Mali", "🇲🇱", "+223"),
-    Country("Guinée", "🇬🇳", "+224"),
-    Country("Côte d'Ivoire", "🇨🇮", "+225"),
-    Country("Cameroun", "🇨🇲", "+237"),
-    Country("Madagascar", "🇲🇬", "+261"),
-    Country("Congo (RDC)", "🇨🇩", "+243"),
-    Country("États-Unis", "🇺🇸", "+1"),
-    Country("Royaume-Uni", "🇬🇧", "+44"),
-    Country("Allemagne", "🇩🇪", "+49"),
-    Country("Espagne", "🇪🇸", "+34"),
-    Country("Italie", "🇮🇹", "+39"),
-    Country("Portugal", "🇵🇹", "+351"),
-    Country("Pays-Bas", "🇳🇱", "+31"),
-    Country("Brésil", "🇧🇷", "+55"),
-    Country("Nigeria", "🇳🇬", "+234"),
-    Country("Ghana", "🇬🇭", "+233"),
+    Country("France",        "🇫🇷", "+33",  9,  "# ## ## ## ##", "6 12 34 56 78"),
+    Country("Belgique",      "🇧🇪", "+32",  9,  "### ## ## ##",  "470 12 34 56"),
+    Country("Suisse",        "🇨🇭", "+41",  9,  "## ### ## ##",  "76 123 45 67"),
+    Country("Canada",        "🇨🇦", "+1",   10, "### ### ####",  "514 123 4567"),
+    Country("Maroc",         "🇲🇦", "+212", 9,  "### ### ###",   "612 345 678"),
+    Country("Algérie",       "🇩🇿", "+213", 9,  "### ### ###",   "551 234 567"),
+    Country("Tunisie",       "🇹🇳", "+216", 8,  "## ### ###",    "20 123 456"),
+    Country("Sénégal",       "🇸🇳", "+221", 9,  "## ### ## ##",  "70 123 45 67"),
+    Country("Mali",          "🇲🇱", "+223", 8,  "## ## ## ##",   "70 12 34 56"),
+    Country("Guinée",        "🇬🇳", "+224", 9,  "### ## ## ##",  "620 12 34 56"),
+    Country("Côte d'Ivoire", "🇨🇮", "+225", 10, "## ## ## ## ##","07 12 34 56 78"),
+    Country("Cameroun",      "🇨🇲", "+237", 9,  "### ### ###",   "676 123 456"),
+    Country("Madagascar",    "🇲🇬", "+261", 9,  "## ## ### ##",  "32 12 345 67"),
+    Country("Congo (RDC)",   "🇨🇩", "+243", 9,  "### ### ###",   "812 345 678"),
+    Country("États-Unis",    "🇺🇸", "+1",   10, "### ### ####",  "212 555 1234"),
+    Country("Royaume-Uni",   "🇬🇧", "+44",  10, "#### ### ####", "7911 123 456"),
+    Country("Allemagne",     "🇩🇪", "+49",  11, "#### ## ## ###","1511 12 34 567"),
+    Country("Espagne",       "🇪🇸", "+34",  9,  "### ### ###",   "612 345 678"),
+    Country("Italie",        "🇮🇹", "+39",  10, "### ### ####",  "312 345 6789"),
+    Country("Portugal",      "🇵🇹", "+351", 9,  "### ### ###",   "912 345 678"),
+    Country("Pays-Bas",      "🇳🇱", "+31",  9,  "# #### ####",  "6 1234 5678"),
+    Country("Brésil",        "🇧🇷", "+55",  11, "## ##### ####", "11 91234 5678"),
+    Country("Nigeria",       "🇳🇬", "+234", 10, "### ### ####",  "802 123 4567"),
+    Country("Ghana",         "🇬🇭", "+233", 9,  "## ### ####",   "20 123 4567"),
 )
+
+/** Applique le masque de formatage sur les chiffres bruts */
+fun applyMask(rawDigits: String, mask: String): String {
+    val result = StringBuilder()
+    var digitIndex = 0
+    for (ch in mask) {
+        if (digitIndex >= rawDigits.length) break
+        if (ch == '#') {
+            result.append(rawDigits[digitIndex++])
+        } else {
+            if (digitIndex > 0) result.append(ch)
+        }
+    }
+    return result.toString()
+}
 
 // ─────────────────────────────────────────────────────────
 // PHONE SCREEN
@@ -98,10 +126,10 @@ val commonCountries = listOf(
 fun PhoneScreen(
     authViewModel: AuthViewModel,
     onBack: () -> Unit,
-    onSuccess: () -> Unit
+    onSuccess: (fullPhone: String) -> Unit
 ) {
     val authState by authViewModel.authState.collectAsState()
-    var phoneNumber by remember { mutableStateOf("") }
+    var rawDigits by remember { mutableStateOf("") }
     var selectedCountry by remember { mutableStateOf(commonCountries.first()) }
     var showCountryPicker by remember { mutableStateOf(false) }
 
@@ -111,12 +139,21 @@ fun PhoneScreen(
     val btnBg = if (isDark) Color.White else Color.Black
     val btnFg = if (isDark) Color.Black else Color.White
     val isLoading = authState is AuthState.Loading
-    val canSubmit = phoneNumber.isNotBlank() && !isLoading
+    val errorMessage = (authState as? AuthState.Error)?.message
+
+    val displayText = applyMask(rawDigits, selectedCountry.formatMask)
+    val fullPhone = "${selectedCountry.dialCode}${rawDigits}"
+    val canSubmit = rawDigits.length >= (selectedCountry.maxDigits - 1) && !isLoading
+
+    // Quand le pays change, vider le numéro pour éviter un format invalide
+    LaunchedEffect(selectedCountry) {
+        rawDigits = ""
+    }
 
     LaunchedEffect(authState) {
-        if (authState is AuthState.Success) {
-            onSuccess()
+        if (authState is AuthState.OtpSent) {
             authViewModel.resetState()
+            onSuccess(fullPhone)
         }
     }
 
@@ -138,7 +175,7 @@ fun PhoneScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(bottom = 140.dp)
+                .padding(bottom = 160.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
@@ -166,12 +203,12 @@ fun PhoneScreen(
 
             Spacer(Modifier.height(40.dp))
 
-            // ── Country + phone input row ──
+            // ── Sélecteur de pays + champ de saisie ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Country selector (flag + code + chevron)
+                // Flag + indicatif + chevron
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -198,7 +235,7 @@ fun PhoneScreen(
 
                 Spacer(Modifier.width(12.dp))
 
-                // Vertical divider
+                // Séparateur vertical
                 Box(
                     modifier = Modifier
                         .width(1.dp)
@@ -208,18 +245,27 @@ fun PhoneScreen(
 
                 Spacer(Modifier.width(12.dp))
 
-                // Phone number field
+                // Champ de saisie — capture les chiffres bruts, affiche le format
                 BasicTextField(
-                    value = phoneNumber,
-                    onValueChange = { phoneNumber = it },
+                    value = displayText,
+                    onValueChange = { input ->
+                        val digits = input.filter { it.isDigit() }
+                        if (digits.length <= selectedCountry.maxDigits) {
+                            rawDigits = digits
+                        }
+                    },
                     singleLine = true,
                     textStyle = TextStyle(color = fg, fontSize = 16.sp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     cursorBrush = SolidColor(DadaDriveGreen),
                     modifier = Modifier.weight(1f),
                     decorationBox = { inner ->
-                        if (phoneNumber.isEmpty()) {
-                            Text("06 12 34 56 78", color = fg.copy(alpha = 0.3f), fontSize = 16.sp)
+                        if (rawDigits.isEmpty()) {
+                            Text(
+                                selectedCountry.placeholder,
+                                color = fg.copy(alpha = 0.3f),
+                                fontSize = 16.sp
+                            )
                         }
                         inner()
                     }
@@ -227,11 +273,34 @@ fun PhoneScreen(
             }
 
             Spacer(Modifier.height(8.dp))
-            HorizontalDivider(color = fg.copy(alpha = 0.15f))
+            HorizontalDivider(
+                color = if (rawDigits.isNotEmpty()) DadaDriveGreen.copy(alpha = 0.6f)
+                        else fg.copy(alpha = 0.15f)
+            )
+
+            // ── Message d'erreur ──
+            if (errorMessage != null) {
+                Spacer(Modifier.height(16.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFFEDED), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = errorMessage,
+                        color = Color(0xFFB00020),
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
 
             Spacer(Modifier.height(28.dp))
 
-            // ── Privacy note ──
+            // ── Note de confidentialité ──
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -260,7 +329,7 @@ fun PhoneScreen(
             Spacer(Modifier.height(24.dp))
         }
 
-        // ── Fixed bottom: Continuer + step indicator ──
+        // ── Bouton fixe en bas ──
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -279,7 +348,8 @@ fun PhoneScreen(
             Button(
                 onClick = {
                     if (canSubmit) {
-                        authViewModel.loginWithPhone(selectedCountry.dialCode + phoneNumber)
+                        authViewModel.resetState()
+                        authViewModel.sendOtp(fullPhone)
                     }
                 },
                 enabled = canSubmit,
@@ -294,7 +364,7 @@ fun PhoneScreen(
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        color = Color.Black,
+                        color = if (isDark) Color.Black else Color.White,
                         modifier = Modifier.size(22.dp),
                         strokeWidth = 2.dp
                     )
@@ -350,18 +420,19 @@ private fun CountryPickerDialog(
             )
             Spacer(Modifier.height(16.dp))
 
-            // Search bar
+            // Barre de recherche
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        color = fg.copy(alpha = 0.07f),
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                    .background(fg.copy(alpha = 0.07f), RoundedCornerShape(12.dp))
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Search, null, tint = fg.copy(alpha = 0.4f), modifier = Modifier.size(18.dp))
+                Icon(
+                    Icons.Default.Search, null,
+                    tint = fg.copy(alpha = 0.4f),
+                    modifier = Modifier.size(18.dp)
+                )
                 Spacer(Modifier.width(8.dp))
                 BasicTextField(
                     value = searchQuery,
@@ -371,7 +442,13 @@ private fun CountryPickerDialog(
                     cursorBrush = SolidColor(DadaDriveGreen),
                     modifier = Modifier.weight(1f),
                     decorationBox = { inner ->
-                        if (searchQuery.isEmpty()) Text("Rechercher un pays...", color = fg.copy(alpha = 0.35f), fontSize = 15.sp)
+                        if (searchQuery.isEmpty()) {
+                            Text(
+                                "Rechercher un pays...",
+                                color = fg.copy(alpha = 0.35f),
+                                fontSize = 15.sp
+                            )
+                        }
                         inner()
                     }
                 )
@@ -390,12 +467,14 @@ private fun CountryPickerDialog(
                     ) {
                         Text(country.flag, fontSize = 24.sp)
                         Spacer(Modifier.width(14.dp))
-                        Text(
-                            text = country.name,
-                            color = fg,
-                            fontSize = 15.sp,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(country.name, color = fg, fontSize = 15.sp)
+                            Text(
+                                text = country.placeholder,
+                                color = fg.copy(alpha = 0.4f),
+                                fontSize = 12.sp
+                            )
+                        }
                         Text(
                             text = country.dialCode,
                             color = fg.copy(alpha = 0.5f),
