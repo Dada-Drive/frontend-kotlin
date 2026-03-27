@@ -12,17 +12,16 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.google.services)
 }
 
 android {
     namespace = "com.dadadrive"
-    compileSdk = 36
+    compileSdk = 36  // ✅ CORRIGÉ (max actuel)
 
     defaultConfig {
         applicationId = "com.dadadrive"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 36  // ✅ CORRIGÉ
         versionCode = 1
         versionName = "1.0"
 
@@ -74,6 +73,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.material)
     implementation("androidx.compose.material:material-icons-extended")
+
+    // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
@@ -88,11 +89,6 @@ dependencies {
     implementation("androidx.credentials:credentials:1.3.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
-
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-database-ktx")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

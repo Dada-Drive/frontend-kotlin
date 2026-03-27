@@ -13,4 +13,6 @@ interface AuthRepository {
     ): Result<User>
     suspend fun loginWithPhone(phoneNumber: String): Result<User>
     suspend fun loginWithGoogle(idToken: String): Result<User>
+    suspend fun sendOtp(phone: String): Result<Unit>
+    suspend fun verifyOtp(phone: String, code: String): Result<User>
 }

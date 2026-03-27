@@ -3,6 +3,8 @@ package com.dadadrive.data.repository
 import com.dadadrive.data.local.TokenManager
 import com.dadadrive.data.remote.api.AuthApiService
 import com.dadadrive.data.remote.model.GoogleAuthRequest
+import com.dadadrive.data.remote.model.SendOtpRequest
+import com.dadadrive.data.remote.model.VerifyOtpRequest
 import com.dadadrive.domain.model.User
 import com.dadadrive.domain.repository.AuthRepository
 import kotlinx.coroutines.delay
@@ -55,6 +57,46 @@ class AuthRepositoryImpl @Inject constructor(
                 profilePictureUri = profilePictureUri
             )
         )
+    }
+
+    override suspend fun sendOtp(phone: String): Result<Unit> {
+        return try {
+            authApiService.sendOtp(SendOtpRequest(phone))
+            Result.success(Unit)
+        } catch (e: HttpException) {
+            val message = when (e.code()) {
+                429 -> "Trop de tentatives. Veuillez réessayer plus tard."
+                400 -> "Numéro de téléphone invalide."
+                else -> "Erreur serveur (${e.code()}). Veuillez réessayer."
+            }
+            Result.failure(Exception(message))
+        } catch (e: Exception) {
+            Result.failure(Exception("Impossible de se connecter au serveur. Vérifiez votre connexion."))
+        }
+    }
+
+    override suspend fun verifyOtp(phone: String, code: String): Result<User> {
+        return try {
+            val response = authApiService.verifyOtp(VerifyOtpRequest(phone, code))
+            tokenManager.saveTokens(response.accessToken, response.refreshToken)
+            val user = User(
+                id = response.user.id,
+                fullName = response.user.fullName ?: "",
+                email = response.user.email ?: "",
+                phoneNumber = response.user.phone ?: phone,
+                profilePictureUri = null
+            )
+            Result.success(user)
+        } catch (e: HttpException) {
+            val message = when (e.code()) {
+                401 -> "Code incorrect ou expiré."
+                429 -> "Trop de tentatives. Demandez un nouveau code."
+                else -> "Erreur serveur (${e.code()}). Veuillez réessayer."
+            }
+            Result.failure(Exception(message))
+        } catch (e: Exception) {
+            Result.failure(Exception("Impossible de se connecter au serveur. Vérifiez votre connexion."))
+        }
     }
 
     override suspend fun loginWithGoogle(idToken: String): Result<User> {

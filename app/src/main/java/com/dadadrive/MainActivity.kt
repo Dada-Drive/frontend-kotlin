@@ -25,12 +25,15 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.dadadrive.core.constants.Constants
 import com.dadadrive.ui.auth.AuthState
 import com.dadadrive.ui.auth.AuthViewModel
+import com.dadadrive.ui.auth.OtpScreen
 import com.dadadrive.ui.auth.PhoneScreen
 import com.dadadrive.ui.auth.WelcomeScreen
 import com.dadadrive.ui.onboarding.OnboardingScreen
@@ -49,6 +52,9 @@ sealed class Screen(val route: String) {
     object Onboarding : Screen("onboarding")
     object Welcome : Screen("welcome")
     object Phone : Screen("phone")
+    object Otp : Screen("otp/{phone}") {
+        fun createRoute(phone: String) = "otp/${java.net.URLEncoder.encode(phone, "UTF-8")}"
+    }
     object Pending : Screen("pending")
     object Home : Screen("home")
 }
@@ -160,8 +166,27 @@ private fun DadaDriveNavHost() {
             PhoneScreen(
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() },
+                onSuccess = { fullPhone ->
+                    navController.navigate(Screen.Otp.createRoute(fullPhone))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.Otp.route,
+            arguments = listOf(navArgument("phone") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val phone = java.net.URLDecoder.decode(
+                backStackEntry.arguments?.getString("phone") ?: "",
+                "UTF-8"
+            )
+            val authViewModel: AuthViewModel = hiltViewModel()
+            OtpScreen(
+                phone = phone,
+                authViewModel = authViewModel,
+                onBack = { navController.popBackStack() },
                 onSuccess = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.Pending.route) {
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 }
