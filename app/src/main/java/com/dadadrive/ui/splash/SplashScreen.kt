@@ -19,17 +19,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.R
+import com.dadadrive.ui.theme.LocalAppColors
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(onSplashFinished: () -> Unit) {
+    val c = LocalAppColors.current
     val alpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
@@ -41,7 +42,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(c.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -60,7 +61,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
 
             Text(
                 text = "DADA DRIVE",
-                color = Color.White,
+                color = c.textPrimary,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 6.sp,
@@ -71,7 +72,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
 
             Text(
                 text = "Your ride, your way",
-                color = Color(0xFF666666),
+                color = c.textCaption,
                 fontSize = 14.sp,
                 letterSpacing = 1.sp
             )

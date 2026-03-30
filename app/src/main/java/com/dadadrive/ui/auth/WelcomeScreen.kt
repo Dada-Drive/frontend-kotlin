@@ -3,7 +3,6 @@ package com.dadadrive.ui.auth
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,8 +43,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.R
-import com.dadadrive.ui.theme.DadaDriveGreen
-import com.dadadrive.ui.theme.GoogleRed
+import com.dadadrive.ui.theme.LocalAppColors
 
 @Composable
 fun WelcomeScreen(
@@ -53,11 +51,9 @@ fun WelcomeScreen(
     onGoogleClick: () -> Unit,
     authState: AuthState = AuthState.Idle
 ) {
-    val isDark = isSystemInDarkTheme()
+    val appColors = LocalAppColors.current
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
-    val btnBg = if (isDark) Color.White else Color.Black
-    val btnFg = if (isDark) Color.Black else Color.White
     val isLoading = authState is AuthState.Loading
     val errorMessage = (authState as? AuthState.Error)?.message
 
@@ -122,7 +118,7 @@ fun WelcomeScreen(
                         append("Votre application pour des ")
                         withStyle(
                             SpanStyle(
-                                color = DadaDriveGreen,
+                                color = appColors.primary,
                                 fontStyle = FontStyle.Italic,
                                 fontWeight = FontWeight.Bold
                             )
@@ -149,7 +145,7 @@ fun WelcomeScreen(
                                 .width(if (i == 0) 22.dp else 6.dp)
                                 .clip(RoundedCornerShape(3.dp))
                                 .background(
-                                    if (i == 0) DadaDriveGreen else fg.copy(alpha = 0.2f)
+                                    if (i == 0) appColors.primary else fg.copy(alpha = 0.2f)
                                 )
                         )
                         if (i < 2) Spacer(Modifier.width(5.dp))
@@ -180,14 +176,14 @@ fun WelcomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = Color(0xFFFFEDED),
+                            color = appColors.errorContainer,
                             shape = RoundedCornerShape(12.dp)
                         )
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     Text(
                         text = errorMessage,
-                        color = Color(0xFFB00020),
+                        color = appColors.onErrorContainer,
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
                         textAlign = TextAlign.Center,
@@ -204,10 +200,10 @@ fun WelcomeScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = btnBg,
-                    contentColor = btnFg,
-                    disabledContainerColor = btnBg.copy(alpha = 0.4f),
-                    disabledContentColor = btnFg.copy(alpha = 0.5f)
+                    containerColor = appColors.buttonBackground,
+                    contentColor = appColors.buttonText,
+                    disabledContainerColor = appColors.buttonDisabledBackground,
+                    disabledContentColor = appColors.buttonDisabledText
                 )
             ) {
                 Icon(Icons.Default.Phone, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -229,13 +225,13 @@ fun WelcomeScreen(
                 if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        color = GoogleRed,
+                        color = appColors.googleRed,
                         strokeWidth = 2.dp
                     )
                     Spacer(Modifier.width(10.dp))
                     Text("Connexion en cours...", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                 } else {
-                    Text("G", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = GoogleRed)
+                    Text("G", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = appColors.googleRed)
                     Spacer(Modifier.width(10.dp))
                     Text("Continuer avec Google", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                 }

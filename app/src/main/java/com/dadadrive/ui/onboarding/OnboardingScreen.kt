@@ -10,7 +10,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,8 +33,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -69,7 +68,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.R
-import com.dadadrive.ui.theme.DadaDriveGreen
+import com.dadadrive.ui.theme.LocalAppColors
 
 // ─────────────────────────────────────────────────────────
 // ENTRY POINT
@@ -211,7 +210,7 @@ private fun PageSecurite(page: Int, onNext: () -> Unit, onSkip: () -> Unit) {
             )
             Spacer(Modifier.height(24.dp))
 
-            FeatureItem(Icons.Default.Shield, "Chauffeurs certifiés", "Vérification rigoureuse et continue.")
+            FeatureItem(Icons.Default.Lock, "Chauffeurs certifiés", "Vérification rigoureuse et continue.")
             Spacer(Modifier.height(16.dp))
             FeatureItem(Icons.Default.LocationOn, "Suivi en temps réel", "Partagez votre trajet avec vos proches.")
             Spacer(Modifier.height(16.dp))
@@ -420,6 +419,7 @@ private fun OnboardingHeader(page: Int, onSkip: () -> Unit) {
 
 @Composable
 private fun DotsIndicator(totalDots: Int, selectedIndex: Int, modifier: Modifier = Modifier) {
+    val primary = LocalAppColors.current.primary
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -433,7 +433,7 @@ private fun DotsIndicator(totalDots: Int, selectedIndex: Int, modifier: Modifier
                     .width(if (selected) 22.dp else 6.dp)
                     .clip(RoundedCornerShape(3.dp))
                     .background(
-                        if (selected) DadaDriveGreen
+                        if (selected) primary
                         else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
                     )
             )
@@ -443,14 +443,15 @@ private fun DotsIndicator(totalDots: Int, selectedIndex: Int, modifier: Modifier
 
 @Composable
 private fun FeatureItem(icon: ImageVector, title: String, subtitle: String) {
+    val primary = LocalAppColors.current.primary
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
         Box(
             modifier = Modifier
                 .size(42.dp)
-                .background(DadaDriveGreen.copy(alpha = 0.12f), CircleShape),
+                .background(primary.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint = DadaDriveGreen, modifier = Modifier.size(20.dp))
+            Icon(imageVector = icon, contentDescription = null, tint = primary, modifier = Modifier.size(20.dp))
         }
         Spacer(Modifier.width(14.dp))
         Column {
@@ -462,6 +463,8 @@ private fun FeatureItem(icon: ImageVector, title: String, subtitle: String) {
 
 @Composable
 private fun ReceiptCard() {
+    val primary = LocalAppColors.current.primary
+    val onPrimary = LocalAppColors.current.onPrimary
     val fg = MaterialTheme.colorScheme.onBackground
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -476,13 +479,13 @@ private fun ReceiptCard() {
                     Text("le n° 8929-K.", color = fg.copy(alpha = 0.4f), fontSize = 12.sp, fontStyle = FontStyle.Italic)
                 }
                 Box(
-                    modifier = Modifier.background(DadaDriveGreen, RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 8.dp),
+                    modifier = Modifier.background(primary, RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("FIXED", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                        Text("0€", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
-                        Text("SURPRISE", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text("FIXED", color = onPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text("0€", color = onPrimary, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                        Text("SURPRISE", color = onPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -502,11 +505,11 @@ private fun ReceiptCard() {
             Spacer(Modifier.height(14.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.background(DadaDriveGreen.copy(alpha = 0.1f), RoundedCornerShape(8.dp)).padding(horizontal = 10.dp, vertical = 6.dp)
+                modifier = Modifier.background(primary.copy(alpha = 0.1f), RoundedCornerShape(8.dp)).padding(horizontal = 10.dp, vertical = 6.dp)
             ) {
-                Icon(Icons.Default.Verified, null, tint = DadaDriveGreen, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.CheckCircle, null, tint = primary, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("PRIX GARANTI", color = DadaDriveGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("PRIX GARANTI", color = primary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -522,19 +525,16 @@ private fun ReceiptRow(label: String, amount: String, fg: Color) {
 
 @Composable
 private fun OnboardingButton(label: String, onClick: () -> Unit) {
-    val isDark = isSystemInDarkTheme()
-    val btnBg = if (isDark) Color.White else Color.Black
-    val btnFg = if (isDark) Color.Black else Color.White
-
+    val c = LocalAppColors.current
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().height(56.dp),
         shape = RoundedCornerShape(28.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = btnBg,
-            contentColor = btnFg,
-            disabledContainerColor = btnBg.copy(alpha = 0.4f),
-            disabledContentColor = btnFg.copy(alpha = 0.6f)
+            containerColor = c.buttonBackground,
+            contentColor = c.buttonText,
+            disabledContainerColor = c.buttonDisabledBackground,
+            disabledContentColor = c.buttonDisabledText
         )
     ) {
         Text(text = label, fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
@@ -560,6 +560,7 @@ private fun SkipLink(label: String, onClick: () -> Unit) {
 
 @Composable
 private fun RadarAnimation(modifier: Modifier = Modifier) {
+    val primary = LocalAppColors.current.primary
     val tr = rememberInfiniteTransition(label = "radar")
     val s1 by tr.animateFloat(0f, 1f, infiniteRepeatable(tween(2400, easing = LinearEasing), RepeatMode.Restart), label = "s1")
     val s2 by tr.animateFloat(0f, 1f, infiniteRepeatable(tween(2400, delayMillis = 800, easing = LinearEasing), RepeatMode.Restart), label = "s2")
@@ -569,10 +570,10 @@ private fun RadarAnimation(modifier: Modifier = Modifier) {
         val center = Offset(size.width / 2f, size.height / 2f)
         val maxR = size.minDimension / 2f
         listOf(s1, s2, s3).forEach { s ->
-            drawCircle(color = DadaDriveGreen.copy(alpha = (1f - s) * 0.5f), radius = maxR * s, center = center, style = Stroke(width = 2.dp.toPx()))
+            drawCircle(color = primary.copy(alpha = (1f - s) * 0.5f), radius = maxR * s, center = center, style = Stroke(width = 2.dp.toPx()))
         }
-        drawCircle(color = DadaDriveGreen.copy(alpha = 0.15f), radius = maxR * 0.25f, center = center)
-        drawCircle(color = DadaDriveGreen, radius = 10.dp.toPx(), center = center)
-        drawLine(color = DadaDriveGreen, start = center, end = Offset(center.x, center.y + 18.dp.toPx()), strokeWidth = 3.dp.toPx(), cap = StrokeCap.Round)
+        drawCircle(color = primary.copy(alpha = 0.15f), radius = maxR * 0.25f, center = center)
+        drawCircle(color = primary, radius = 10.dp.toPx(), center = center)
+        drawLine(color = primary, start = center, end = Offset(center.x, center.y + 18.dp.toPx()), strokeWidth = 3.dp.toPx(), cap = StrokeCap.Round)
     }
 }

@@ -6,7 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,7 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.core.constants.Constants
-import com.dadadrive.ui.theme.DadaDriveGreen
+import com.dadadrive.ui.theme.LocalAppColors
 import kotlinx.coroutines.delay
 
 private const val RESEND_DELAY_SECONDS = 120
@@ -67,12 +67,11 @@ fun OtpScreen(
     onBack: () -> Unit,
     onSuccess: () -> Unit
 ) {
+    val appColors = LocalAppColors.current
     val authState by authViewModel.authState.collectAsState()
-    val isDark = isSystemInDarkTheme()
+    val isDarkUi = appColors.background.luminance() < 0.5f
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
-    val btnBg = if (isDark) Color.White else Color.Black
-    val btnFg = if (isDark) Color.Black else Color.White
 
     var code by remember { mutableStateOf("") }
     var secondsLeft by remember { mutableIntStateOf(RESEND_DELAY_SECONDS) }
@@ -151,7 +150,7 @@ fun OtpScreen(
             )
             Text(
                 text = phone,
-                color = DadaDriveGreen,
+                color = appColors.primary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -210,18 +209,18 @@ fun OtpScreen(
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
                                     when {
-                                        isFilled -> DadaDriveGreen.copy(
-                                            alpha = if (isDark) 0.15f else 0.08f
+                                        isFilled -> appColors.primary.copy(
+                                            alpha = if (isDarkUi) 0.15f else 0.08f
                                         )
-                                        isDark -> Color.White.copy(alpha = 0.05f)
+                                        isDarkUi -> Color.White.copy(alpha = 0.05f)
                                         else -> Color.Black.copy(alpha = 0.03f)
                                     }
                                 )
                                 .border(
                                     width = if (isFocused || isFilled) 2.dp else 1.dp,
                                     color = when {
-                                        isFilled -> DadaDriveGreen
-                                        isFocused -> DadaDriveGreen.copy(alpha = 0.6f)
+                                        isFilled -> appColors.primary
+                                        isFocused -> appColors.primary.copy(alpha = 0.6f)
                                         else -> fg.copy(alpha = 0.15f)
                                     },
                                     shape = RoundedCornerShape(12.dp)
@@ -231,7 +230,7 @@ fun OtpScreen(
                             if (isFilled) {
                                 Text(
                                     text = digit,
-                                    color = DadaDriveGreen,
+                                    color = appColors.primary,
                                     fontSize = 22.sp,
                                     fontWeight = FontWeight.Bold,
                                     textAlign = TextAlign.Center
@@ -240,7 +239,7 @@ fun OtpScreen(
                                 // Curseur clignotant simulé
                                 Text(
                                     text = "|",
-                                    color = DadaDriveGreen.copy(alpha = 0.8f),
+                                    color = appColors.primary.copy(alpha = 0.8f),
                                     fontSize = 22.sp,
                                     fontWeight = FontWeight.Light,
                                     textAlign = TextAlign.Center
@@ -263,12 +262,12 @@ fun OtpScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFFFFEDED), RoundedCornerShape(12.dp))
+                            .background(LocalAppColors.current.errorContainer, RoundedCornerShape(12.dp))
                             .padding(horizontal = 16.dp, vertical = 12.dp)
                     ) {
                         Text(
                             text = msg,
-                            color = Color(0xFFB00020),
+                            color = LocalAppColors.current.onErrorContainer,
                             fontSize = 13.sp,
                             lineHeight = 18.sp,
                             modifier = Modifier.fillMaxWidth(),
@@ -307,7 +306,7 @@ fun OtpScreen(
                 }) {
                     Text(
                         text = "Renvoyez le code",
-                        color = DadaDriveGreen,
+                        color = appColors.primary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -325,15 +324,15 @@ fun OtpScreen(
                     .height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = btnBg,
-                    contentColor = btnFg,
-                    disabledContainerColor = btnBg.copy(alpha = 0.35f),
-                    disabledContentColor = btnFg.copy(alpha = 0.5f)
+                    containerColor = appColors.buttonBackground,
+                    contentColor = appColors.buttonText,
+                    disabledContainerColor = appColors.buttonDisabledBackground,
+                    disabledContentColor = appColors.buttonDisabledText
                 )
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        color = if (isDark) Color.Black else Color.White,
+                        color = appColors.buttonText,
                         modifier = Modifier.size(22.dp),
                         strokeWidth = 2.dp
                     )

@@ -2,7 +2,6 @@ package com.dadadrive.ui.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,7 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -55,7 +54,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.dadadrive.ui.theme.DadaDriveGreen
+import com.dadadrive.ui.theme.LocalAppColors
 
 // ─────────────────────────────────────────────────────────
 // DATA
@@ -133,11 +132,9 @@ fun PhoneScreen(
     var selectedCountry by remember { mutableStateOf(commonCountries.first()) }
     var showCountryPicker by remember { mutableStateOf(false) }
 
+    val appColors = LocalAppColors.current
     val bg = MaterialTheme.colorScheme.background
     val fg = MaterialTheme.colorScheme.onBackground
-    val isDark = isSystemInDarkTheme()
-    val btnBg = if (isDark) Color.White else Color.Black
-    val btnFg = if (isDark) Color.Black else Color.White
     val isLoading = authState is AuthState.Loading
     val errorMessage = (authState as? AuthState.Error)?.message
 
@@ -257,7 +254,7 @@ fun PhoneScreen(
                     singleLine = true,
                     textStyle = TextStyle(color = fg, fontSize = 16.sp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    cursorBrush = SolidColor(DadaDriveGreen),
+                    cursorBrush = SolidColor(appColors.primary),
                     modifier = Modifier.weight(1f),
                     decorationBox = { inner ->
                         if (rawDigits.isEmpty()) {
@@ -274,7 +271,7 @@ fun PhoneScreen(
 
             Spacer(Modifier.height(8.dp))
             HorizontalDivider(
-                color = if (rawDigits.isNotEmpty()) DadaDriveGreen.copy(alpha = 0.6f)
+                color = if (rawDigits.isNotEmpty()) appColors.primary.copy(alpha = 0.6f)
                         else fg.copy(alpha = 0.15f)
             )
 
@@ -284,12 +281,12 @@ fun PhoneScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFFFFEDED), RoundedCornerShape(12.dp))
+                        .background(LocalAppColors.current.errorContainer, RoundedCornerShape(12.dp))
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     Text(
                         text = errorMessage,
-                        color = Color(0xFFB00020),
+                        color = LocalAppColors.current.onErrorContainer,
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
                         modifier = Modifier.fillMaxWidth(),
@@ -312,9 +309,9 @@ fun PhoneScreen(
                 verticalAlignment = Alignment.Top
             ) {
                 Icon(
-                    imageVector = Icons.Default.Security,
+                    imageVector = Icons.Default.Lock,
                     contentDescription = null,
-                    tint = DadaDriveGreen,
+                    tint = appColors.primary,
                     modifier = Modifier.size(20.dp).padding(top = 2.dp)
                 )
                 Spacer(Modifier.width(12.dp))
@@ -356,15 +353,15 @@ fun PhoneScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = btnBg,
-                    contentColor = btnFg,
-                    disabledContainerColor = btnBg.copy(alpha = 0.35f),
-                    disabledContentColor = btnFg.copy(alpha = 0.5f)
+                    containerColor = appColors.buttonBackground,
+                    contentColor = appColors.buttonText,
+                    disabledContainerColor = appColors.buttonDisabledBackground,
+                    disabledContentColor = appColors.buttonDisabledText
                 )
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        color = if (isDark) Color.Black else Color.White,
+                        color = appColors.buttonText,
                         modifier = Modifier.size(22.dp),
                         strokeWidth = 2.dp
                     )
@@ -439,7 +436,7 @@ private fun CountryPickerDialog(
                     onValueChange = { searchQuery = it },
                     singleLine = true,
                     textStyle = TextStyle(color = fg, fontSize = 15.sp),
-                    cursorBrush = SolidColor(DadaDriveGreen),
+                    cursorBrush = SolidColor(LocalAppColors.current.primary),
                     modifier = Modifier.weight(1f),
                     decorationBox = { inner ->
                         if (searchQuery.isEmpty()) {

@@ -72,7 +72,11 @@ class AuthViewModel @Inject constructor(
             _authState.value = AuthState.Loading
             val result = googleAuthUseCase(idToken)
             _authState.value = result.fold(
-                onSuccess = { user -> AuthState.Success(user) },
+                onSuccess = { user ->
+                    // Si pas de numéro de téléphone → demander la vérification
+                    if (user.phoneNumber.isBlank()) AuthState.NeedsPhone(user)
+                    else AuthState.Success(user)
+                },
                 onFailure = { e -> AuthState.Error(e.message ?: "Erreur de connexion Google") }
             )
         }

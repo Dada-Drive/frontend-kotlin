@@ -4,6 +4,9 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
 
     <application
         android:name=".DadaDriveApplication"
@@ -16,6 +19,14 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.DadaDrive">
+
+        <!-- HERE Maps SDK credentials — remplacer par vos clés du portail HERE -->
+        <meta-data
+            android:name="com.here.sdk.access_key_id"
+            android:value="RZu4URfXxhJaWRJcrdBksw"/>
+        <meta-data
+            android:name="com.here.sdk.access_key_secret"
+            android:value="-HzkVX982rtxfrRSl6XnPgOUzGZ72xHESnxLWYMrQSSZtBaoAE9f3zb1_yB3Q8GJUHeyP8ZoOuxveLotQGTCdg"/>
         <activity
             android:name="com.dadadrive.MainActivity"
             android:exported="true"

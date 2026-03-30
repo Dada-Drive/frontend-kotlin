@@ -39,15 +39,28 @@ android {
         )
     }
 
+    // ✅ AJOUT : Configuration de signature pour Release APK
+    signingConfigs {
+        create("release") {
+            storeFile = file("../my-release-key.keystore")
+            storePassword = "221JFT4456"
+            keyAlias = "my-key-alias"
+            keyPassword = "221JFT4456"
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
+    packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -72,7 +85,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.material)
-    implementation("androidx.compose.material:material-icons-extended")
+    // Sous-ensemble d’icônes Material (~170) : évite material-icons-extended (~2 Mo+ de bytecode).
+    implementation("androidx.compose.material:material-icons-core")
 
     // Hilt
     implementation(libs.hilt.android)
@@ -89,6 +103,12 @@ dependencies {
     implementation("androidx.credentials:credentials:1.3.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    // Une seule dépendance location (évite résolution/transitifs doublonnés).
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    // Coil — chargement d'images (photos de profil)
+    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation(files("libs/heresdk-explore-android-4.25.5.0.274356.aar"))
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

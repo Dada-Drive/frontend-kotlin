@@ -5,21 +5,16 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
@@ -36,12 +31,16 @@ import com.dadadrive.ui.auth.AuthViewModel
 import com.dadadrive.ui.auth.OtpScreen
 import com.dadadrive.ui.auth.PhoneScreen
 import com.dadadrive.ui.auth.WelcomeScreen
+import com.dadadrive.ui.map.MapScreen
 import com.dadadrive.ui.onboarding.OnboardingScreen
-import com.dadadrive.ui.pending.PendingScreen
+import com.dadadrive.ui.profile.EditProfileScreen
+import com.dadadrive.ui.profile.ProfileViewModel
+import com.dadadrive.ui.role.RoleSelectionScreen
+import com.dadadrive.ui.settings.ColorWheelSettingsScreen
+import com.dadadrive.ui.splash.SessionViewModel
 import com.dadadrive.ui.splash.SplashScreen
-import com.dadadrive.ui.theme.Black
 import com.dadadrive.ui.theme.DadaDriveTheme
-import com.dadadrive.ui.theme.White
+import com.dadadrive.ui.theme.ThemeViewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import dagger.hilt.android.AndroidEntryPoint
@@ -55,8 +54,11 @@ sealed class Screen(val route: String) {
     object Otp : Screen("otp/{phone}") {
         fun createRoute(phone: String) = "otp/${java.net.URLEncoder.encode(phone, "UTF-8")}"
     }
-    object Pending : Screen("pending")
+    object RoleSelection : Screen("role_selection")
+    object Map : Screen("map")
+    object EditProfile : Screen("edit_profile")
     object Home : Screen("home")
+    object ColorSettings : Screen("settings/colors")
 }
 
 @AndroidEntryPoint
@@ -66,29 +68,52 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            DadaDriveTheme {
-                DadaDriveNavHost()
+            val themeViewModel: ThemeViewModel = hiltViewModel()
+            val currentTheme by themeViewModel.currentTheme.collectAsState()
+            val darkTheme = isSystemInDarkTheme()
+            val appColors = remember(currentTheme, darkTheme) {
+                currentTheme.resolveScheme(darkTheme)
+            }
+
+            DadaDriveTheme(darkTheme = darkTheme, appColors = appColors) {
+                DadaDriveNavHost(themeViewModel = themeViewModel)
             }
         }
     }
 }
 
 @Composable
-private fun DadaDriveNavHost() {
+private fun DadaDriveNavHost(themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
+
+    // Instance unique de ProfileViewModel partagée entre MapScreen et EditProfileScreen.
+    // Créée ici (hors NavHost) → scoped à l'Activity → même StateFlow pour les deux écrans.
+    val sharedProfileViewModel: ProfileViewModel = hiltViewModel()
 
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
     ) {
         composable(Screen.Splash.route) {
-            SplashScreen(
-                onSplashFinished = {
-                    navController.navigate(Screen.Onboarding.route) {
+            val sessionViewModel: SessionViewModel = hiltViewModel()
+            val sessionState by sessionViewModel.state.collectAsState()
+            var splashDone by remember { mutableStateOf(false) }
+
+            // Navigate quand les DEUX conditions sont remplies :
+            // 1. Animation splash terminée  2. Vérification session terminée
+            LaunchedEffect(splashDone, sessionState) {
+                if (splashDone && sessionState != SessionViewModel.SessionState.Checking) {
+                    val destination = when (sessionState) {
+                        SessionViewModel.SessionState.Valid -> Screen.Map.route
+                        else -> Screen.Onboarding.route
+                    }
+                    navController.navigate(destination) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
-            )
+            }
+
+            SplashScreen(onSplashFinished = { splashDone = true })
         }
 
         composable(Screen.Onboarding.route) {
@@ -108,11 +133,19 @@ private fun DadaDriveNavHost() {
             val scope = rememberCoroutineScope()
 
             LaunchedEffect(authState) {
-                if (authState is AuthState.Success) {
-                    authViewModel.resetState()
-                    navController.navigate(Screen.Pending.route) {
-                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                when (authState) {
+                    is AuthState.Success -> {
+                        authViewModel.resetState()
+                        navController.navigate(Screen.RoleSelection.route) {
+                            popUpTo(Screen.Welcome.route) { inclusive = true }
+                        }
                     }
+                    is AuthState.NeedsPhone -> {
+                        // Google user sans numéro : vérification téléphone d'abord
+                        authViewModel.resetState()
+                        navController.navigate(Screen.Phone.route)
+                    }
+                    else -> {}
                 }
             }
 
@@ -186,38 +219,69 @@ private fun DadaDriveNavHost() {
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() },
                 onSuccess = {
-                    navController.navigate(Screen.Pending.route) {
+                    navController.navigate(Screen.RoleSelection.route) {
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(Screen.Pending.route) {
-            PendingScreen()
+        composable(Screen.RoleSelection.route) {
+            RoleSelectionScreen(
+                onSuccess = {
+                    navController.navigate(Screen.Map.route) {
+                        popUpTo(Screen.RoleSelection.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.Map.route) {
+            MapScreen(
+                profileViewModel = sharedProfileViewModel,
+                onNavigateToEditProfile = {
+                    navController.navigate(Screen.EditProfile.route)
+                },
+                onNavigateToColorSettings = {
+                    navController.navigate(Screen.ColorSettings.route)
+                },
+                onLogout = {
+                    navController.navigate(Screen.Welcome.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            EditProfileScreen(
+                viewModel = sharedProfileViewModel,
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable(Screen.Home.route) {
-            HomePlaceholder()
+            MapScreen(
+                profileViewModel = sharedProfileViewModel,
+                onNavigateToEditProfile = {
+                    navController.navigate(Screen.EditProfile.route)
+                },
+                onNavigateToColorSettings = {
+                    navController.navigate(Screen.ColorSettings.route)
+                },
+                onLogout = {
+                    navController.navigate(Screen.Welcome.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
-    }
-}
 
-@Composable
-private fun HomePlaceholder() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Black),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Welcome to\nDADA DRIVE",
-            color = White,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            lineHeight = 38.sp
-        )
+        composable(Screen.ColorSettings.route) {
+            ColorWheelSettingsScreen(
+                onBack = { navController.popBackStack() },
+                themeViewModel = themeViewModel
+            )
+        }
     }
 }

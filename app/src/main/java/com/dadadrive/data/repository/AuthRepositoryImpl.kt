@@ -1,9 +1,13 @@
 package com.dadadrive.data.repository
 
+import android.util.Log
 import com.dadadrive.data.local.TokenManager
+import com.dadadrive.data.local.UserManager
 import com.dadadrive.data.remote.api.AuthApiService
+import com.dadadrive.data.remote.cloudinary.CloudinaryManager
 import com.dadadrive.data.remote.model.GoogleAuthRequest
 import com.dadadrive.data.remote.model.SendOtpRequest
+import com.dadadrive.data.remote.model.UpdateProfileRequest
 import com.dadadrive.data.remote.model.VerifyOtpRequest
 import com.dadadrive.domain.model.User
 import com.dadadrive.domain.repository.AuthRepository
@@ -13,7 +17,9 @@ import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val authApiService: AuthApiService,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val userManager: UserManager,
+    private val cloudinaryManager: CloudinaryManager
 ) : AuthRepository {
 
     override suspend fun login(email: String, password: String): Result<User> {
@@ -78,17 +84,32 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun verifyOtp(phone: String, code: String): Result<User> {
         return try {
             val response = authApiService.verifyOtp(VerifyOtpRequest(phone, code))
-            tokenManager.saveTokens(response.accessToken, response.refreshToken)
+
+            // Scénario 1 — utilisateur Google déjà connecté qui vérifie son numéro
+            // Le backend retourne { success: true, message: "Phone verified successfully" } sans tokens
+            if (response.accessToken == null) {
+                val existing = userManager.getUser()
+                val updatedUser = existing?.copy(phoneNumber = phone)
+                    ?: User(id = "", fullName = "", email = "", phoneNumber = phone)
+                userManager.saveUser(updatedUser)
+                return Result.success(updatedUser)
+            }
+
+            // Scénario 2 — nouvel utilisateur ou login via OTP (tokens fournis)
+            tokenManager.saveTokens(response.accessToken, response.refreshToken!!)
             val user = User(
-                id = response.user.id,
+                id = response.user!!.id,
                 fullName = response.user.fullName ?: "",
                 email = response.user.email ?: "",
                 phoneNumber = response.user.phone ?: phone,
+                role = response.user.role.ifBlank { "rider" },
                 profilePictureUri = null
             )
+            userManager.saveUser(user)
             Result.success(user)
         } catch (e: HttpException) {
             val message = when (e.code()) {
+                400 -> "Ce numéro est déjà utilisé par un autre compte."
                 401 -> "Code incorrect ou expiré."
                 429 -> "Trop de tentatives. Demandez un nouveau code."
                 else -> "Erreur serveur (${e.code()}). Veuillez réessayer."
@@ -103,13 +124,38 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val response = authApiService.googleAuth(GoogleAuthRequest(idToken))
             tokenManager.saveTokens(response.accessToken, response.refreshToken)
+
+            val googleAvatarUrl = response.user.avatarUrl
+            val userId = response.user.id
+            val publicId = cloudinaryManager.publicIdForUser(userId)
+
+            // Upload non-bloquant de la photo Google vers Cloudinary
+            val finalAvatarUrl = if (!googleAvatarUrl.isNullOrBlank()) {
+                cloudinaryManager.uploadFromUrl(googleAvatarUrl, publicId)
+                    .onSuccess { cloudUrl ->
+                        // Synchroniser l'URL Cloudinary avec le backend
+                        try {
+                            authApiService.updateProfile(UpdateProfileRequest(avatarUrl = cloudUrl))
+                        } catch (e: Exception) {
+                            Log.w("AuthRepo", "Sync avatar backend échoué (non bloquant)", e)
+                        }
+                        userManager.saveCloudinaryPublicId(publicId)
+                    }
+                    .onFailure { e ->
+                        Log.w("AuthRepo", "Upload Cloudinary échoué — fallback Google URL", e)
+                    }
+                    .getOrDefault(googleAvatarUrl) // fallback = URL Google originale
+            } else null
+
             val user = User(
-                id = response.user.id,
+                id = userId,
                 fullName = response.user.fullName,
                 email = response.user.email ?: "",
                 phoneNumber = response.user.phoneNumber ?: "",
-                profilePictureUri = response.user.avatarUrl
+                role = response.user.role.ifBlank { "rider" },
+                profilePictureUri = finalAvatarUrl
             )
+            userManager.saveUser(user)
             Result.success(user)
         } catch (e: HttpException) {
             val message = when (e.code()) {

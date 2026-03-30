@@ -13,10 +13,12 @@ data class VerifyOtpRequest(val phone: String, val code: String)
 
 data class VerifyOtpResponse(
     val success: Boolean,
-    val accessToken: String,
-    val refreshToken: String,
-    val user: OtpUserDto,
-    val isNewUser: Boolean
+    val message: String? = null,
+    // null quand l'utilisateur est déjà connecté (Google) → backend ne renvoie pas de nouveaux tokens
+    val accessToken: String? = null,
+    val refreshToken: String? = null,
+    val user: OtpUserDto? = null,
+    val isNewUser: Boolean = false
 )
 
 data class OtpUserDto(
