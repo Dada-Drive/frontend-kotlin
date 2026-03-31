@@ -1,0 +1,12 @@
+## Copy this file to local.properties and fill values locally.
+## Do not commit your local.properties file.
+
+GOOGLE_WEB_CLIENT_ID=
+BASE_URL=
+HERE_ACCESS_KEY_ID=
+HERE_ACCESS_KEY_SECRET=
+
+RELEASE_STORE_FILE=
+RELEASE_STORE_PASSWORD=
+RELEASE_KEY_ALIAS=
+RELEASE_KEY_PASSWORD=
