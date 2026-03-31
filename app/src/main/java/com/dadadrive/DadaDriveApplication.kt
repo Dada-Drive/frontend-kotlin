@@ -22,9 +22,11 @@ class DadaDriveApplication : Application() {
     private fun initHereSdk() {
         try {
             // Création du mode d'authentification avec la clé API HERE
+            val accessKeyId = BuildConfig.HERE_ACCESS_KEY_ID
+            val accessKeySecret = BuildConfig.HERE_ACCESS_KEY_SECRET
             val authMode = AuthenticationMode.withKeySecret(
-                "RZu4URfXxhJaWRJcrdBksw",
-                "-HzkVX982rtxfrRSl6XnPgOUzGZ72xHESnxLWYMrQSSZtBaoAE9f3zb1_yB3Q8GJUHeyP8ZoOuxveLotQGTCdg"
+                accessKeyId,
+                accessKeySecret
             )
             val options = SDKOptions(authMode)
             SDKNativeEngine.makeSharedInstance(this, options)

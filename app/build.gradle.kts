@@ -37,15 +37,19 @@ android {
             "BASE_URL",
             "\"${localProperties.getProperty("BASE_URL", "")}\""
         )
+        buildConfigField("String", "HERE_ACCESS_KEY_ID",
+            "\"${localProperties.getProperty("HERE_ACCESS_KEY_ID", "")}\"")
+        buildConfigField("String", "HERE_ACCESS_KEY_SECRET",
+            "\"${localProperties.getProperty("HERE_ACCESS_KEY_SECRET", "")}\"")
     }
 
-    // ✅ AJOUT : Configuration de signature pour Release APK
+    // ✅ APRÈS (sécurisé)
     signingConfigs {
         create("release") {
-            storeFile = file("../my-release-key.keystore")
-            storePassword = "221JFT4456"
-            keyAlias = "my-key-alias"
-            keyPassword = "221JFT4456"
+            storeFile = file(localProperties.getProperty("KEYSTORE_PATH", ""))
+            storePassword = localProperties.getProperty("KEYSTORE_STORE_PASSWORD", "")
+            keyAlias = localProperties.getProperty("KEYSTORE_KEY_ALIAS", "my-key-alias")
+            keyPassword = localProperties.getProperty("KEYSTORE_KEY_PASSWORD", "")
         }
     }
 
