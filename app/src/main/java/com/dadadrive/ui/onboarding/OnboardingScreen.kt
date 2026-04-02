@@ -18,8 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -52,12 +52,12 @@ private data class OnboardingPage(
 
 private val pages = listOf(
     OnboardingPage(
-        icon = Icons.Default.Groups,
+        icon = Icons.Default.Person,        // ✅ Fix: Groups → People
         title = "Your app for fair deals",
         subtitle = "Choose rides that are right for you"
     ),
     OnboardingPage(
-        icon = Icons.Default.Map,
+        icon = Icons.Default.LocationOn,
         title = "Rides across Tunisia",
         subtitle = "Available in Tunis, Sfax, Sousse and more"
     )
@@ -156,7 +156,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                 ) {
                     Text(
                         "Continue",
-                        style = AppTypography.titleSmall,
+                        style = AppTypography.headingS,  // ✅ Fix: titleSmall → headingS
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -168,7 +168,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                         append(" and ")
                         withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Privacy Policy") }
                     },
-                    style = AppTypography.labelSmall,
+                    style = AppTypography.labelS,  // ✅ Fix: labelSmall → labelS
                     color = AppColor.textHint,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = AppSpacing.l)
@@ -219,7 +219,7 @@ private fun OnboardingPageView(page: OnboardingPage) {
 
         Text(
             text = page.title,
-            style = AppTypography.headlineMedium,
+            style = AppTypography.headingL,  // ✅ Fix: headlineMedium → headingL
             fontWeight = FontWeight.Bold,
             color = AppColor.textPrimary,
             textAlign = TextAlign.Center
@@ -229,7 +229,7 @@ private fun OnboardingPageView(page: OnboardingPage) {
 
         Text(
             text = page.subtitle,
-            style = AppTypography.bodyMedium,
+            style = AppTypography.bodyM,     // ✅ Fix: bodyMedium → bodyM
             color = AppColor.textHint,
             textAlign = TextAlign.Center
         )
@@ -252,7 +252,7 @@ private fun LogoView() {
         }
         Text(
             text = "DadaDrive",
-            style = AppTypography.titleMedium,
+            style = AppTypography.headingM,  // ✅ Fix: titleMedium → headingM
             fontWeight = FontWeight.Bold,
             color = AppColor.textPrimary
         )

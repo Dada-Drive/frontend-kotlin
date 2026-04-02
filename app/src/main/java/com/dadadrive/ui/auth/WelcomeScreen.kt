@@ -22,8 +22,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -281,7 +281,7 @@ private fun BottomSection(
                     horizontalArrangement = Arrangement.spacedBy(AppSpacing.s),
                     verticalAlignment = Alignment.Top
                 ) {
-                    Icon(Icons.Default.Error, null, tint = AppColor.error, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Default.Warning, null, tint = AppColor.error, modifier = Modifier.size(14.dp))
                     Text(error, color = AppColor.error, fontSize = 10.sp, fontWeight = FontWeight.Medium)
                 }
             }
