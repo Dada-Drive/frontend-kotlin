@@ -17,25 +17,17 @@ import com.here.sdk.core.GeoCoordinates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.coroutines.resume
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.util.Locale
-import java.util.UUID
 import javax.inject.Inject
-
-/**
- * Représente un marqueur personnalisé placé par l'utilisateur sur la carte.
- * Custom pin placed manually by the user on the map.
- */
-data class DadaMarker(
-    val id: String = UUID.randomUUID().toString(),
-    val position: GeoCoordinates,
-    val title: String,
-    val snippet: String = ""
-)
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
@@ -61,15 +53,84 @@ class MapViewModel @Inject constructor(
     private val _isTracking = MutableStateFlow(false)
     val isTracking: StateFlow<Boolean> = _isTracking.asStateFlow()
 
-    // ── Marqueurs utilisateur ─────────────────────────────────────────────────
+    // ── Destination (choix unique sur la carte) ───────────────────────────────
+    /** Point géo sous le centre de l’écran (mode choix destination sur la carte). */
+    private val _pickTargetGeo = MutableStateFlow<GeoCoordinates?>(null)
+    val pickTargetGeo: StateFlow<GeoCoordinates?> = _pickTargetGeo.asStateFlow()
 
-    private val _markers = MutableStateFlow<List<DadaMarker>>(emptyList())
-    val markers: StateFlow<List<DadaMarker>> = _markers.asStateFlow()
+    /** Adresse affichée au-dessus du pin (géocodage inverse du centre). */
+    private val _pickTargetAddress = MutableStateFlow<String?>(null)
+    val pickTargetAddress: StateFlow<String?> = _pickTargetAddress.asStateFlow()
 
-    // ── Point tapé (info-bulle coordonnées) ───────────────────────────────────
+    /** Destination confirmée (une seule) après « Terminer » sur la carte. */
+    private val _confirmedDestination = MutableStateFlow<GeoCoordinates?>(null)
+    val confirmedDestination: StateFlow<GeoCoordinates?> = _confirmedDestination.asStateFlow()
 
-    private val _tappedPoint = MutableStateFlow<GeoCoordinates?>(null)
-    val tappedPoint: StateFlow<GeoCoordinates?> = _tappedPoint.asStateFlow()
+    /** Texte affiché dans le champ « À » de la feuille d’itinéraire. */
+    private val _destinationLabel = MutableStateFlow<String?>(null)
+    val destinationLabel: StateFlow<String?> = _destinationLabel.asStateFlow()
+
+    private var pickGeocodeJob: Job? = null
+
+    fun resetPickerDraft() {
+        pickGeocodeJob?.cancel()
+        _pickTargetGeo.value = null
+        _pickTargetAddress.value = null
+    }
+
+    fun updatePickTarget(geo: GeoCoordinates) {
+        val prev = _pickTargetGeo.value
+        if (prev != null) {
+            val dLat = kotlin.math.abs(prev.latitude - geo.latitude)
+            val dLng = kotlin.math.abs(prev.longitude - geo.longitude)
+            if (dLat < 1e-7 && dLng < 1e-7) return
+        }
+        _pickTargetGeo.value = geo
+        pickGeocodeJob?.cancel()
+        pickGeocodeJob = viewModelScope.launch {
+            delay(320)
+            val line = reverseGeocodeLine(geo.latitude, geo.longitude)
+            _pickTargetAddress.value = line
+        }
+    }
+
+    fun confirmDestination() {
+        val geo = _pickTargetGeo.value ?: return
+        _confirmedDestination.value = geo
+        _destinationLabel.value = _pickTargetAddress.value
+            ?: String.format(Locale.US, "%.5f, %.5f", geo.latitude, geo.longitude)
+    }
+
+    fun clearConfirmedDestination() {
+        _confirmedDestination.value = null
+    }
+
+    fun updateDestinationLabelInput(text: String) {
+        _destinationLabel.value = text.takeIf { it.isNotBlank() }
+    }
+
+    private suspend fun reverseGeocodeLine(latitude: Double, longitude: Double): String? =
+        withContext(Dispatchers.IO) {
+            try {
+                val geocoder = Geocoder(context, Locale.getDefault())
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    suspendCancellableCoroutine { cont ->
+                        geocoder.getFromLocation(latitude, longitude, 1) { addresses ->
+                            val line = addresses.firstOrNull()?.toReadableString()
+                            // Ne jamais resume après cancel (ex. Terminer → resetPickerDraft) : sinon crash sur le thread du Geocoder.
+                            if (cont.isActive) {
+                                cont.resume(line)
+                            }
+                        }
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    geocoder.getFromLocation(latitude, longitude, 1)?.firstOrNull()?.toReadableString()
+                }
+            } catch (_: Exception) {
+                null
+            }
+        }
 
     // ── LocationCallback temps réel ───────────────────────────────────────────
 
@@ -104,8 +165,8 @@ class MapViewModel @Inject constructor(
         }
 
         // Mises à jour continues (haute précision GPS)
-        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5_000L)
-            .setMinUpdateIntervalMillis(2_000L)
+        val request = LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 10_000L)
+            .setMinUpdateIntervalMillis(5_000L)
             .build()
 
         fusedLocationClient.requestLocationUpdates(
@@ -131,26 +192,6 @@ class MapViewModel @Inject constructor(
                 _locationAccuracy.value = it.accuracy
             }
         }
-    }
-
-    fun onMapTapped(point: GeoCoordinates) {
-        _tappedPoint.value = point
-    }
-
-    fun dismissTappedPoint() {
-        _tappedPoint.value = null
-    }
-
-    fun addMarker(position: GeoCoordinates, title: String, snippet: String = "") {
-        _markers.value = _markers.value + DadaMarker(position = position, title = title, snippet = snippet)
-    }
-
-    fun removeMarker(id: String) {
-        _markers.value = _markers.value.filter { it.id != id }
-    }
-
-    fun clearMarkers() {
-        _markers.value = emptyList()
     }
 
     // ── Géocodage inverse ──────────────────────────────────────────────────────

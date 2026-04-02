@@ -41,6 +41,10 @@ android {
             "\"${localProperties.getProperty("HERE_ACCESS_KEY_ID", "")}\"")
         buildConfigField("String", "HERE_ACCESS_KEY_SECRET",
             "\"${localProperties.getProperty("HERE_ACCESS_KEY_SECRET", "")}\"")
+        manifestPlaceholders["HERE_ACCESS_KEY_ID"] =
+            localProperties.getProperty("HERE_ACCESS_KEY_ID", "")
+        manifestPlaceholders["HERE_ACCESS_KEY_SECRET"] =
+            localProperties.getProperty("HERE_ACCESS_KEY_SECRET", "")
     }
 
     // ✅ APRÈS (sécurisé)

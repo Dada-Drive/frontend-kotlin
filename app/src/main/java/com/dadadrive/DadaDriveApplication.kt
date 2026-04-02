@@ -13,25 +13,29 @@ class DadaDriveApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
-        // Initialisation HERE Maps SDK
         initHereSdk()
-        // Cloudinary : upload via OkHttp dans CloudinaryManager (pas de SDK cloudinary-android = moins de mémoire / APK).
     }
 
     private fun initHereSdk() {
+        val accessKeyId     = BuildConfig.HERE_ACCESS_KEY_ID
+        val accessKeySecret = BuildConfig.HERE_ACCESS_KEY_SECRET
+
+        // ✅ Vérification que les clés sont bien lues
+        Log.d("HereSDK", "Key ID length     : ${accessKeyId.length}")
+        Log.d("HereSDK", "Key Secret length : ${accessKeySecret.length}")
+
+        if (accessKeyId.isBlank() || accessKeySecret.isBlank()) {
+            Log.e("HereSDK", "❌ Clés HERE vides ! Vérifie local.properties + build.gradle")
+            return
+        }
+
         try {
-            // Création du mode d'authentification avec la clé API HERE
-            val accessKeyId = BuildConfig.HERE_ACCESS_KEY_ID
-            val accessKeySecret = BuildConfig.HERE_ACCESS_KEY_SECRET
-            val authMode = AuthenticationMode.withKeySecret(
-                accessKeyId,
-                accessKeySecret
-            )
-            val options = SDKOptions(authMode)
+            val authMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret)
+            val options  = SDKOptions(authMode)
             SDKNativeEngine.makeSharedInstance(this, options)
+            Log.i("HereSDK", "✅ HERE SDK initialisé avec succès")
         } catch (e: InstantiationErrorException) {
-            Log.e("HereSDK", "Erreur d'initialisation HERE SDK: ${e.message}")
+            Log.e("HereSDK", "❌ Erreur d'initialisation HERE SDK: ${e.message}")
         }
     }
 
