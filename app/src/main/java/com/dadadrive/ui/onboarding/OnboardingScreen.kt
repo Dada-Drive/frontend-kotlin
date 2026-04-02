@@ -39,7 +39,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.ui.theme.AppColor
-import com.dadadrive.ui.theme.AppFont
+import com.dadadrive.ui.theme.AppTypography
 import com.dadadrive.ui.theme.AppRadius
 import com.dadadrive.ui.theme.AppSpacing
 import kotlinx.coroutines.launch
@@ -156,7 +156,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                 ) {
                     Text(
                         "Continue",
-                        style = AppFont.headingS,
+                        style = AppTypography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -168,7 +168,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                         append(" and ")
                         withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Privacy Policy") }
                     },
-                    style = AppFont.labelS,
+                    style = AppTypography.labelSmall,
                     color = AppColor.textHint,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = AppSpacing.l)
@@ -219,7 +219,7 @@ private fun OnboardingPageView(page: OnboardingPage) {
 
         Text(
             text = page.title,
-            style = AppFont.displayMedium,
+            style = AppTypography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = AppColor.textPrimary,
             textAlign = TextAlign.Center
@@ -229,7 +229,7 @@ private fun OnboardingPageView(page: OnboardingPage) {
 
         Text(
             text = page.subtitle,
-            style = AppFont.bodyM,
+            style = AppTypography.bodyMedium,
             color = AppColor.textHint,
             textAlign = TextAlign.Center
         )
@@ -252,7 +252,7 @@ private fun LogoView() {
         }
         Text(
             text = "DadaDrive",
-            style = AppFont.headingM,
+            style = AppTypography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = AppColor.textPrimary
         )

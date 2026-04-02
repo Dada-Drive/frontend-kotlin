@@ -49,8 +49,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.stringResource
+import com.dadadrive.R
 import com.dadadrive.ui.theme.AppColor
-import com.dadadrive.ui.theme.AppFont
+import com.dadadrive.ui.theme.AppTypography
 import com.dadadrive.ui.theme.AppRadius
 import com.dadadrive.ui.theme.AppSpacing
 import com.dadadrive.ui.theme.lighter
@@ -204,7 +208,11 @@ private fun LogoSection(glow: Float) {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text("🚗", fontSize = 28.sp)
+                Text(
+                    "🚗",
+                    fontSize = 28.sp,
+                    modifier = Modifier.semantics { contentDescription = "DadaDrive logo" }
+                )
             }
         }
         Spacer(Modifier.height(AppSpacing.l))
@@ -335,11 +343,14 @@ private fun AuthButton(style: AuthBtnStyle, isLoading: Boolean, onClick: () -> U
                 if (isGoogle && isLoading) {
                     CircularProgressIndicator(strokeWidth = 2.dp, color = iconFg, modifier = Modifier.size(14.dp))
                 } else {
-                    Text(
-                        text = if (isGoogle) "G" else "",
-                        color = iconFg,
-                        fontWeight = FontWeight.Bold
-                    )
+                    if (isGoogle) {
+                        Text(
+                            text = "G",
+                            color = iconFg,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.semantics { contentDescription = "Google sign in" }
+                        )
+                    }
                     if (!isGoogle) Icon(Icons.Default.Phone, null, tint = iconFg, modifier = Modifier.size(15.dp))
                 }
             }
@@ -377,7 +388,7 @@ private fun DisabledAppleButton() {
                 disabledContainerColor = Color.White,
                 disabledContentColor = Color.Black
             )
-        ) { Text("Continue with Apple", fontWeight = FontWeight.SemiBold) }
+        ) { Text(stringResource(R.string.welcome_continue_with_apple), fontWeight = FontWeight.SemiBold) }
 
         Box(
             modifier = Modifier
@@ -389,7 +400,7 @@ private fun DisabledAppleButton() {
             Text(
                 "Coming Soon",
                 color = AppColor.textHint,
-                style = AppFont.labelS,
+                style = AppTypography.labelS,
                 modifier = Modifier
                     .padding(end = AppSpacing.m)
                     .background(AppColor.surface, RoundedCornerShape(AppRadius.full))
@@ -418,7 +429,7 @@ private fun DividerOr() {
         Text(
             "or",
             color = AppColor.textHint,
-            style = AppFont.labelM,
+            style = AppTypography.labelM,
             modifier = Modifier.padding(horizontal = AppSpacing.m)
         )
         Box(

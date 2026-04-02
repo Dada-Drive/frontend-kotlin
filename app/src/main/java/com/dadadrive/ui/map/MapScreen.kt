@@ -92,6 +92,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import kotlin.math.roundToInt
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -106,6 +107,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
+import com.dadadrive.R
 import com.here.sdk.core.Anchor2D
 import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.Point2D
@@ -485,7 +487,7 @@ fun MapScreen(
 @Composable
 private fun PickTargetAddressBubble(address: String?, modifier: Modifier = Modifier) {
     val c = LocalAppColors.current
-    val label = address?.takeIf { it.isNotBlank() } ?: "Move map to set pickup"
+    val label = address?.takeIf { it.isNotBlank() } ?: stringResource(R.string.map_move_to_set_pickup)
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
@@ -600,7 +602,7 @@ private fun RouteItinerarySheetContent(
             onValueChange = onDestinationValueChange,
             modifier = Modifier.fillMaxWidth(),
             label = { Text("To", color = c.textSecondary, fontSize = 10.sp) },
-            placeholder = { Text("To", color = c.greyHint) },
+            placeholder = { Text(stringResource(R.string.map_destination_placeholder), color = c.greyHint) },
             leadingIcon = {
                 Icon(Icons.Default.Search, null, tint = c.textSecondary, modifier = Modifier.size(22.dp))
             },
@@ -1015,9 +1017,9 @@ private fun ProfileBottomSheet(
             Spacer(Modifier.height(24.dp))
             HorizontalDivider(color = c.dividerGrey)
             Spacer(Modifier.height(8.dp))
-            ProfileMenuItem(Icons.Default.Edit,      "Edit Profile",     onClick = onEditProfile)
-            ProfileMenuItem(Icons.Default.Search,    "Help & Support",   onClick = {})
-            ProfileMenuItem(Icons.Default.Info,      "Terms of Service", onClick = {})
+            ProfileMenuItem(Icons.Default.Edit,      stringResource(R.string.menu_edit_profile),    onClick = onEditProfile)
+            ProfileMenuItem(Icons.Default.Search,    stringResource(R.string.menu_help_support),    onClick = {})
+            ProfileMenuItem(Icons.Default.Info,      stringResource(R.string.menu_terms_of_service), onClick = {})
             Spacer(Modifier.height(4.dp))
             HorizontalDivider(color = c.dividerGrey)
             Spacer(Modifier.height(4.dp))
