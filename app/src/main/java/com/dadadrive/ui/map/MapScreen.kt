@@ -360,7 +360,7 @@ fun MapScreen(
                     }
                     Text(
                         text = "DadaDrive",
-                        color = Color.Black,
+                        color = LocalAppColors.current.textPrimary,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 15.sp
                     )
@@ -380,7 +380,7 @@ fun MapScreen(
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notifications",
-                        tint = Color.Black,
+                        tint = LocalAppColors.current.textPrimary,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -485,19 +485,19 @@ fun MapScreen(
 @Composable
 private fun PickTargetAddressBubble(address: String?, modifier: Modifier = Modifier) {
     val c = LocalAppColors.current
-    val label = address?.takeIf { it.isNotBlank() } ?: "…"
+    val label = address?.takeIf { it.isNotBlank() } ?: "Move map to set pickup"
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = c.primary,
+        shape = RoundedCornerShape(10.dp),
+        color = c.surfaceElevated,
         shadowElevation = 8.dp
     ) {
         Text(
             text = label,
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            color = c.onPrimary,
+            color = c.textPrimary,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp,
+            fontSize = 12.sp,
             maxLines = 2,
             textAlign = TextAlign.Center
         )
@@ -522,7 +522,7 @@ private fun PickerModeBottomBar(
             onClick = onTerminer,
             enabled = canConfirm,
             modifier = Modifier.fillMaxWidth().height(54.dp),
-            shape = RoundedCornerShape(27.dp),
+            shape = RoundedCornerShape(999.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = c.primary,
                 disabledContainerColor = c.primaryDisabled,
@@ -530,7 +530,7 @@ private fun PickerModeBottomBar(
                 disabledContentColor = c.onPrimary.copy(alpha = 0.5f)
             )
         ) {
-            Text("Terminer", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            Text("Confirm pickup", fontWeight = FontWeight.Bold, fontSize = 14.sp)
         }
     }
 }
@@ -556,22 +556,26 @@ private fun RouteItinerarySheetContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Indiquer votre itinéraire",
+                "Enter your route",
                 color = c.textPrimary,
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+                fontSize = 16.sp
             )
             IconButton(onClick = onClose) {
-                Icon(Icons.Default.Close, contentDescription = "Fermer", tint = c.textLabel)
+                Surface(shape = CircleShape, color = c.surfaceMuted, modifier = Modifier.size(32.dp)) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = c.textHint, modifier = Modifier.size(14.dp))
+                    }
+                }
             }
         }
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
-            value = originAddress ?: "Localisation en cours…",
+            value = originAddress ?: "Current location",
             onValueChange = {},
             readOnly = true,
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("De", color = c.textSecondary, fontSize = 13.sp) },
+            label = { Text("From", color = c.textSecondary, fontSize = 10.sp) },
             leadingIcon = {
                 Box(
                     modifier = Modifier
@@ -595,8 +599,8 @@ private fun RouteItinerarySheetContent(
             value = destinationValue,
             onValueChange = onDestinationValueChange,
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("À", color = c.textSecondary, fontSize = 13.sp) },
-            placeholder = { Text("Où allez-vous ?", color = c.greyHint) },
+            label = { Text("To", color = c.textSecondary, fontSize = 10.sp) },
+            placeholder = { Text("To", color = c.greyHint) },
             leadingIcon = {
                 Icon(Icons.Default.Search, null, tint = c.textSecondary, modifier = Modifier.size(22.dp))
             },
@@ -898,7 +902,7 @@ private fun BottomSearchBar(
                 Text("Where to?", color = c.textSecondary, fontSize = 16.sp, modifier = Modifier.weight(1f))
                 Surface(shape = CircleShape, color = c.surfaceMuted, modifier = Modifier.size(36.dp)) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Refresh, "Historique", tint = c.primary, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Refresh, "History", tint = c.primary, modifier = Modifier.size(18.dp))
                     }
                 }
             }
@@ -964,7 +968,7 @@ private fun ProfileBottomSheet(
                 onClick = onDismiss,
                 modifier = Modifier.align(Alignment.TopEnd).padding(end = 8.dp)
             ) {
-                Icon(Icons.Default.Close, null, tint = c.textLabel)
+                Icon(Icons.Default.Close, null, tint = c.textHint)
             }
         }
         Column(
@@ -1011,10 +1015,9 @@ private fun ProfileBottomSheet(
             Spacer(Modifier.height(24.dp))
             HorizontalDivider(color = c.dividerGrey)
             Spacer(Modifier.height(8.dp))
-            ProfileMenuItem(Icons.Default.Edit,      "Edit Profile",      onClick = onEditProfile)
-            ProfileMenuItem(Icons.Default.Settings,  "Thème de couleurs", onClick = onColorSettings)
-            ProfileMenuItem(Icons.Default.Search,    "Help & Support",    onClick = {})
-            ProfileMenuItem(Icons.Default.Info,      "Terms of Service",  onClick = {})
+            ProfileMenuItem(Icons.Default.Edit,      "Edit Profile",     onClick = onEditProfile)
+            ProfileMenuItem(Icons.Default.Search,    "Help & Support",   onClick = {})
+            ProfileMenuItem(Icons.Default.Info,      "Terms of Service", onClick = {})
             Spacer(Modifier.height(4.dp))
             HorizontalDivider(color = c.dividerGrey)
             Spacer(Modifier.height(4.dp))

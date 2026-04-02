@@ -34,6 +34,22 @@ object AppTypography {
     )
 }
 
+object AppFont {
+    val displayLarge = AppTypography.displayLarge
+    val displayMedium = AppTypography.displayMedium
+    val headingL = AppTypography.headingL
+    val headingM = AppTypography.headingM
+    val headingS = AppTypography.headingS
+    val bodyL = AppTypography.bodyL
+    val bodyM = AppTypography.bodyM
+    val bodyS = AppTypography.bodyS
+    val labelL = AppTypography.labelL
+    val labelM = AppTypography.labelM
+    val labelS = AppTypography.labelS
+    val monoL = AppTypography.monoL
+    val monoM = AppTypography.monoM
+}
+
 val DadaDriveTypography = Typography(
     headlineLarge = AppTypography.displayLarge,
     headlineMedium = AppTypography.displayMedium,
