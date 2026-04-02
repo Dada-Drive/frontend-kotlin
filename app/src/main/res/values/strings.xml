@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">DadaDrive</string>
+    <string name="welcome_continue_with_apple">Continue with Apple</string>
+    <string name="map_move_to_set_pickup">Move map to set pickup</string>
+    <string name="map_destination_placeholder">Search destination</string>
+    <string name="menu_edit_profile">Edit Profile</string>
+    <string name="menu_help_support">Help &amp; Support</string>
+    <string name="menu_terms_of_service">Terms of Service</string>
 </resources>

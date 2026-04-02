@@ -1,5 +1,7 @@
 package com.dadadrive.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
@@ -19,6 +21,40 @@ val InputUnderline = Color(0xFF444444)
 val ErrorRed       = Color(0xFFE53935)
 val FacebookBlue   = Color(0xFF1877F2)
 val GoogleRed      = Color(0xFFEA4335)
+
+object AppColor {
+    @get:Composable
+    val background: Color
+        get() = if (isSystemInDarkTheme()) Color(0xFF111111) else Color(0xFFF5F5F5)
+
+    @get:Composable
+    val surface: Color
+        get() = if (isSystemInDarkTheme()) Color(0xFF1A1A1A) else Color.White
+
+    @get:Composable
+    val textPrimary: Color
+        get() = if (isSystemInDarkTheme()) Color.White else Color(0xFF111111)
+
+    val textHint = Color(0xFF888888)
+    val textOnGreen = Color(0xFF111111)
+    val green = Color(0xFF80C000)
+    val greenDisabled = Color(0xFFA8D860)
+    val error = Color(0xFFE53935)
+    val destination: Color get() = error
+}
+
+fun Color.lighter(by: Float): Color = lerpColor(this, Color.White, by.coerceIn(0f, 1f))
+fun Color.darker(by: Float): Color = lerpColor(this, Color.Black, by.coerceIn(0f, 1f))
+
+private fun lerpColor(start: Color, end: Color, fraction: Float): Color {
+    val inv = 1f - fraction
+    return Color(
+        red = start.red * inv + end.red * fraction,
+        green = start.green * inv + end.green * fraction,
+        blue = start.blue * inv + end.blue * fraction,
+        alpha = start.alpha * inv + end.alpha * fraction
+    )
+}
 
 // ── Palette centralisée — accès via LocalAppColors.current ──────────────────
 
