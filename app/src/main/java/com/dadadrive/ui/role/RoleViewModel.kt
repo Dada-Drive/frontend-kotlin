@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,34 +32,49 @@ class RoleViewModel @Inject constructor(
     private val _state = MutableStateFlow<RoleState>(RoleState.Idle)
     val state: StateFlow<RoleState> = _state.asStateFlow()
 
+    private val selectRoleInFlight = AtomicBoolean(false)
+
     fun selectRole(role: String) {
+        if (!selectRoleInFlight.compareAndSet(false, true)) return
+
         viewModelScope.launch {
-            _state.value = RoleState.Loading
-
-            if (tokenManager.getAccessToken().isNullOrBlank()) {
-                _state.value = RoleState.Error("Session expirée. Reconnectez-vous.")
-                return@launch
-            }
-
             try {
-                // AuthInterceptor ajoute le token automatiquement
-                authApiService.updateRole(UpdateRoleRequest(role))
-                // Sauvegarder le rôle localement après succès API
-                userManager.updateRole(role)
-                _state.value = RoleState.Success
-            } catch (e: HttpException) {
-                val message = when (e.code()) {
-                    400 -> "Rôle invalide."
-                    401 -> "Session expirée. Reconnectez-vous."
-                    else -> "Erreur serveur (${e.code()})."
+                _state.value = RoleState.Loading
+
+                if (tokenManager.getAccessToken().isNullOrBlank()) {
+                    _state.value = RoleState.Error("Session expirée. Reconnectez-vous.")
+                    return@launch
                 }
-                // En cas d'erreur réseau, sauvegarder localement quand même
-                userManager.updateRole(role)
-                _state.value = RoleState.Error(message)
-            } catch (e: Exception) {
-                // Pas de connexion : sauvegarder localement et continuer
-                userManager.updateRole(role)
-                _state.value = RoleState.Success
+
+                val localRole = userManager.getUser()?.role
+                if (localRole == role && role != "pending") {
+                    _state.value = RoleState.Success
+                    return@launch
+                }
+
+                try {
+                    authApiService.updateRole(UpdateRoleRequest(role))
+                    userManager.updateRole(role)
+                    _state.value = RoleState.Success
+                } catch (e: HttpException) {
+                    val body = e.response()?.errorBody()?.string().orEmpty()
+                    if (e.code() == 400 && body.contains("already been set", ignoreCase = true)) {
+                        userManager.updateRole(role)
+                        _state.value = RoleState.Success
+                        return@launch
+                    }
+                    val message = when (e.code()) {
+                        400 -> "Rôle invalide."
+                        401 -> "Session expirée. Reconnectez-vous."
+                        else -> "Erreur serveur (${e.code()})."
+                    }
+                    _state.value = RoleState.Error(message)
+                } catch (e: Exception) {
+                    userManager.updateRole(role)
+                    _state.value = RoleState.Success
+                }
+            } finally {
+                selectRoleInFlight.set(false)
             }
         }
     }

@@ -9,11 +9,18 @@ data class AuthResponse(
     val user: UserDto
 )
 
+/** GET /auth/me → `{ "success": true, "user": { … } }` (voir authController.getMe). */
+data class GetMeResponseDto(
+    val success: Boolean? = null,
+    val user: UserDto
+)
+
+// Équivalent Swift : User dans AuthModels.swift (CodingKeys : phone, full_name, avatar_url…)
 data class UserDto(
     val id: String,
-    @SerializedName("full_name") val fullName: String,
+    @SerializedName("full_name") val fullName: String?,
     val email: String?,
-    @SerializedName("phone_number") val phoneNumber: String?,
+    @SerializedName("phone") val phone: String?,
     @SerializedName("avatar_url") val avatarUrl: String?,
     val role: String
 )

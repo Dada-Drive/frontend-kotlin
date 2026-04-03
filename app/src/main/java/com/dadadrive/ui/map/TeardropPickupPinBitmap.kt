@@ -6,183 +6,132 @@ import android.graphics.Canvas
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
 import androidx.core.graphics.ColorUtils
 
-/**
- * Bitmap du marqueur de position type « pickup » (goutte verte 3D + ombre au sol),
- * équivalent Android du `TeardropPin` Swift dans PickupPinOverlay.
- *
- * L’ancrage HERE doit être [Anchor2D](horizontal = 0.5, vertical = tipNormalizedY)
- * où [tipNormalizedY] est fourni par [teardropPickupPinAnchorYNormalized].
- */
+// ═══════════════════════════════════════════════════════════════════════
+// Layout descriptor — used by CenterPickupPinOverlay in MapScreen
+// ═══════════════════════════════════════════════════════════════════════
+
+data class TeardropPinLayout(
+    val bitmapWidth:  Float,
+    val bitmapHeight: Float,
+    val tipYFromTop:  Float
+)
+
+fun teardropPickupPinLayout(): TeardropPinLayout = TeardropPinLayout(
+    bitmapWidth  = 160f,
+    bitmapHeight = 224f,
+    tipYFromTop  = 224f
+)
+
+fun teardropPickupPinAnchorYNormalized(): Double = 1.0
+
+/** Same teardrop outline as Swift / iOS pickup pin (160×224). */
+internal fun buildTeardropPinPath(pinW: Float, pinH: Float): Path {
+    val cx = pinW / 2f
+    val r = pinW / 2f
+    val headCY = r
+    val tipY = pinH
+
+    val d = tipY - headCY
+    val sinTheta = (r / d).coerceAtMost(0.9999f)
+    val theta = Math.asin(sinTheta.toDouble()).toFloat()
+    val cosTheta = Math.cos(theta.toDouble()).toFloat()
+    val tx = cx - r * cosTheta
+    val ty = headCY + r * sinTheta
+
+    return Path().apply {
+        moveTo(tx, ty)
+        val oval = RectF(cx - r, headCY - r, cx + r, headCY + r)
+        arcTo(
+            oval,
+            (90f + Math.toDegrees(theta.toDouble())).toFloat(),
+            -(360f - 2f * Math.toDegrees(theta.toDouble()).toFloat()),
+            false
+        )
+        lineTo(cx, tipY)
+        lineTo(tx, ty)
+        close()
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Pickup-location teardrop pin
+// ═══════════════════════════════════════════════════════════════════════
+
 fun createTeardropPickupLocationBitmap(primaryArgb: Int): Bitmap {
-    val scale = 3f
-    val pinWidth = 40f * scale
-    val pinHeight = 56f * scale
+    val pinW = 160f
+    val pinH = 224f
 
-    val horizontalPad = 28f * scale
-    val topPad = 20f * scale
-    val bottomPad = 22f * scale
-
-    val bitmapW = (pinWidth + horizontalPad * 2).toInt().coerceAtLeast(1)
-    val bitmapH = (topPad + pinHeight + bottomPad).toInt().coerceAtLeast(1)
-    val pinLeft = (bitmapW - pinWidth) / 2f
-
-    val base = primaryArgb or 0xFF000000.toInt()
-    val greenLight = ColorUtils.blendARGB(base, 0xFFFFFFFF.toInt(), 0.18f)
-    val greenDark = ColorUtils.blendARGB(base, 0xFF000000.toInt(), 0.28f)
-
-    val bitmap = Bitmap.createBitmap(bitmapW, bitmapH, Bitmap.Config.ARGB_8888)
+    val bitmap = Bitmap.createBitmap(pinW.toInt(), pinH.toInt(), Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
 
-    val tipX = bitmapW / 2f
-    val tipY = topPad + pinHeight
+    val green = primaryArgb or 0xFF000000.toInt()
+    val lightGreen = ColorUtils.blendARGB(green, 0xFFFFFFFF.toInt(), 0.18f)
+    val darkGreen = ColorUtils.blendARGB(green, 0xFF000000.toInt(), 0.28f)
 
-    // ── Ombre au sol (RadialGradient comme Swift) ───────────────────────────
-    val shadowW = 26f * scale
-    val shadowH = 7f * scale
-    val shadowCx = tipX
-    val shadowCy = tipY + 3f * scale
-    val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        shader = RadialGradient(
-            shadowCx, shadowCy,
-            13f * scale,
-            intArrayOf(0x38000000.toInt(), 0x00000000.toInt()),
-            floatArrayOf(0f, 1f),
-            Shader.TileMode.CLAMP
-        )
-    }
-    canvas.drawOval(
-        RectF(
-            shadowCx - shadowW / 2f,
-            shadowCy - shadowH / 2f,
-            shadowCx + shadowW / 2f,
-            shadowCy + shadowH / 2f
-        ),
-        shadowPaint
-    )
+    val path = buildTeardropPinPath(pinW, pinH)
+    val cx = pinW / 2f
+    val r = pinW / 2f
+    val headCY = r
 
+    val aa = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    // Drop shadow
     canvas.save()
-    canvas.translate(pinLeft, topPad)
-
-    // Goutte « classique » (demi-cercle + pointe) — rendu fiable sur Canvas Android
-    val path = mapPinTeardropPath(pinWidth, pinHeight)
-    val rHead = pinWidth / 2f
-
-    // ── Ombre portée du pin (flou + léger décalage) ─────────────────────────
-    val dropShadow = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0x24000000.toInt()
-        style = Paint.Style.FILL
-        maskFilter = BlurMaskFilter(2.5f * scale, BlurMaskFilter.Blur.NORMAL)
-    }
-    canvas.save()
-    canvas.translate(1.5f * scale, 3f * scale)
-    canvas.drawPath(path, dropShadow)
+    aa.color = 0x24000000.toInt()
+    aa.style = Paint.Style.FILL
+    aa.maskFilter = BlurMaskFilter(2.5f, BlurMaskFilter.Blur.NORMAL)
+    canvas.translate(1.5f, 3f)
+    canvas.drawPath(path, aa)
     canvas.restore()
-    dropShadow.maskFilter = null
+    aa.maskFilter = null
 
-    // ── Corps : dégradé vertical (clair → vert → foncé) ─────────────────────
-    val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        shader = LinearGradient(
-            pinWidth * 0.25f, pinHeight * 0.05f,
-            pinWidth * 0.75f, pinHeight,
-            intArrayOf(greenLight, base, greenDark),
-            floatArrayOf(0f, 0.45f, 1f),
-            Shader.TileMode.CLAMP
-        )
-        style = Paint.Style.FILL
-    }
-    canvas.drawPath(path, bodyPaint)
-
-    // ── Reflet (blanc → transparent), clip sur la goutte ─────────────────────
+    // Base gradient
     canvas.save()
     canvas.clipPath(path)
-    val glossPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        shader = LinearGradient(
-            pinWidth * 0.1f, pinHeight * 0.1f,
-            pinWidth * 0.55f, pinHeight * 0.6f,
-            intArrayOf(0x47FFFFFF.toInt(), 0x00FFFFFF.toInt()),
-            null,
-            Shader.TileMode.CLAMP
-        )
-    }
-    canvas.drawRect(0f, 0f, pinWidth, pinHeight, glossPaint)
-    canvas.restore()
-
-    // ── Petit highlight elliptique (haut-gauche) ────────────────────────────
-    val specPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0x85FFFFFF.toInt()
-        maskFilter = BlurMaskFilter(1.5f * scale, BlurMaskFilter.Blur.NORMAL)
-    }
-    val specCx = pinWidth / 2f - 7f * scale
-    val specCy = rHead * 0.35f
-    canvas.drawOval(
-        RectF(specCx - 4.5f * scale, specCy - 3f * scale, specCx + 4.5f * scale, specCy + 3f * scale),
-        specPaint
+    aa.shader = LinearGradient(
+        pinW * 0.25f, pinH * 0.05f,
+        pinW * 0.75f, pinH,
+        intArrayOf(lightGreen, green, darkGreen),
+        floatArrayOf(0f, 0.45f, 1f),
+        Shader.TileMode.CLAMP
     )
-    specPaint.maskFilter = null
-
-    // ── Cercle blanc intérieur (RadialGradient) ─────────────────────────────
-    val innerCx = pinWidth / 2f
-    val innerCy = rHead * 0.92f
-    val innerR = 7f * scale
-    val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        shader = RadialGradient(
-            innerCx, innerCy, innerR * 1.2f,
-            intArrayOf(0xFFFFFFFF.toInt(), 0xE6FFFFFF.toInt()),
-            floatArrayOf(0f, 1f),
-            Shader.TileMode.CLAMP
-        )
-        setShadowLayer(2f * scale, 0f, 1f * scale, 0x26000000.toInt())
-    }
-    canvas.drawCircle(innerCx, innerCy, innerR, innerPaint)
-
+    aa.style = Paint.Style.FILL
+    canvas.drawPath(path, aa)
+    aa.shader = null
     canvas.restore()
+
+    // Gloss
+    canvas.save()
+    canvas.clipPath(path)
+    aa.shader = LinearGradient(
+        pinW * 0.10f, pinH * 0.10f,
+        pinW * 0.55f, pinH * 0.60f,
+        intArrayOf(0x47FFFFFF.toInt(), 0x00FFFFFF.toInt()),
+        null,
+        Shader.TileMode.CLAMP
+    )
+    canvas.drawRect(0f, 0f, pinW, pinH, aa)
+    aa.shader = null
+    canvas.restore()
+
+    // Specular highlight
+    aa.color = 0x85FFFFFF.toInt()
+    aa.maskFilter = BlurMaskFilter(1.5f, BlurMaskFilter.Blur.NORMAL)
+    canvas.drawOval(RectF(cx - 11.5f, headCY - 3f, cx - 2.5f, headCY + 3f), aa)
+    aa.maskFilter = null
+
+    // White center dot
+    aa.color = 0xFFFFFFFF.toInt()
+    aa.style = Paint.Style.FILL
+    canvas.drawCircle(cx, headCY, r * 0.28f, aa)
+
+    // Green inner dot
+    aa.color = green
+    canvas.drawCircle(cx, headCY, r * 0.16f, aa)
 
     return bitmap
-}
-
-/** Dimensions du bitmap + position Y de la pointe (pour overlay centré à l’écran). */
-data class TeardropPinLayout(val bitmapWidth: Int, val bitmapHeight: Int, val tipYFromTop: Float)
-
-fun teardropPickupPinLayout(): TeardropPinLayout {
-    val scale = 3f
-    val pinWidth = 40f * scale
-    val pinHeight = 56f * scale
-    val horizontalPad = 28f * scale
-    val topPad = 20f * scale
-    val bottomPad = 22f * scale
-    val bitmapW = (pinWidth + horizontalPad * 2).toInt().coerceAtLeast(1)
-    val bitmapH = (topPad + pinHeight + bottomPad).toInt().coerceAtLeast(1)
-    val tipY = topPad + pinHeight
-    return TeardropPinLayout(bitmapW, bitmapH, tipY)
-}
-
-/** Normalisé vertical (0..1) du point d’ancrage sur la pointe du pin pour [Anchor2D]. */
-fun teardropPickupPinAnchorYNormalized(): Double {
-    val scale = 3f
-    val pinHeight = 56f * scale
-    val topPad = 20f * scale
-    val bottomPad = 22f * scale
-    val bitmapH = (topPad + pinHeight + bottomPad).toInt().coerceAtLeast(1)
-    val tipY = topPad + pinHeight
-    return (tipY / bitmapH).toDouble().coerceIn(0.0, 1.0)
-}
-
-/**
- * Pin carte : demi-cercle inférieur de la tête + pointe — proche des pins classiques / Swift.
- */
-private fun mapPinTeardropPath(w: Float, h: Float): Path {
-    val cx = w / 2f
-    val r = w / 2f
-    val oval = RectF(cx - r, 0f, cx + r, 2f * r)
-    val path = Path()
-    path.moveTo(cx - r, r)
-    path.arcTo(oval, 180f, 180f, false)
-    path.lineTo(cx, h)
-    path.close()
-    return path
 }

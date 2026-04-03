@@ -13,12 +13,15 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.dadadrive.core.pricing.RideRouteEstimator
+import com.dadadrive.core.pricing.RiderFareEstimate
 import com.here.sdk.core.GeoCoordinates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +32,19 @@ import kotlinx.coroutines.withContext
 import java.util.Locale
 import javax.inject.Inject
 
+data class AddressSearchHit(
+    val label: String,
+    val coordinates: GeoCoordinates
+)
+
+/**
+ * Matches Swift LocationManager + SearchViewModel location logic.
+ *
+ * Swift reference:
+ *   LocationManager:  desiredAccuracy = kCLLocationAccuracyNearestTenMeters, distanceFilter = 8
+ *   Location updates: continuous, with geocoding on each update
+ *   Destination pick: center-pin with debounced reverse geocode (350ms in Swift)
+ */
 @HiltViewModel
 class MapViewModel @Inject constructor(
     @ApplicationContext private val context: Context
@@ -36,41 +52,68 @@ class MapViewModel @Inject constructor(
 
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
-    // ── Position GPS ──────────────────────────────────────────────────────────
+    // ── GPS Position ────────────────────────────────────────────────────────
 
     private val _currentLocation = MutableStateFlow<GeoCoordinates?>(null)
     val currentLocation: StateFlow<GeoCoordinates?> = _currentLocation.asStateFlow()
 
-    /** Précision GPS en mètres (rayon du cercle d'incertitude). */
+    /** GPS accuracy in metres (uncertainty circle radius). */
     private val _locationAccuracy = MutableStateFlow<Float?>(null)
     val locationAccuracy: StateFlow<Float?> = _locationAccuracy.asStateFlow()
 
-    /** Adresse textuelle de la position actuelle (via Geocoder). */
+    /** Textual address of current position (via Geocoder). */
     private val _currentAddress = MutableStateFlow<String?>(null)
     val currentAddress: StateFlow<String?> = _currentAddress.asStateFlow()
 
-    /** true quand les mises à jour GPS temps réel sont actives. */
+    /** true when real-time GPS updates are active. */
     private val _isTracking = MutableStateFlow(false)
     val isTracking: StateFlow<Boolean> = _isTracking.asStateFlow()
 
-    // ── Destination (choix unique sur la carte) ───────────────────────────────
-    /** Point géo sous le centre de l’écran (mode choix destination sur la carte). */
+    // ── Destination (single pick on map) ─────────────────────────────────────
+
+    /** Geo point under screen center (destination pick mode). */
     private val _pickTargetGeo = MutableStateFlow<GeoCoordinates?>(null)
     val pickTargetGeo: StateFlow<GeoCoordinates?> = _pickTargetGeo.asStateFlow()
 
-    /** Adresse affichée au-dessus du pin (géocodage inverse du centre). */
+    /** Address displayed above the center pin (reverse geocode). */
     private val _pickTargetAddress = MutableStateFlow<String?>(null)
     val pickTargetAddress: StateFlow<String?> = _pickTargetAddress.asStateFlow()
 
-    /** Destination confirmée (une seule) après « Terminer » sur la carte. */
+    /** Confirmed destination after "Confirm" tap. */
     private val _confirmedDestination = MutableStateFlow<GeoCoordinates?>(null)
     val confirmedDestination: StateFlow<GeoCoordinates?> = _confirmedDestination.asStateFlow()
 
-    /** Texte affiché dans le champ « À » de la feuille d’itinéraire. */
+    /** Text shown in the "To" field of the route sheet. */
     private val _destinationLabel = MutableStateFlow<String?>(null)
     val destinationLabel: StateFlow<String?> = _destinationLabel.asStateFlow()
 
+    /** Optional pickup point chosen in the route sheet (otherwise use GPS [currentLocation]). */
+    private val _pickupOverrideGeo = MutableStateFlow<GeoCoordinates?>(null)
+    val pickupOverrideGeo: StateFlow<GeoCoordinates?> = _pickupOverrideGeo.asStateFlow()
+
+    private val _pickupOverrideLabel = MutableStateFlow<String?>(null)
+    val pickupOverrideLabel: StateFlow<String?> = _pickupOverrideLabel.asStateFlow()
+
+    /** Forward-geocode suggestions for the bottom search field (Android Geocoder). */
+    private val _addressSearchResults = MutableStateFlow<List<AddressSearchHit>>(emptyList())
+    val addressSearchResults: StateFlow<List<AddressSearchHit>> = _addressSearchResults.asStateFlow()
+
+    private val _addressSearchLoading = MutableStateFlow(false)
+    val addressSearchLoading: StateFlow<Boolean> = _addressSearchLoading.asStateFlow()
+
+    private val _pickupSearchResults = MutableStateFlow<List<AddressSearchHit>>(emptyList())
+    val pickupSearchResults: StateFlow<List<AddressSearchHit>> = _pickupSearchResults.asStateFlow()
+
+    private val _pickupSearchLoading = MutableStateFlow(false)
+    val pickupSearchLoading: StateFlow<Boolean> = _pickupSearchLoading.asStateFlow()
+
+    /** Pickup→drop estimate using same fare math as backend (see [com.dadadrive.core.pricing]). */
+    private val _riderFareEstimate = MutableStateFlow<RiderFareEstimate?>(null)
+    val riderFareEstimate: StateFlow<RiderFareEstimate?> = _riderFareEstimate.asStateFlow()
+
     private var pickGeocodeJob: Job? = null
+    private var forwardSearchJob: Job? = null
+    private var pickupForwardSearchJob: Job? = null
 
     fun resetPickerDraft() {
         pickGeocodeJob?.cancel()
@@ -78,6 +121,10 @@ class MapViewModel @Inject constructor(
         _pickTargetAddress.value = null
     }
 
+    /**
+     * Update center-pin target. Debounced geocode at 320ms
+     * (Swift uses 350ms for drag label).
+     */
     fun updatePickTarget(geo: GeoCoordinates) {
         val prev = _pickTargetGeo.value
         if (prev != null) {
@@ -99,15 +146,135 @@ class MapViewModel @Inject constructor(
         _confirmedDestination.value = geo
         _destinationLabel.value = _pickTargetAddress.value
             ?: String.format(Locale.US, "%.5f, %.5f", geo.latitude, geo.longitude)
+        updateRiderFareEstimateIfPossible()
     }
 
     fun clearConfirmedDestination() {
         _confirmedDestination.value = null
+        _riderFareEstimate.value = null
     }
 
     fun updateDestinationLabelInput(text: String) {
         _destinationLabel.value = text.takeIf { it.isNotBlank() }
     }
+
+    /**
+     * Debounced forward geocode for typed queries. Results vary by device / Play Services / network.
+     */
+    fun scheduleAddressSearch(query: String) {
+        forwardSearchJob?.cancel()
+        val trimmed = query.trim()
+        if (trimmed.length < 3) {
+            _addressSearchResults.value = emptyList()
+            _addressSearchLoading.value = false
+            return
+        }
+        forwardSearchJob = viewModelScope.launch {
+            _addressSearchLoading.value = true
+            delay(400)
+            if (!isActive) return@launch
+            val list = forwardGeocode(trimmed)
+            if (!isActive) return@launch
+            _addressSearchResults.value = list
+            _addressSearchLoading.value = false
+        }
+    }
+
+    fun clearAddressSearchResults() {
+        forwardSearchJob?.cancel()
+        _addressSearchResults.value = emptyList()
+        _addressSearchLoading.value = false
+    }
+
+    /** Apply a chosen suggestion as the ride destination. */
+    fun applySearchDestination(hit: AddressSearchHit) {
+        clearAddressSearchResults()
+        _confirmedDestination.value = hit.coordinates
+        _destinationLabel.value = hit.label
+        updateRiderFareEstimateIfPossible()
+    }
+
+    private fun effectivePickupGeo(): GeoCoordinates? =
+        _pickupOverrideGeo.value ?: _currentLocation.value
+
+    private fun updateRiderFareEstimateIfPossible() {
+        val pickup = effectivePickupGeo()
+        val drop = _confirmedDestination.value
+        if (pickup == null || drop == null) {
+            _riderFareEstimate.value = null
+            return
+        }
+        _riderFareEstimate.value = RideRouteEstimator.estimateFareFromPickupToDrop(pickup, drop)
+    }
+
+    fun applyPickupOverride(hit: AddressSearchHit) {
+        clearPickupSearchResults()
+        _pickupOverrideGeo.value = hit.coordinates
+        _pickupOverrideLabel.value = hit.label
+        updateRiderFareEstimateIfPossible()
+    }
+
+    fun clearPickupOverride() {
+        clearPickupSearchResults()
+        _pickupOverrideGeo.value = null
+        _pickupOverrideLabel.value = null
+        updateRiderFareEstimateIfPossible()
+    }
+
+    /**
+     * Suggestions for the route sheet "From" field (same Geocoder stack as destination search).
+     */
+    fun schedulePickupSearch(query: String) {
+        pickupForwardSearchJob?.cancel()
+        val trimmed = query.trim()
+        if (trimmed.length < 3) {
+            _pickupSearchResults.value = emptyList()
+            _pickupSearchLoading.value = false
+            return
+        }
+        pickupForwardSearchJob = viewModelScope.launch {
+            _pickupSearchLoading.value = true
+            delay(400)
+            if (!isActive) return@launch
+            val list = forwardGeocode(trimmed)
+            if (!isActive) return@launch
+            _pickupSearchResults.value = list
+            _pickupSearchLoading.value = false
+        }
+    }
+
+    fun clearPickupSearchResults() {
+        pickupForwardSearchJob?.cancel()
+        _pickupSearchResults.value = emptyList()
+        _pickupSearchLoading.value = false
+    }
+
+    private suspend fun forwardGeocode(query: String): List<AddressSearchHit> =
+        withContext(Dispatchers.IO) {
+            if (!Geocoder.isPresent()) return@withContext emptyList()
+            try {
+                val geocoder = Geocoder(context, Locale.getDefault())
+                val raw: List<Address> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    suspendCancellableCoroutine { cont ->
+                        geocoder.getFromLocationName(query, 5) { addresses ->
+                            if (cont.isActive) cont.resume(addresses ?: emptyList())
+                        }
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    geocoder.getFromLocationName(query, 5) ?: emptyList()
+                }
+                raw.mapNotNull { addr ->
+                    val line = addr.toReadableString() ?: return@mapNotNull null
+                    val lat = addr.latitude
+                    val lon = addr.longitude
+                    if (lat == 0.0 && lon == 0.0) return@mapNotNull null
+                    AddressSearchHit(label = line, coordinates = GeoCoordinates(lat, lon))
+                }
+            } catch (_: Exception) {
+                emptyList()
+            }
+        }
 
     private suspend fun reverseGeocodeLine(latitude: Double, longitude: Double): String? =
         withContext(Dispatchers.IO) {
@@ -117,7 +284,6 @@ class MapViewModel @Inject constructor(
                     suspendCancellableCoroutine { cont ->
                         geocoder.getFromLocation(latitude, longitude, 1) { addresses ->
                             val line = addresses.firstOrNull()?.toReadableString()
-                            // Ne jamais resume après cancel (ex. Terminer → resetPickerDraft) : sinon crash sur le thread du Geocoder.
                             if (cont.isActive) {
                                 cont.resume(line)
                             }
@@ -125,14 +291,16 @@ class MapViewModel @Inject constructor(
                     }
                 } else {
                     @Suppress("DEPRECATION")
-                    geocoder.getFromLocation(latitude, longitude, 1)?.firstOrNull()?.toReadableString()
+                    geocoder.getFromLocation(latitude, longitude, 1)
+                        ?.firstOrNull()
+                        ?.toReadableString()
                 }
             } catch (_: Exception) {
                 null
             }
         }
 
-    // ── LocationCallback temps réel ───────────────────────────────────────────
+    // ── Real-time LocationCallback ────────────────────────────────────────────
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
@@ -140,31 +308,33 @@ class MapViewModel @Inject constructor(
                 _currentLocation.value = GeoCoordinates(loc.latitude, loc.longitude)
                 _locationAccuracy.value = loc.accuracy
                 geocodeLocation(loc.latitude, loc.longitude)
+                updateRiderFareEstimateIfPossible()
             }
         }
     }
 
-    // ── API publique ──────────────────────────────────────────────────────────
+    // ── Public API ────────────────────────────────────────────────────────────
 
     /**
-     * Démarre les mises à jour GPS en temps réel.
-     * Récupère d'abord la dernière position connue, puis s'abonne aux updates continues.
-     * Interval : 5 s, interval minimum : 2 s.
+     * Start real-time GPS updates.
+     * Matches Swift: desiredAccuracy = NearestTenMeters, distanceFilter = 8m
+     * Android equivalent: BALANCED_POWER, interval 10s, min 5s
      */
     @SuppressLint("MissingPermission")
     fun startLocationUpdates() {
         if (_isTracking.value) return
 
-        // Dernière position connue pour un affichage immédiat
+        // Last known location for immediate display
         fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
             loc?.let {
                 _currentLocation.value = GeoCoordinates(it.latitude, it.longitude)
                 _locationAccuracy.value = it.accuracy
                 geocodeLocation(it.latitude, it.longitude)
+                updateRiderFareEstimateIfPossible()
             }
         }
 
-        // Mises à jour continues (haute précision GPS)
+        // Continuous updates (balanced power = ~10m accuracy, like NearestTenMeters)
         val request = LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 10_000L)
             .setMinUpdateIntervalMillis(5_000L)
             .build()
@@ -177,40 +347,35 @@ class MapViewModel @Inject constructor(
         _isTracking.value = true
     }
 
-    /** Arrête les mises à jour GPS (économise la batterie). */
+    /** Stop GPS updates (save battery). */
     fun stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
         _isTracking.value = false
     }
 
-    /** Récupère la dernière position connue, sans démarrer les mises à jour continues. */
+    /** Fetch last known location without starting continuous updates. */
     @SuppressLint("MissingPermission")
     fun fetchLastLocation() {
         fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
             loc?.let {
                 _currentLocation.value = GeoCoordinates(it.latitude, it.longitude)
                 _locationAccuracy.value = it.accuracy
+                updateRiderFareEstimateIfPossible()
             }
         }
     }
 
-    // ── Géocodage inverse ──────────────────────────────────────────────────────
+    // ── Reverse geocoding ────────────────────────────────────────────────────
 
-    /**
-     * Convertit des coordonnées GPS en adresse textuelle via Geocoder.
-     * Exécuté sur Dispatchers.IO pour ne pas bloquer le thread principal.
-     */
     private fun geocodeLocation(latitude: Double, longitude: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val geocoder = Geocoder(context, Locale.getDefault())
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    // API 33+ : callback asynchrone
                     geocoder.getFromLocation(latitude, longitude, 1) { addresses ->
                         _currentAddress.value = addresses.firstOrNull()?.toReadableString()
                     }
                 } else {
-                    // Avant API 33 : appel synchrone (sur IO dispatcher)
                     @Suppress("DEPRECATION")
                     val addresses = geocoder.getFromLocation(latitude, longitude, 1)
                     val formatted = addresses?.firstOrNull()?.toReadableString()
@@ -219,7 +384,7 @@ class MapViewModel @Inject constructor(
                     }
                 }
             } catch (_: Exception) {
-                // Geocoder peut échouer sans réseau ou service Play indisponible
+                // Geocoder can fail without network or Play services
             }
         }
     }
@@ -230,6 +395,6 @@ class MapViewModel @Inject constructor(
     }
 }
 
-/** Retourne la première ligne d'adresse, ou null si vide. */
+/** Returns the first address line, or null if empty. */
 private fun Address.toReadableString(): String? =
     getAddressLine(0)?.takeIf { it.isNotBlank() }

@@ -8,6 +8,7 @@ import com.dadadrive.data.remote.cloudinary.CloudinaryManager
 import com.dadadrive.data.remote.model.GoogleAuthRequest
 import com.dadadrive.data.remote.model.SendOtpRequest
 import com.dadadrive.data.remote.model.UpdateProfileRequest
+import com.dadadrive.data.remote.model.LogoutRequest
 import com.dadadrive.data.remote.model.VerifyOtpRequest
 import com.dadadrive.domain.model.User
 import com.dadadrive.domain.repository.AuthRepository
@@ -103,7 +104,7 @@ class AuthRepositoryImpl @Inject constructor(
                 email = response.user.email ?: "",
                 phoneNumber = response.user.phone ?: phone,
                 role = response.user.role.ifBlank { "rider" },
-                profilePictureUri = null
+                profilePictureUri = response.user.avatarUrl
             )
             userManager.saveUser(user)
             Result.success(user)
@@ -149,9 +150,9 @@ class AuthRepositoryImpl @Inject constructor(
 
             val user = User(
                 id = userId,
-                fullName = response.user.fullName,
+                fullName = response.user.fullName ?: "",
                 email = response.user.email ?: "",
-                phoneNumber = response.user.phoneNumber ?: "",
+                phoneNumber = response.user.phone ?: "",
                 role = response.user.role.ifBlank { "rider" },
                 profilePictureUri = finalAvatarUrl
             )
@@ -166,6 +167,19 @@ class AuthRepositoryImpl @Inject constructor(
             Result.failure(Exception(message))
         } catch (e: Exception) {
             Result.failure(Exception("Impossible de se connecter au serveur. Vérifiez votre connexion."))
+        }
+    }
+
+    override suspend fun logout(): Result<Unit> {
+        return try {
+            authApiService.logout(LogoutRequest(tokenManager.getRefreshToken().orEmpty()))
+            tokenManager.clearTokens()
+            userManager.clearUser()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            tokenManager.clearTokens()
+            userManager.clearUser()
+            Result.failure(e)
         }
     }
 }

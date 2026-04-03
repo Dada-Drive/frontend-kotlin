@@ -23,10 +23,10 @@ private fun buildDarkScheme(
         primaryDisabled   = primaryDisabled,
         secondary         = Color(0xFF9E9E9E),
         onSecondary       = Color.White,
-        background        = Color(0xFF000000),
+        background        = Color(0xFF111111),
         onBackground      = Color.White,
-        surface           = Color(0xFF111111),
-        darkSurface       = Color(0xFF111111),
+        surface           = Color(0xFF1A1A1A),
+        darkSurface       = Color(0xFF1A1A1A),
         lightSurface      = Color(0xFFF5F5F5),
         inputBackground   = Color(0xFF1A1A1A),
         darkInput         = Color(0xFF1A1A1A),
@@ -83,16 +83,16 @@ private fun buildLightScheme(
         primaryDisabled   = primaryDisabled,
         secondary         = Color(0xFF757575),
         onSecondary       = Color.White,
-        background        = Color(0xFFFFFFFF),
-        onBackground      = Color(0xFF121212),
-        surface           = Color(0xFFF5F5F5),
+        background        = Color(0xFFF5F5F5),
+        onBackground      = Color(0xFF111111),
+        surface           = Color(0xFFFFFFFF),
         darkSurface       = Color(0xFFF5F5F5),
         lightSurface      = Color(0xFFF5F5F5),
         inputBackground   = Color(0xFFF5F5F5),
         darkInput         = Color(0xFFEEEEEE),
         lightInput        = Color(0xFFEEEEEE),
         inputUnderline    = Color(0xFFBDBDBD),
-        textPrimary       = Color(0xFF121212),
+        textPrimary       = Color(0xFF111111),
         textSecondary     = Color(0xFF616161),
         textHint          = Color(0xFF757575),
         textLabel         = Color(0xFF616161),
@@ -144,13 +144,23 @@ enum class AppTheme(
     RED("Rouge",             Color(0xFFF44336), Color(0xFFEF9A9A)),
     AMBER("Ambre",          Color(0xFFFFC107), Color(0xFFFFE082));
 
-    /** Schéma complet selon le mode système (clair / sombre). */
-    fun resolveScheme(isDark: Boolean): AppColorScheme =
-        if (isDark) {
+    /**
+     * Schéma complet selon le mode système (clair / sombre).
+     * @param secondaryOverride si non null, remplace la couleur secondaire Material (boutons secondaires, etc.).
+     */
+    fun resolveScheme(isDark: Boolean, secondaryOverride: Color? = null): AppColorScheme {
+        val base = if (isDark) {
             buildDarkScheme(displayName, brandPrimary, brandPrimaryDisabled)
         } else {
             buildLightScheme(displayName, brandPrimary, brandPrimaryDisabled)
         }
+        if (secondaryOverride == null) return base
+        val s = secondaryOverride.copy(alpha = 1f)
+        return base.copy(
+            secondary = s,
+            onSecondary = contentOnPrimary(s)
+        )
+    }
 
     companion object {
         fun fromName(name: String): AppTheme =

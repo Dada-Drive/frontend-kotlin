@@ -54,9 +54,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.res.stringResource
 import com.dadadrive.R
 import com.dadadrive.ui.theme.AppColor
-import com.dadadrive.ui.theme.AppTypography
 import com.dadadrive.ui.theme.AppRadius
 import com.dadadrive.ui.theme.AppSpacing
+import com.dadadrive.ui.theme.AppTypography
+import com.dadadrive.ui.theme.LocalAppColors
 import com.dadadrive.ui.theme.lighter
 import com.dadadrive.ui.theme.darker
 
@@ -98,7 +99,7 @@ fun WelcomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColor.background)
+            .background(LocalAppColors.current.background)
     ) {
         Orb(440.dp, 220.dp, 120.dp, orb1.dp, AppColor.green.copy(alpha = 0.22f), 8.dp)
         Orb(320.dp, 160.dp, (-140).dp, orb2.dp, AppColor.green.copy(alpha = 0.12f), 12.dp)
@@ -221,7 +222,7 @@ private fun LogoSection(glow: Float) {
                 append("Dada")
                 withStyle(SpanStyle(color = AppColor.green.copy(alpha = 0.85f))) { append("Drive") }
             },
-            color = AppColor.textPrimary,
+            color = LocalAppColors.current.textPrimary,
             fontSize = 38.sp,
             fontWeight = FontWeight.Black
         )
@@ -261,7 +262,7 @@ private fun BottomSection(
             modifier = Modifier
                 .padding(horizontal = AppSpacing.l)
                 .background(
-                    AppColor.surface.copy(alpha = 0.55f),
+                    LocalAppColors.current.surface.copy(alpha = 0.55f),
                     RoundedCornerShape(28.dp)
                 )
                 .padding(AppSpacing.xl),
@@ -313,8 +314,8 @@ private enum class AuthBtnStyle { Google, Phone }
 @Composable
 private fun AuthButton(style: AuthBtnStyle, isLoading: Boolean, onClick: () -> Unit) {
     val isGoogle = style == AuthBtnStyle.Google
-    val buttonBg = if (isGoogle) AppColor.surface else AppColor.green
-    val labelColor = if (isGoogle) AppColor.textPrimary else Color.Black
+    val buttonBg = if (isGoogle) LocalAppColors.current.surface else AppColor.green
+    val labelColor = if (isGoogle) LocalAppColors.current.textPrimary else Color.Black
     val iconBg = if (isGoogle) Color(0xFFEA4335).copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.18f)
     val iconFg = if (isGoogle) Color(0xFFEA4335) else Color.Black
     val arrowColor = if (isGoogle) AppColor.textHint else Color.Black.copy(alpha = 0.5f)
@@ -394,7 +395,7 @@ private fun DisabledAppleButton() {
             modifier = Modifier
                 .matchParentSize()
                 .clip(RoundedCornerShape(AppRadius.full))
-                .background(AppColor.background.copy(alpha = 0.6f)),
+                .background(LocalAppColors.current.background.copy(alpha = 0.6f)),
             contentAlignment = Alignment.CenterEnd
         ) {
             Text(
@@ -403,7 +404,7 @@ private fun DisabledAppleButton() {
                 style = AppTypography.labelS,
                 modifier = Modifier
                     .padding(end = AppSpacing.m)
-                    .background(AppColor.surface, RoundedCornerShape(AppRadius.full))
+                    .background(LocalAppColors.current.surface, RoundedCornerShape(AppRadius.full))
                     .padding(horizontal = AppSpacing.m, vertical = AppSpacing.xs)
             )
         }
@@ -422,7 +423,7 @@ private fun DividerOr() {
                 .height(1.dp)
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color.Transparent, AppColor.surface, Color.Transparent)
+                        listOf(Color.Transparent, LocalAppColors.current.surface, Color.Transparent)
                     )
                 )
         )
@@ -438,7 +439,7 @@ private fun DividerOr() {
                 .height(1.dp)
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color.Transparent, AppColor.surface, Color.Transparent)
+                        listOf(Color.Transparent, LocalAppColors.current.surface, Color.Transparent)
                     )
                 )
         )

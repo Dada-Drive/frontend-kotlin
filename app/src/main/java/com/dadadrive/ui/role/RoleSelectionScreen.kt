@@ -46,10 +46,14 @@ fun RoleSelectionScreen(
 ) {
     var selectedRole by remember { mutableStateOf<String?>(null) }
     val state by viewModel.state.collectAsState()
+    var hasNavigatedOnSuccess by remember { mutableStateOf(false) }
 
-    // Naviguer vers la carte dès que le rôle est sauvegardé
+    // Une seule navigation : évite les doubles appels si Success est re-lu (recomposition).
     LaunchedEffect(state) {
-        if (state is RoleViewModel.RoleState.Success) onSuccess()
+        if (state is RoleViewModel.RoleState.Success && !hasNavigatedOnSuccess) {
+            hasNavigatedOnSuccess = true
+            onSuccess()
+        }
     }
 
     val c = LocalAppColors.current

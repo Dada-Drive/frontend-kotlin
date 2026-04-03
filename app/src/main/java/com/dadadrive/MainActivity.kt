@@ -1,3 +1,4 @@
+// Équivalent Swift : Presentation/AppCoordinatorView.swift + AuthCoordinatorView (NavHost)
 package com.dadadrive
 
 import android.os.Bundle
@@ -12,7 +13,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.credentials.CredentialManager
@@ -26,16 +26,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dadadrive.core.constants.Constants
+import com.dadadrive.map.MapsInitializer
 import com.dadadrive.ui.auth.AuthState
 import com.dadadrive.ui.auth.AuthViewModel
+import com.dadadrive.ui.auth.NameEntryScreen
 import com.dadadrive.ui.auth.OtpScreen
 import com.dadadrive.ui.auth.PhoneScreen
 import com.dadadrive.ui.auth.WelcomeScreen
+import com.dadadrive.ui.driver.DriverHomeScreen
+import com.dadadrive.ui.driver.DriverSetupScreen
 import com.dadadrive.ui.map.MapScreen
 import com.dadadrive.ui.onboarding.OnboardingScreen
 import com.dadadrive.ui.profile.EditProfileScreen
 import com.dadadrive.ui.profile.ProfileViewModel
 import com.dadadrive.ui.role.RoleSelectionScreen
+import com.dadadrive.ui.session.SessionUiState
 import com.dadadrive.ui.settings.ColorWheelSettingsScreen
 import com.dadadrive.ui.splash.SessionViewModel
 import com.dadadrive.ui.splash.SplashScreen
@@ -45,20 +50,26 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.Color
 
-sealed class Screen(val route: String) {
-    object Splash : Screen("splash")
-    object Onboarding : Screen("onboarding")
-    object Welcome : Screen("welcome")
-    object Phone : Screen("phone")
-    object Otp : Screen("otp/{phone}") {
+private sealed class Screen(val route: String) {
+    data object Splash : Screen("splash")
+    data object Onboarding : Screen("onboarding")
+    data object Welcome : Screen("welcome")
+    data object NameEntry : Screen("name_entry")
+    data object RoleSelection : Screen("role_selection")
+    data object Map : Screen("map")
+    data object DriverHome : Screen("driver_home")
+    data object DriverSetup : Screen("driver_setup")
+    data object EditProfile : Screen("edit_profile")
+    data object ColorSettings : Screen("settings/colors")
+    data object Otp : Screen("otp/{phone}") {
         fun createRoute(phone: String) = "otp/${java.net.URLEncoder.encode(phone, "UTF-8")}"
     }
-    object RoleSelection : Screen("role_selection")
-    object Map : Screen("map")
-    object EditProfile : Screen("edit_profile")
-    object Home : Screen("home")
-    object ColorSettings : Screen("settings/colors")
+    data object Phone : Screen("phone?fromSession={fromSession}") {
+        fun createRoute(fromSession: Boolean) = "phone?fromSession=$fromSession"
+    }
 }
 
 @AndroidEntryPoint
@@ -66,64 +77,68 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        try {
+            MapsInitializer.initialize(applicationContext)
+            Log.d(TAG_HERE_MAPS, "HERE Maps SDK pre-initialized successfully")
+        } catch (e: Exception) {
+            Log.e(TAG_HERE_MAPS, "HERE Maps SDK pre-initialization failed: ${e.message}", e)
+        }
+
         enableEdgeToEdge()
         setContent {
+            val sessionViewModel: SessionViewModel = hiltViewModel()
             val themeViewModel: ThemeViewModel = hiltViewModel()
             val currentTheme by themeViewModel.currentTheme.collectAsState()
+            val customSecondaryArgb by themeViewModel.customSecondaryArgb.collectAsState()
             val darkTheme = isSystemInDarkTheme()
-            val appColors = remember(currentTheme, darkTheme) {
-                currentTheme.resolveScheme(darkTheme)
+            val appColors = remember(currentTheme, darkTheme, customSecondaryArgb) {
+                val secondaryOverride = customSecondaryArgb?.let { argb -> Color(argb) }
+                currentTheme.resolveScheme(darkTheme, secondaryOverride)
             }
 
             DadaDriveTheme(darkTheme = darkTheme, appColors = appColors) {
-                DadaDriveNavHost(themeViewModel = themeViewModel)
+                DadaDriveNavHost(
+                    sessionViewModel = sessionViewModel,
+                    themeViewModel = themeViewModel
+                )
             }
         }
+    }
+
+    private companion object {
+        private const val TAG_HERE_MAPS = "HereMaps"
     }
 }
 
 @Composable
-private fun DadaDriveNavHost(themeViewModel: ThemeViewModel) {
+private fun DadaDriveNavHost(
+    sessionViewModel: SessionViewModel,
+    themeViewModel: ThemeViewModel
+) {
     val navController = rememberNavController()
-
-    // Instance unique de ProfileViewModel partagée entre MapScreen et EditProfileScreen.
-    // Créée ici (hors NavHost) → scoped à l'Activity → même StateFlow pour les deux écrans.
+    var splashDone by remember { mutableStateOf(false) }
+    val sessionUiState by sessionViewModel.sessionState.collectAsState()
     val sharedProfileViewModel: ProfileViewModel = hiltViewModel()
+
+    LaunchedEffect(splashDone, sessionUiState) {
+        if (!splashDone) return@LaunchedEffect
+        if (sessionUiState is SessionUiState.Loading) return@LaunchedEffect
+        val dest = sessionToRoute(sessionUiState) ?: return@LaunchedEffect
+        val current = navController.currentDestination?.route
+        if (routesMatch(current, dest)) return@LaunchedEffect
+        navController.navigate(dest) {
+            popUpTo(Screen.Splash.route) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
 
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
     ) {
         composable(Screen.Splash.route) {
-            val sessionViewModel: SessionViewModel = hiltViewModel()
-            val sessionState by sessionViewModel.state.collectAsState()
-            var splashDone by remember { mutableStateOf(false) }
-
-            // Navigate quand les DEUX conditions sont remplies :
-            // 1. Animation splash terminée  2. Vérification session terminée
-            LaunchedEffect(splashDone, sessionState) {
-                if (splashDone && sessionState != SessionViewModel.SessionState.Checking) {
-                    val destination = when (sessionState) {
-                        SessionViewModel.SessionState.Valid -> Screen.Map.route
-                        else -> Screen.Onboarding.route
-                    }
-                    navController.navigate(destination) {
-                        popUpTo(Screen.Splash.route) { inclusive = true }
-                    }
-                }
-            }
-
             SplashScreen(onSplashFinished = { splashDone = true })
-        }
-
-        composable(Screen.Onboarding.route) {
-            OnboardingScreen(
-                onFinished = {
-                    navController.navigate(Screen.Welcome.route) {
-                        popUpTo(Screen.Onboarding.route) { inclusive = true }
-                    }
-                }
-            )
         }
 
         composable(Screen.Welcome.route) {
@@ -136,14 +151,11 @@ private fun DadaDriveNavHost(themeViewModel: ThemeViewModel) {
                 when (authState) {
                     is AuthState.Success -> {
                         authViewModel.resetState()
-                        navController.navigate(Screen.RoleSelection.route) {
-                            popUpTo(Screen.Welcome.route) { inclusive = true }
-                        }
+                        sessionViewModel.refreshSession()
                     }
                     is AuthState.NeedsPhone -> {
-                        // Google user sans numéro : vérification téléphone d'abord
                         authViewModel.resetState()
-                        navController.navigate(Screen.Phone.route)
+                        navController.navigate(Screen.Phone.createRoute(true))
                     }
                     else -> {}
                 }
@@ -151,54 +163,62 @@ private fun DadaDriveNavHost(themeViewModel: ThemeViewModel) {
 
             WelcomeScreen(
                 authState = authState,
-                onPhoneClick = { navController.navigate(Screen.Phone.route) },
+                onPhoneClick = { navController.navigate(Screen.Onboarding.route) },
                 onGoogleClick = {
                     scope.launch {
                         try {
-                            Log.d("GoogleAuth", "=== DÉBUT GOOGLE SIGN IN ===")
-
                             val credentialManager = CredentialManager.create(context)
-
                             val googleIdOption = GetGoogleIdOption.Builder()
                                 .setFilterByAuthorizedAccounts(false)
                                 .setServerClientId(Constants.GOOGLE_WEB_CLIENT_ID)
                                 .setAutoSelectEnabled(false)
                                 .build()
-
                             val request = GetCredentialRequest.Builder()
                                 .addCredentialOption(googleIdOption)
                                 .build()
-
                             val result = credentialManager.getCredential(context, request)
                             val credential = result.credential
-
-                            // ✅ FIX — utiliser createFrom() au lieu du cast direct
                             if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                                Log.d("GoogleAuth", "Token obtenu avec succès !")
-                                authViewModel.loginWithGoogle(googleIdTokenCredential.idToken)
-                            } else {
-                                Log.e("GoogleAuth", "Type de credential inconnu: ${credential.type}")
+                                val idToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
+                                authViewModel.loginWithGoogle(idToken)
                             }
-
-                        } catch (e: GetCredentialCancellationException) {
-                            Log.w("GoogleAuth", "Annulé par l'utilisateur")
-                        } catch (e: NoCredentialException) {
-                            Log.e("GoogleAuth", "Aucun compte Google: ${e.message}")
+                        } catch (_: GetCredentialCancellationException) {
+                        } catch (_: NoCredentialException) {
                         } catch (e: Exception) {
-                            Log.e("GoogleAuth", "ERREUR: ${e::class.simpleName} — ${e.message}")
-                            Log.e("GoogleAuth", "Stack: ${e.stackTraceToString()}")
+                            Log.e("GoogleAuth", "Error: ${e.message}", e)
                         }
                     }
                 }
             )
         }
 
-        composable(Screen.Phone.route) {
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onFinished = {
+                    navController.navigate(Screen.Phone.createRoute(false)) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = Screen.Phone.route,
+            arguments = listOf(
+                navArgument("fromSession") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { entry ->
+            val fromSession = entry.arguments?.getBoolean("fromSession") ?: false
             val authViewModel: AuthViewModel = hiltViewModel()
             PhoneScreen(
                 authViewModel = authViewModel,
-                onBack = { navController.popBackStack() },
+                onBack = {
+                    if (fromSession) sessionViewModel.forceLogout()
+                    else navController.popBackStack()
+                },
                 onSuccess = { fullPhone ->
                     navController.navigate(Screen.Otp.createRoute(fullPhone))
                 }
@@ -218,38 +238,39 @@ private fun DadaDriveNavHost(themeViewModel: ThemeViewModel) {
                 phone = phone,
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() },
-                onSuccess = {
-                    navController.navigate(Screen.RoleSelection.route) {
-                        popUpTo(Screen.Welcome.route) { inclusive = true }
-                    }
-                }
+                onSuccess = { sessionViewModel.refreshSession() }
             )
         }
 
+        composable(Screen.NameEntry.route) {
+            NameEntryScreen(onContinue = { sessionViewModel.refreshSession() })
+        }
+
         composable(Screen.RoleSelection.route) {
-            RoleSelectionScreen(
-                onSuccess = {
-                    navController.navigate(Screen.Map.route) {
-                        popUpTo(Screen.RoleSelection.route) { inclusive = true }
-                    }
-                }
-            )
+            RoleSelectionScreen(onSuccess = { sessionViewModel.refreshSession() })
+        }
+
+        composable(Screen.DriverSetup.route) {
+            DriverSetupScreen(onComplete = { sessionViewModel.refreshSession() })
         }
 
         composable(Screen.Map.route) {
             MapScreen(
                 profileViewModel = sharedProfileViewModel,
-                onNavigateToEditProfile = {
-                    navController.navigate(Screen.EditProfile.route)
-                },
-                onNavigateToColorSettings = {
-                    navController.navigate(Screen.ColorSettings.route)
-                },
+                onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onNavigateToColorSettings = { navController.navigate(Screen.ColorSettings.route) },
                 onLogout = {
-                    navController.navigate(Screen.Welcome.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
+                    sessionViewModel.forceLogout()
                 }
+            )
+        }
+
+        composable(Screen.DriverHome.route) {
+            DriverHomeScreen(
+                profileViewModel = sharedProfileViewModel,
+                onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onNavigateToColorSettings = { navController.navigate(Screen.ColorSettings.route) },
+                onLogout = { sessionViewModel.forceLogout() }
             )
         }
 
@@ -260,23 +281,6 @@ private fun DadaDriveNavHost(themeViewModel: ThemeViewModel) {
             )
         }
 
-        composable(Screen.Home.route) {
-            MapScreen(
-                profileViewModel = sharedProfileViewModel,
-                onNavigateToEditProfile = {
-                    navController.navigate(Screen.EditProfile.route)
-                },
-                onNavigateToColorSettings = {
-                    navController.navigate(Screen.ColorSettings.route)
-                },
-                onLogout = {
-                    navController.navigate(Screen.Welcome.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
-            )
-        }
-
         composable(Screen.ColorSettings.route) {
             ColorWheelSettingsScreen(
                 onBack = { navController.popBackStack() },
@@ -284,4 +288,24 @@ private fun DadaDriveNavHost(themeViewModel: ThemeViewModel) {
             )
         }
     }
+}
+
+private fun routesMatch(current: String?, dest: String): Boolean {
+    if (current == null) return false
+    val cBase = current.substringBefore('?')
+    val dBase = dest.substringBefore('?')
+    if (cBase != dBase) return false
+    if (!dest.contains('?')) return true
+    return current == dest
+}
+
+private fun sessionToRoute(state: SessionUiState): String? = when (state) {
+    SessionUiState.Loading -> null
+    SessionUiState.Unauthenticated -> Screen.Welcome.route
+    SessionUiState.NeedsPhone -> Screen.Phone.createRoute(true)
+    SessionUiState.NeedsName -> Screen.NameEntry.route
+    SessionUiState.NeedsRole -> Screen.RoleSelection.route
+    SessionUiState.NeedsDriverSetup -> Screen.DriverSetup.route
+    is SessionUiState.Authenticated ->
+        if (state.user.role == "driver") Screen.DriverHome.route else Screen.Map.route
 }

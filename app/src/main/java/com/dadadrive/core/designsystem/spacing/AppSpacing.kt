@@ -1,54 +1,45 @@
 package com.dadadrive.core.designsystem.spacing
 
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-// ─────────────────────────────────────────────────────────
-// DESIGN SYSTEM – SPACING
-// ─────────────────────────────────────────────────────────
-
 /**
- * Spacing tokens used throughout the DadaDrive design system.
- *
- * Use these constants instead of raw [Dp] values to ensure consistent
- * spacing across the entire app.
- *
- * Scale (base-4):
- *  none  =  0 dp
- *  xxs   =  2 dp
- *  xs    =  4 dp
- *  sm    =  8 dp
- *  md    = 12 dp
- *  lg    = 16 dp
- *  xl    = 24 dp
- *  xxl   = 32 dp
- *  xxxl  = 48 dp
- *  huge  = 64 dp
+ * Spacing tokens matching Swift AppSpacing: xs=4, s=8, m=12, l=16, xl=24, xxl=32, xxxl=48.
  */
 object AppSpacing {
-    val none: Dp = 0.dp
-    val xxs: Dp = 2.dp
-    val xs: Dp = 4.dp
-    val sm: Dp = 8.dp
-    val md: Dp = 12.dp
-    val lg: Dp = 16.dp
-    val xl: Dp = 24.dp
-    val xxl: Dp = 32.dp
-    val xxxl: Dp = 48.dp
-    val huge: Dp = 64.dp
+    val xxs = 4.dp
+    val xs = 4.dp
+    val s = 8.dp
+    val m = 12.dp
+    val l = 16.dp
+    val xl = 24.dp
+    val xxl = 32.dp
+    val xxxl = 48.dp
 
-    // ── Screen-level padding ──────────────────────────────
-    /** Standard horizontal screen padding. */
-    val screenHorizontal: Dp = 24.dp
-    /** Standard vertical screen padding. */
-    val screenVertical: Dp = 16.dp
+    /** Legacy aliases for existing components */
+    val sm = m
+    val md = l
+    val lg = xl
 
-    // ── Component-specific ────────────────────────────────
-    val buttonHeight: Dp = 56.dp
-    val buttonRadius: Dp = 28.dp
-    val inputRadius: Dp = 12.dp
-    val cardRadius: Dp = 16.dp
-    val iconSizeSmall: Dp = 16.dp
-    val iconSizeMedium: Dp = 24.dp
-    val iconSizeLarge: Dp = 32.dp
+    val inputRadius = 12.dp
+    val buttonRadius = 999.dp
+    val buttonHeight = 54.dp
+    val cardRadius = 16.dp
+    val sheetRadius = 20.dp
+
+    val screenHorizontal = 20.dp
+    val screenVertical = 24.dp
+}
+
+object AppRadius {
+    val s = 6.dp
+    val m = 12.dp
+    val l = 20.dp
+    val full = 999.dp
+}
+
+object AppIconSize {
+    val s = 16.dp
+    val m = 24.dp
+    val l = 32.dp
+    val xl = 48.dp
 }

@@ -26,5 +26,6 @@ data class OtpUserDto(
     @SerializedName("full_name") val fullName: String?,
     val email: String?,
     val phone: String?,
-    val role: String
+    val role: String,
+    @SerializedName("avatar_url") val avatarUrl: String? = null
 )

@@ -1,3 +1,4 @@
+// Équivalent Swift : Presentation/AppCoordinatorViewModel.swift (+ effet TokenStore sur erreur getMe)
 package com.dadadrive.ui.splash
 
 import android.util.Log
@@ -5,8 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dadadrive.data.local.TokenManager
 import com.dadadrive.data.local.UserManager
+import com.dadadrive.data.remote.AuthNavigationEvents
 import com.dadadrive.data.remote.api.AuthApiService
+import com.dadadrive.data.remote.model.toDomainUser
 import com.dadadrive.domain.model.User
+import com.dadadrive.domain.repository.AuthRepository
+import com.dadadrive.domain.repository.DriverRepository
+import com.dadadrive.ui.session.SessionUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,85 +25,81 @@ import javax.inject.Inject
 class SessionViewModel @Inject constructor(
     private val tokenManager: TokenManager,
     private val authApiService: AuthApiService,
-    private val userManager: UserManager
+    private val userManager: UserManager,
+    private val driverRepository: DriverRepository,
+    private val authRepository: AuthRepository,
+    private val authNavigationEvents: AuthNavigationEvents
 ) : ViewModel() {
 
-    sealed class SessionState {
-        object Checking : SessionState()
-        object Valid    : SessionState()   // Session OK → MapScreen
-        object Invalid  : SessionState()   // Pas de token ou token révoqué → WelcomeScreen
-    }
-
-    private val _state = MutableStateFlow<SessionState>(SessionState.Checking)
-    val state: StateFlow<SessionState> = _state.asStateFlow()
+    private val _sessionState = MutableStateFlow<SessionUiState>(SessionUiState.Loading)
+    val sessionState: StateFlow<SessionUiState> = _sessionState.asStateFlow()
 
     init {
-        checkSession()
-    }
-
-    /**
-     * Vérifie si la session est toujours valide :
-     *
-     * 1. Pas de token enregistré                 → Invalid (afficher WelcomeScreen)
-     * 2. Token présent + API /me répond 200       → Valid   (données user rafraîchies)
-     * 3. Token présent + API répond 401 / 403     → Invalid + tokens effacés (token révoqué/expiré)
-     * 4. Token présent + erreur réseau ou serveur → Valid   avec données en cache
-     *    (l'utilisateur reste connecté en mode offline)
-     */
-    private fun checkSession() {
         viewModelScope.launch {
-            val token = tokenManager.getAccessToken()
-
-            // ── Étape 1 : pas de token → déconnecté ──────────────────────────────
-            if (token.isNullOrBlank()) {
-                _state.value = SessionState.Invalid
-                return@launch
-            }
-
-            // ── Étape 2 : lire le cache local (utilisé comme fallback) ────────────
-            val cachedUser = userManager.getUser()
-
-            // ── Étape 3 : valider le token auprès du serveur ──────────────────────
-            try {
-                val userDto = authApiService.getMe()
-
-                // Succès : on met à jour les données locales avec les infos fraîches
-                userManager.saveUser(
-                    User(
-                        id               = userDto.id,
-                        fullName         = userDto.fullName,
-                        email            = userDto.email        ?: "",
-                        phoneNumber      = userDto.phoneNumber  ?: "",
-                        role             = userDto.role.ifBlank { "rider" },
-                        profilePictureUri = userDto.avatarUrl
-                    )
-                )
-                _state.value = SessionState.Valid
-
-            } catch (e: HttpException) {
-                when (e.code()) {
-                    // 401 / 403 → token explicitement invalide ou révoqué par le serveur
-                    401, 403 -> {
-                        Log.w("Session", "Token invalide (${e.code()}) → déconnexion forcée")
-                        tokenManager.clearTokens()
-                        userManager.clearUser()
-                        _state.value = SessionState.Invalid
-                    }
-                    // Autre erreur HTTP (500, 503…) → serveur en erreur, pas l'utilisateur
-                    else -> {
-                        Log.w("Session", "Erreur serveur (${e.code()}) → session cache conservée")
-                        _state.value = if (cachedUser != null) SessionState.Valid
-                                       else SessionState.Invalid
-                    }
-                }
-
-            } catch (e: Exception) {
-                // Pas de réseau, timeout, hôte injoignable, rebuild sans serveur…
-                // → on conserve la session grâce aux données en cache
-                Log.w("Session", "Erreur réseau (${e.message}) → fallback cache")
-                _state.value = if (cachedUser != null) SessionState.Valid
-                               else SessionState.Invalid
+            authNavigationEvents.forceLogout.collect {
+                tokenManager.clearTokens()
+                userManager.clearUser()
+                _sessionState.value = SessionUiState.Unauthenticated
             }
         }
+        refreshSession()
+    }
+
+    fun refreshSession() {
+        viewModelScope.launch {
+            _sessionState.value = SessionUiState.Loading
+            val token = tokenManager.getAccessToken()
+            if (token.isNullOrBlank()) {
+                _sessionState.value = SessionUiState.Unauthenticated
+                return@launch
+            }
+            try {
+                val me = authApiService.getMe()
+                val dto = me.user
+                val user = dto.toDomainUser()
+                userManager.saveUser(user)
+                _sessionState.value = nextStateAfterMe(dto.phone, dto.fullName, dto.role, user)
+            } catch (e: Exception) {
+                Log.w("Session", "getMe failed: ${e.message}")
+                tokenManager.clearTokens()
+                userManager.clearUser()
+                _sessionState.value = SessionUiState.Unauthenticated
+            }
+        }
+    }
+
+    private suspend fun nextStateAfterMe(
+        phone: String?,
+        fullName: String?,
+        roleRaw: String,
+        user: User
+    ): SessionUiState {
+        if (phone.isNullOrBlank()) return SessionUiState.NeedsPhone
+        if (fullName.isNullOrBlank()) return SessionUiState.NeedsName
+        val role = roleRaw.ifBlank { "rider" }
+        if (role == "pending") return SessionUiState.NeedsRole
+        if (role == "driver") {
+            val profile = driverRepository.getProfile()
+            val vehicle = driverRepository.getVehicle()
+            // 404 = profil / véhicule pas encore créés → onboarding driver (pas une erreur fatale).
+            val onboardingIncomplete = profile.isHttpNotFound() || vehicle.isHttpNotFound() ||
+                profile.isFailure || vehicle.isFailure
+            if (onboardingIncomplete) {
+                return SessionUiState.NeedsDriverSetup
+            }
+        }
+        return SessionUiState.Authenticated(user)
+    }
+
+    fun forceLogout() {
+        viewModelScope.launch {
+            runCatching { authRepository.logout() }
+            _sessionState.value = SessionUiState.Unauthenticated
+        }
+    }
+
+    private fun <T> Result<T>.isHttpNotFound(): Boolean {
+        val e = exceptionOrNull() ?: return false
+        return e is HttpException && e.code() == 404
     }
 }

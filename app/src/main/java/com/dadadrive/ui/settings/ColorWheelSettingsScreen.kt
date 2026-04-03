@@ -29,13 +29,17 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +49,7 @@ import com.dadadrive.ui.theme.AppTheme
 import com.dadadrive.ui.theme.LocalAppColors
 import com.dadadrive.ui.theme.ThemeViewModel
 import com.dadadrive.ui.theme.allColorEntries
+import com.dadadrive.R
 
 @Composable
 fun ColorWheelSettingsScreen(
@@ -53,8 +58,12 @@ fun ColorWheelSettingsScreen(
 ) {
     val colors      = LocalAppColors.current
     val currentTheme by themeViewModel.currentTheme.collectAsState()
+    val customSecondaryArgb by themeViewModel.customSecondaryArgb.collectAsState()
     val systemDark  = isSystemInDarkTheme()
-    val previewScheme = currentTheme.resolveScheme(systemDark)
+    val previewScheme = currentTheme.resolveScheme(
+        systemDark,
+        customSecondaryArgb?.let { Color(it) }
+    )
 
     Box(
         modifier = Modifier
@@ -123,6 +132,16 @@ fun ColorWheelSettingsScreen(
                     isSelected = theme == currentTheme,
                     onSelect = { themeViewModel.setTheme(theme) },
                     modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            item {
+                SecondaryColorSection(
+                    themeViewModel = themeViewModel,
+                    currentTheme = currentTheme,
+                    systemDark = systemDark,
+                    customSecondaryArgb = customSecondaryArgb,
+                    modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp)
                 )
             }
 
@@ -201,11 +220,10 @@ private fun ThemePreviewCard(
                         .height(28.dp)
                         .weight(1f)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(scheme.darkInput)
-                        .border(1.dp, scheme.primary.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
+                        .background(scheme.secondary),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Annuler", color = scheme.textSecondary, fontSize = 10.sp)
+                    Text("Secondaire", color = scheme.onSecondary, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -362,6 +380,134 @@ private fun ColorTokenRow(
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+private data class SecondaryPreset(val argb: Int?, val labelRes: Int)
+
+private fun argbRgb(r: Int, g: Int, b: Int): Int =
+    (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+
+@Composable
+private fun SecondaryColorSection(
+    themeViewModel: ThemeViewModel,
+    currentTheme: AppTheme,
+    systemDark: Boolean,
+    customSecondaryArgb: Int?,
+    modifier: Modifier = Modifier
+) {
+    val c = LocalAppColors.current
+    val defaultSecondary = currentTheme.resolveScheme(systemDark, null).secondary
+    val presets = remember {
+        listOf(
+            SecondaryPreset(null, R.string.secondary_preset_auto),
+            SecondaryPreset(argbRgb(96, 125, 139), R.string.secondary_preset_slate),
+            SecondaryPreset(argbRgb(84, 110, 122), R.string.secondary_preset_blue_grey),
+            SecondaryPreset(argbRgb(0, 137, 123), R.string.secondary_preset_teal),
+            SecondaryPreset(argbRgb(92, 107, 192), R.string.secondary_preset_indigo),
+            SecondaryPreset(argbRgb(255, 112, 67), R.string.secondary_preset_coral),
+            SecondaryPreset(argbRgb(142, 36, 170), R.string.secondary_preset_plum),
+            SecondaryPreset(argbRgb(255, 193, 7), R.string.secondary_preset_amber),
+            SecondaryPreset(argbRgb(0, 191, 165), R.string.secondary_preset_mint)
+        )
+    }
+    Column(modifier) {
+        Text(
+            text = stringResource(R.string.settings_secondary_title).uppercase(),
+            color = c.textHint,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 1.sp,
+            modifier = Modifier.padding(bottom = 6.dp)
+        )
+        Text(
+            text = stringResource(R.string.settings_secondary_subtitle),
+            color = c.textSecondary,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+        presets.chunked(4).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                row.forEach { preset ->
+                    SecondaryPresetChip(
+                        label = stringResource(preset.labelRes),
+                        swatchColor = if (preset.argb == null) defaultSecondary else Color(preset.argb),
+                        selected = if (preset.argb == null) {
+                            customSecondaryArgb == null
+                        } else {
+                            preset.argb == customSecondaryArgb
+                        },
+                        onClick = {
+                            if (preset.argb == null) themeViewModel.clearCustomSecondary()
+                            else themeViewModel.setCustomSecondaryArgb(preset.argb)
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                repeat(4 - row.size) {
+                    Spacer(Modifier.weight(1f))
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+        }
+        TextButton(
+            onClick = { themeViewModel.clearCustomSecondary() },
+            enabled = customSecondaryArgb != null,
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            Text(stringResource(R.string.settings_secondary_reset), color = c.primary)
+        }
+    }
+}
+
+@Composable
+private fun SecondaryPresetChip(
+    label: String,
+    swatchColor: Color,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val c = LocalAppColors.current
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(swatchColor)
+                .border(
+                    width = if (selected) 3.dp else 1.dp,
+                    color = if (selected) c.primary else Color.Black.copy(alpha = 0.18f),
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            if (selected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = if (swatchColor.luminance() > 0.55f) Color.Black else Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = label,
+            color = c.textSecondary,
+            fontSize = 10.sp,
+            maxLines = 2,
+            lineHeight = 12.sp
         )
     }
 }

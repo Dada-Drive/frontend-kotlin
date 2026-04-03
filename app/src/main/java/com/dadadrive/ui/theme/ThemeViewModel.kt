@@ -19,9 +19,23 @@ class ThemeViewModel @Inject constructor(
     private val _currentTheme = MutableStateFlow(loadSavedTheme())
     val currentTheme: StateFlow<AppTheme> = _currentTheme.asStateFlow()
 
+    /** `null` = couleur secondaire par défaut du thème clair/sombre. */
+    private val _customSecondaryArgb = MutableStateFlow(loadCustomSecondaryArgb())
+    val customSecondaryArgb: StateFlow<Int?> = _customSecondaryArgb.asStateFlow()
+
     fun setTheme(theme: AppTheme) {
         _currentTheme.value = theme
         prefs.edit().putString(KEY_THEME, theme.name).apply()
+    }
+
+    fun setCustomSecondaryArgb(argb: Int) {
+        _customSecondaryArgb.value = argb
+        prefs.edit().putInt(KEY_SECONDARY_ARGB, argb).apply()
+    }
+
+    fun clearCustomSecondary() {
+        _customSecondaryArgb.value = null
+        prefs.edit().remove(KEY_SECONDARY_ARGB).apply()
     }
 
     private fun loadSavedTheme(): AppTheme {
@@ -29,8 +43,14 @@ class ThemeViewModel @Inject constructor(
         return AppTheme.fromName(saved)
     }
 
+    private fun loadCustomSecondaryArgb(): Int? {
+        if (!prefs.contains(KEY_SECONDARY_ARGB)) return null
+        return prefs.getInt(KEY_SECONDARY_ARGB, 0)
+    }
+
     companion object {
         private const val PREFS_NAME = "dadadrive_prefs"
-        private const val KEY_THEME  = "app_theme"
+        private const val KEY_THEME = "app_theme"
+        private const val KEY_SECONDARY_ARGB = "custom_secondary_argb"
     }
 }

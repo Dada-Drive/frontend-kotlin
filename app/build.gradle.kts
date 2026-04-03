@@ -93,8 +93,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.material)
-    // Sous-ensemble d’icônes Material (~170) : évite material-icons-extended (~2 Mo+ de bytecode).
     implementation("androidx.compose.material:material-icons-core")
+    // Icônes carte / calques (sélecteur de fond, parité Swift MapTypePickerPanel).
+    implementation("androidx.compose.material:material-icons-extended")
 
     // Hilt
     implementation(libs.hilt.android)
@@ -115,6 +116,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     // Coil — chargement d'images (photos de profil)
     implementation("io.coil-kt:coil-compose:2.7.0")
+    // Équivalent Swift : TokenStore.swift (stockage chiffré)
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation(files("libs/heresdk-explore-android-4.25.5.0.274356.aar"))
 
 

@@ -1,4 +1,6 @@
 GOOGLE_WEB_CLIENT_ID=
+# Même convention que Swift AppConstants.API.baseURL : suffixe /api/ (slash final pour Retrofit)
+# Ex. https://api.dadadrive.tn/api/
 BASE_URL=
 HERE_ACCESS_KEY_ID=
 HERE_ACCESS_KEY_SECRET=

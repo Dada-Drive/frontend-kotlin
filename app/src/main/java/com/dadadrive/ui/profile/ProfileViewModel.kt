@@ -10,6 +10,7 @@ import com.dadadrive.data.remote.api.AuthApiService
 import com.dadadrive.data.remote.cloudinary.CloudinaryManager
 import com.dadadrive.data.remote.model.UpdateProfileRequest
 import com.dadadrive.domain.model.User
+import com.dadadrive.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,14 +24,14 @@ class ProfileViewModel @Inject constructor(
     private val userManager: UserManager,
     private val tokenManager: TokenManager,
     private val authApiService: AuthApiService,
-    private val cloudinaryManager: CloudinaryManager
+    private val cloudinaryManager: CloudinaryManager,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     sealed class SaveState {
         object Idle : SaveState()
         object Loading : SaveState()
         object Success : SaveState()
-        /** Nom sauvegardé mais photo échouée — affiche un warning et revient quand même. */
         data class PartialSuccess(val warning: String) : SaveState()
         data class Error(val message: String) : SaveState()
     }
@@ -50,22 +51,21 @@ class ProfileViewModel @Inject constructor(
     }
 
     /**
-     * Sauvegarde le profil :
-     * 1. Si une nouvelle photo est fournie → upload Cloudinary (stratégie overwrite)
-     * 2. Appel PATCH /api/users/me avec le nom et l'URL Cloudinary
-     * 3. Mise à jour locale via UserManager
+     * Save profile:
+     * 1. Upload new photo to Cloudinary if provided (overwrite strategy)
+     * 2. PATCH /api/users/me with name and Cloudinary URL
+     * 3. Update local user via UserManager
      *
-     * Non-bloquant sur Cloudinary : si l'upload échoue, le nom est quand même sauvegardé.
+     * Non-blocking on Cloudinary: if upload fails, name is still saved.
      */
     fun saveProfile(fullName: String, localAvatarUri: String? = null) {
         if (fullName.isBlank()) return
         viewModelScope.launch {
             _saveState.value = SaveState.Loading
 
-            // ── 1. Upload photo vers Cloudinary si nécessaire ────────────────
+            // 1. Upload photo to Cloudinary if needed
             val userId = _user.value?.id ?: ""
             var finalAvatarUrl: String? = _user.value?.profilePictureUri
-
             var photoUploadError: String? = null
 
             if (localAvatarUri != null && userId.isNotBlank()) {
@@ -74,15 +74,15 @@ class ProfileViewModel @Inject constructor(
                     .onSuccess { cloudUrl ->
                         finalAvatarUrl = cloudUrl
                         userManager.saveCloudinaryPublicId(publicId)
-                        Log.i("ProfileVM", "Photo uploadée : $cloudUrl")
+                        Log.i("ProfileVM", "Photo uploaded: $cloudUrl")
                     }
                     .onFailure { e ->
-                        photoUploadError = e.message ?: "erreur inconnue"
-                        Log.e("ProfileVM", "Upload Cloudinary échoué : ${e.message}", e)
+                        photoUploadError = e.message ?: "unknown error"
+                        Log.e("ProfileVM", "Cloudinary upload failed: ${e.message}", e)
                     }
             }
 
-            // ── 2. Appel backend PATCH /api/users/me ──────────────────────────
+            // 2. Call backend PATCH /api/users/me
             try {
                 val response = authApiService.updateProfile(
                     UpdateProfileRequest(
@@ -91,28 +91,27 @@ class ProfileViewModel @Inject constructor(
                     )
                 )
                 val updated = _user.value?.copy(
-                    fullName = response.user.fullName,
+                    fullName = response.user.fullName ?: fullName.trim(),
                     profilePictureUri = finalAvatarUrl ?: _user.value?.profilePictureUri
                 ) ?: return@launch
 
                 userManager.saveUser(updated)
                 _user.value = userManager.getUser()
 
-                // Si la photo a échoué, revenir quand même mais afficher un avertissement
                 _saveState.value = if (photoUploadError != null) {
-                    SaveState.PartialSuccess("Photo non sauvegardée : $photoUploadError")
+                    SaveState.PartialSuccess("Photo not saved: $photoUploadError")
                 } else {
                     SaveState.Success
                 }
             } catch (e: HttpException) {
                 val msg = when (e.code()) {
-                    400 -> "Nom invalide ou manquant."
-                    401 -> "Session expirée. Reconnectez-vous."
-                    else -> "Erreur serveur (${e.code()})."
+                    400 -> "Invalid or missing name."
+                    401 -> "Session expired. Please log in again."
+                    else -> "Server error (${e.code()})."
                 }
                 _saveState.value = SaveState.Error(msg)
             } catch (e: Exception) {
-                // Pas de réseau → sauvegarder localement quand même
+                // No network → save locally anyway
                 userManager.updateFullName(fullName.trim())
                 if (finalAvatarUrl != null) userManager.updateAvatarUri(finalAvatarUrl!!)
                 _user.value = userManager.getUser()
@@ -121,8 +120,12 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun logout() {
-        tokenManager.clearTokens()
-        userManager.clearUser()
+    /** Équivalent Swift : AuthRepository.logout (MenuSheet). */
+    fun logout(onFinished: () -> Unit = {}) {
+        viewModelScope.launch {
+            runCatching { authRepository.logout() }
+            _user.value = null
+            onFinished()
+        }
     }
 }

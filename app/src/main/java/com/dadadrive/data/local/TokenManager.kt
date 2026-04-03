@@ -1,7 +1,10 @@
+// Équivalent Swift : TokenStore.swift (Keychain — ici EncryptedSharedPreferences)
 package com.dadadrive.data.local
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.dadadrive.core.constants.Constants
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -11,8 +14,15 @@ import javax.inject.Singleton
 class TokenManager @Inject constructor(
     @ApplicationContext context: Context
 ) {
-    private val prefs: SharedPreferences =
-        context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = EncryptedSharedPreferences.create(
+        context,
+        ENCRYPTED_PREFS_NAME,
+        MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
 
     fun saveTokens(accessToken: String, refreshToken: String) {
         prefs.edit()
@@ -30,5 +40,9 @@ class TokenManager @Inject constructor(
             .remove(Constants.PREFS_AUTH_TOKEN)
             .remove(Constants.PREFS_REFRESH_TOKEN)
             .apply()
+    }
+
+    private companion object {
+        private const val ENCRYPTED_PREFS_NAME = "dadadrive_encrypted_tokens"
     }
 }

@@ -1,3 +1,4 @@
+// Équivalent Swift : APIClient.swift — en-tête Authorization Bearer sur les requêtes
 package com.dadadrive.data.remote.interceptor
 
 import com.dadadrive.data.local.TokenManager
@@ -6,12 +7,8 @@ import okhttp3.Response
 import javax.inject.Inject
 
 /**
- * Ajoute automatiquement le header "Authorization: Bearer <token>" à chaque requête
- * si un token est disponible en local.
- *
- * - Si la requête a déjà un header Authorization (ex: @Header manuel), on ne le remplace pas.
- * - Les endpoints avec optionalProtect (sendOtp, verifyOtp) bénéficieront du token
- *   quand l'utilisateur est déjà connecté (ex: Google → ajout du numéro de téléphone).
+ * Ajoute "Authorization: Bearer <accessToken>" si un token est présent (comme TokenStore + APIClient Swift).
+ * Ne remplace pas un header Authorization déjà défini.
  */
 class AuthInterceptor @Inject constructor(
     private val tokenManager: TokenManager
@@ -20,7 +17,6 @@ class AuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val original = chain.request()
 
-        // Ne pas remplacer un Authorization déjà défini manuellement
         if (original.header("Authorization") != null) {
             return chain.proceed(original)
         }

@@ -7,15 +7,8 @@ import android.graphics.Bitmap
 import android.view.ViewGroup
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.TextButton
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,17 +34,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -59,8 +49,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -78,13 +66,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -121,8 +109,10 @@ import com.here.sdk.mapview.MapMarker as HereMapMarker
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView as HereMapView
+import com.dadadrive.core.pricing.RiderFareEstimate
 import com.dadadrive.ui.profile.ProfileViewModel
 import com.dadadrive.ui.theme.LocalAppColors
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -140,6 +130,12 @@ fun MapScreen(
     val pickTargetAddress     by viewModel.pickTargetAddress.collectAsState()
     val confirmedDestination  by viewModel.confirmedDestination.collectAsState()
     val destinationLabel      by viewModel.destinationLabel.collectAsState()
+    val addressSearchResults  by viewModel.addressSearchResults.collectAsState()
+    val addressSearchLoading  by viewModel.addressSearchLoading.collectAsState()
+    val pickupSearchResults   by viewModel.pickupSearchResults.collectAsState()
+    val pickupSearchLoading   by viewModel.pickupSearchLoading.collectAsState()
+    val pickupOverrideLabel   by viewModel.pickupOverrideLabel.collectAsState()
+    val riderFareEstimate     by viewModel.riderFareEstimate.collectAsState()
     val user                  by profileViewModel.user.collectAsState()
 
     var showProfileSheet by remember { mutableStateOf(false) }
@@ -149,9 +145,13 @@ fun MapScreen(
     var mapPickerMode  by remember { mutableStateOf(false) }
     val routeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var destinationFieldDraft by remember { mutableStateOf("") }
+    var originFieldDraft by remember { mutableStateOf("") }
 
-    LaunchedEffect(destinationLabel) {
-        destinationFieldDraft = destinationLabel.orEmpty()
+    LaunchedEffect(showRouteSheet) {
+        if (showRouteSheet) {
+            originFieldDraft = (pickupOverrideLabel ?: currentAddress).orEmpty()
+            destinationFieldDraft = destinationLabel.orEmpty()
+        }
     }
 
     var locationPermissionGranted by remember {
@@ -215,6 +215,8 @@ fun MapScreen(
     Box(modifier = Modifier.fillMaxSize()) {
 
         val useDarkMap = isSystemInDarkTheme()
+        var mapDisplayMode by remember { mutableStateOf(AppMapDisplayMode.NORMAL) }
+        var showMapTypePicker by remember { mutableStateOf(false) }
 
         val avatarUrl = user?.profilePictureUri
         val profileInitials = remember(user?.fullName) {
@@ -232,6 +234,7 @@ fun MapScreen(
             confirmedDestination = if (mapPickerMode) null else confirmedDestination,
             sceneLoaded          = sceneLoaded,
             useDarkMap           = useDarkMap,
+            mapDisplayMode       = mapDisplayMode,
             profilePictureUri    = user?.profilePictureUri,
             profileInitials      = profileInitials,
             onPickTargetUpdated  = if (mapPickerMode) viewModel::updatePickTarget else null,
@@ -255,138 +258,15 @@ fun MapScreen(
         }
 
         if (!mapPickerMode) {
-            val infiniteTransition = rememberInfiniteTransition(label = "avatar_pulse")
-            val pulse1 by infiniteTransition.animateFloat(
-                initialValue = 1f, targetValue = 1.8f,
-                animationSpec = infiniteRepeatable(tween(1600, easing = LinearEasing), RepeatMode.Restart),
-                label = "pulse1"
+            MapHomeTopHeader(
+                avatarUrl = avatarUrl,
+                profileInitials = profileInitials,
+                onProfileClick = { showProfileSheet = true },
+                onSearchClick = { showRouteSheet = true },
+                onNotificationsClick = { /* TODO: notifications */ },
+                showOfflineStatusBadge = false,
+                modifier = Modifier.align(Alignment.TopCenter)
             )
-            val pulse1Alpha by infiniteTransition.animateFloat(
-                initialValue = 0.5f, targetValue = 0f,
-                animationSpec = infiniteRepeatable(tween(1600, easing = LinearEasing), RepeatMode.Restart),
-                label = "pulse1alpha"
-            )
-            val pulse2 by infiniteTransition.animateFloat(
-                initialValue = 1f, targetValue = 2.2f,
-                animationSpec = infiniteRepeatable(tween(2200, easing = LinearEasing, delayMillis = 800), RepeatMode.Restart),
-                label = "pulse2"
-            )
-            val pulse2Alpha by infiniteTransition.animateFloat(
-                initialValue = 0.5f, targetValue = 0f,
-                animationSpec = infiniteRepeatable(tween(2200, easing = LinearEasing, delayMillis = 800), RepeatMode.Restart),
-                label = "pulse2alpha"
-            )
-
-            val green    = Color(0xFF80C000)
-            val dotSize  = 46.dp
-            val totalSize = 100.dp
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .statusBarsPadding()
-                    .padding(start = 16.dp, top = 8.dp)
-                    .size(totalSize),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(dotSize + 8.dp)
-                        .scale(pulse2)
-                        .background(Color.Transparent, CircleShape)
-                        .border(2.dp, green.copy(alpha = pulse2Alpha), CircleShape)
-                )
-                Box(
-                    modifier = Modifier
-                        .size(dotSize + 8.dp)
-                        .scale(pulse1)
-                        .background(Color.Transparent, CircleShape)
-                        .border(2.dp, green.copy(alpha = pulse1Alpha), CircleShape)
-                )
-                Box(modifier = Modifier.size(dotSize + 4.dp).background(green, CircleShape))
-                Box(modifier = Modifier.size(dotSize + 2.dp).background(Color.White, CircleShape))
-                Box(
-                    modifier = Modifier
-                        .size(dotSize)
-                        .clip(CircleShape)
-                        .background(Color(0xFF262629))
-                        .clickable { showProfileSheet = true },
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (!avatarUrl.isNullOrBlank()) {
-                        AsyncImage(
-                            model = avatarUrl,
-                            contentDescription = "Photo de profil",
-                            modifier = Modifier.fillMaxSize().clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Text(profileInitials, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 22.dp, bottom = 22.dp)
-                        .size(13.dp)
-                        .background(green, CircleShape)
-                        .border(2.dp, Color.White, CircleShape)
-                )
-            }
-
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .statusBarsPadding()
-                    .padding(top = 10.dp),
-                shape = RoundedCornerShape(28.dp),
-                color = Color(0xCC5B5B5B)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(22.dp)
-                            .background(Color(0xFF8BCF26), RoundedCornerShape(6.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "D",
-                            color = Color.Black,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Text(
-                        text = "DadaDrive",
-                        color = LocalAppColors.current.textPrimary,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp
-                    )
-                }
-            }
-
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .statusBarsPadding()
-                    .padding(end = 16.dp, top = 10.dp)
-                    .size(52.dp),
-                shape = CircleShape,
-                color = Color(0xCC5B5B5B)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = "Notifications",
-                        tint = LocalAppColors.current.textPrimary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            }
         }
 
         if (mapPickerMode) {
@@ -423,13 +303,51 @@ fun MapScreen(
                 }
             )
         } else {
-            BottomSearchBar(
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .navigationBarsPadding()
-                    .imePadding(),
-                onWhereToClick = { showRouteSheet = true }
-            )
+                    .imePadding()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                MapFloatingControlsRow(
+                    showMapTypePicker = showMapTypePicker,
+                    mapDisplayMode = mapDisplayMode,
+                    onMapDisplayModeChange = { mapDisplayMode = it },
+                    onToggleMapTypePicker = { showMapTypePicker = !showMapTypePicker },
+                    onRecenterClick = {
+                        currentLocation?.let { loc ->
+                            mapViewRef.value?.camera?.lookAt(
+                                loc,
+                                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, 16.0)
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    compact = true,
+                    anchorUnderStatusBar = false
+                )
+                // Équivalent Swift : DestinationConfirmedCard.swift — Request Ride = TODO
+                if (confirmedDestination != null) {
+                    RiderDestinationConfirmedBar(
+                        pickupTitle = pickupOverrideLabel ?: currentAddress ?: "Pickup location",
+                        destinationTitle = destinationLabel.orEmpty(),
+                        fareEstimate = riderFareEstimate,
+                        onChangeDestination = {
+                            viewModel.clearConfirmedDestination()
+                            viewModel.clearAddressSearchResults()
+                            viewModel.clearPickupSearchResults()
+                            showRouteSheet = true
+                        }
+                    )
+                }
+                RiderBottomRouteEntryBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    onOpenRouteSheet = { showRouteSheet = true }
+                )
+            }
         }
 
         if (showProfileSheet) {
@@ -441,15 +359,18 @@ fun MapScreen(
                 onColorSettings = { showProfileSheet = false; onNavigateToColorSettings() },
                 onLogout = {
                     showProfileSheet = false
-                    profileViewModel.logout()
-                    onLogout()
+                    profileViewModel.logout(onFinished = onLogout)
                 }
             )
         }
 
         if (showRouteSheet) {
             ModalBottomSheet(
-                onDismissRequest = { showRouteSheet = false },
+                onDismissRequest = {
+                    showRouteSheet = false
+                    viewModel.clearPickupSearchResults()
+                    viewModel.clearAddressSearchResults()
+                },
                 sheetState = routeSheetState,
                 containerColor = LocalAppColors.current.surfaceElevated,
                 dragHandle = {
@@ -462,13 +383,38 @@ fun MapScreen(
                 }
             ) {
                 RouteItinerarySheetContent(
-                    originAddress = currentAddress,
-                    destinationValue = destinationFieldDraft,
-                    onDestinationValueChange = { v ->
-                        destinationFieldDraft = v
-                        viewModel.updateDestinationLabelInput(v)
+                    originValue = originFieldDraft,
+                    onOriginChange = { text ->
+                        originFieldDraft = text
+                        if (text.isBlank()) viewModel.clearPickupOverride()
+                        else viewModel.schedulePickupSearch(text)
                     },
-                    onClose = { showRouteSheet = false },
+                    destinationValue = destinationFieldDraft,
+                    onDestinationChange = { text ->
+                        destinationFieldDraft = text
+                        viewModel.scheduleAddressSearch(text)
+                    },
+                    pickupResults = pickupSearchResults,
+                    pickupSearchLoading = pickupSearchLoading,
+                    destinationResults = addressSearchResults,
+                    destinationSearchLoading = addressSearchLoading,
+                    onPickupHit = { hit ->
+                        viewModel.applyPickupOverride(hit)
+                        originFieldDraft = hit.label
+                    },
+                    onDestinationHit = { hit ->
+                        viewModel.applySearchDestination(hit)
+                        destinationFieldDraft = hit.label
+                        mapViewRef.value?.camera?.lookAt(
+                            hit.coordinates,
+                            MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, 16.0)
+                        )
+                    },
+                    onClose = {
+                        showRouteSheet = false
+                        viewModel.clearPickupSearchResults()
+                        viewModel.clearAddressSearchResults()
+                    },
                     onOpenMapPicker = {
                         showRouteSheet = false
                         viewModel.resetPickerDraft()
@@ -485,34 +431,21 @@ fun MapScreen(
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun PickTargetAddressBubble(address: String?, modifier: Modifier = Modifier) {
-    val c = LocalAppColors.current
-    val label = address?.takeIf { it.isNotBlank() } ?: stringResource(R.string.map_move_to_set_pickup)
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(10.dp),
-        color = c.surfaceElevated,
-        shadowElevation = 8.dp
-    ) {
-        Text(
-            text = label,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            color = c.textPrimary,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 12.sp,
-            maxLines = 2,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@Composable
 private fun PickerModeBottomBar(
     modifier: Modifier = Modifier,
     canConfirm: Boolean,
     onTerminer: () -> Unit
 ) {
     val c = LocalAppColors.current
+    val gradientColors = if (canConfirm) {
+        listOf(
+            lerp(c.primary, Color.White, 0.12f),
+            c.primary,
+            lerp(c.primary, Color.Black, 0.15f)
+        )
+    } else {
+        listOf(c.primaryDisabled, c.primaryDisabled, c.primaryDisabled)
+    }
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -520,137 +453,22 @@ private fun PickerModeBottomBar(
             .padding(bottom = 28.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Button(
-            onClick = onTerminer,
-            enabled = canConfirm,
-            modifier = Modifier.fillMaxWidth().height(54.dp),
-            shape = RoundedCornerShape(999.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = c.primary,
-                disabledContainerColor = c.primaryDisabled,
-                contentColor = c.onPrimary,
-                disabledContentColor = c.onPrimary.copy(alpha = 0.5f)
-            )
-        ) {
-            Text("Confirm pickup", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-        }
-    }
-}
-
-@Composable
-private fun RouteItinerarySheetContent(
-    originAddress: String?,
-    destinationValue: String,
-    onDestinationValueChange: (String) -> Unit,
-    onClose: () -> Unit,
-    onOpenMapPicker: () -> Unit
-) {
-    val c = LocalAppColors.current
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .padding(bottom = 28.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(Brush.horizontalGradient(gradientColors))
+                .clickable(enabled = canConfirm, onClick = onTerminer),
+            contentAlignment = Alignment.Center
         ) {
             Text(
-                "Enter your route",
-                color = c.textPrimary,
+                "Confirm pickup",
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                color = c.onPrimary.copy(alpha = if (canConfirm) 1f else 0.5f)
             )
-            IconButton(onClick = onClose) {
-                Surface(shape = CircleShape, color = c.surfaceMuted, modifier = Modifier.size(32.dp)) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = c.textHint, modifier = Modifier.size(14.dp))
-                    }
-                }
-            }
         }
-        Spacer(Modifier.height(16.dp))
-        OutlinedTextField(
-            value = originAddress ?: "Current location",
-            onValueChange = {},
-            readOnly = true,
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("From", color = c.textSecondary, fontSize = 10.sp) },
-            leadingIcon = {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .background(c.primary, CircleShape)
-                )
-            },
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor   = c.outlineLight,
-                unfocusedBorderColor = c.border,
-                focusedTextColor     = c.textPrimary,
-                unfocusedTextColor   = c.textPrimary,
-                disabledTextColor    = c.textPrimary,
-                focusedContainerColor   = c.surfaceMuted,
-                unfocusedContainerColor = c.surfaceMuted
-            )
-        )
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = destinationValue,
-            onValueChange = onDestinationValueChange,
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("To", color = c.textSecondary, fontSize = 10.sp) },
-            placeholder = { Text(stringResource(R.string.map_destination_placeholder), color = c.greyHint) },
-            leadingIcon = {
-                Icon(Icons.Default.Search, null, tint = c.textSecondary, modifier = Modifier.size(22.dp))
-            },
-            trailingIcon = {
-                Surface(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clickable { onOpenMapPicker() },
-                    shape = RoundedCornerShape(8.dp),
-                    color = c.surfaceElevated,
-                    shadowElevation = 2.dp
-                ) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                        MapPickerMiniIcon(tint = c.locationMarkerBlue)
-                    }
-                }
-            },
-            shape = RoundedCornerShape(12.dp),
-            singleLine = false,
-            maxLines = 2,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor   = c.primary,
-                unfocusedBorderColor = c.border,
-                focusedTextColor     = c.textPrimary,
-                unfocusedTextColor   = c.textPrimary,
-                focusedContainerColor   = c.surfaceElevated,
-                unfocusedContainerColor = c.surfaceElevated
-            )
-        )
-    }
-}
-
-@Composable
-private fun MapPickerMiniIcon(tint: Color) {
-    Box(
-        modifier = Modifier
-            .size(26.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(Color(0xFFE8E8E8))
-    ) {
-        Icon(
-            Icons.Default.Place,
-            contentDescription = "Choisir sur la carte",
-            tint = tint,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(18.dp)
-        )
     }
 }
 
@@ -679,11 +497,12 @@ private fun CenterPickupPinOverlay(primary: Color) {
 }
 
 @Composable
-private fun HereMapViewComposable(
+internal fun HereMapViewComposable(
     currentLocation: GeoCoordinates?,
     confirmedDestination: GeoCoordinates?,
     sceneLoaded: MutableState<Boolean>,
     useDarkMap: Boolean,
+    mapDisplayMode: AppMapDisplayMode = AppMapDisplayMode.NORMAL,
     profilePictureUri: String?,
     profileInitials: String,
     onPickTargetUpdated: ((GeoCoordinates) -> Unit)?,
@@ -693,12 +512,13 @@ private fun HereMapViewComposable(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     var mapError by remember { mutableStateOf<String?>(null) }
+    val mapViewDimensionsReady = remember { mutableStateOf(false) }
     val locationMarkerRef    = remember { mutableStateOf<HereMapMarker?>(null) }
     val destinationMarkerRef = remember { mutableStateOf<HereMapMarker?>(null) }
 
     val appColorsMap = LocalAppColors.current
-    val destinationPinImage: MapImage = remember(appColorsMap.primary) {
-        MapImageFactory.fromBitmap(createTeardropPickupLocationBitmap(appColorsMap.primary.toArgb()))
+    val destinationPinImage: MapImage = remember(appColorsMap.errorRed) {
+        MapImageFactory.fromBitmap(createTeardropPickupLocationBitmap(appColorsMap.errorRed.toArgb()))
     }
     val pickupPinAnchor = remember { Anchor2D(0.5, teardropPickupPinAnchorYNormalized()) }
 
@@ -728,9 +548,11 @@ private fun HereMapViewComposable(
         }
     }
 
-    val mapScheme = if (useDarkMap) MapScheme.LITE_NIGHT else MapScheme.LITE_DAY
+    val mapScheme = mapDisplayMode.toHereMapScheme(useDarkMap)
 
-    LaunchedEffect(mapView, mapScheme) {
+    // Charger la scène seulement après layout (évite hsdk-WatermarkProcessor sans dimensions).
+    LaunchedEffect(mapViewDimensionsReady.value, mapScheme) {
+        if (!mapViewDimensionsReady.value) return@LaunchedEffect
         sceneLoaded.value = false
         mapError = null
         mapView.mapScene.loadScene(mapScheme) { error ->
@@ -740,8 +562,6 @@ private fun HereMapViewComposable(
                     mapOf(MapFeatures.ROAD_EXIT_LABELS to MapFeatureModes.ROAD_EXIT_LABELS_ALL)
                 )
             }
-            // ✅ FIX : Centrer sur Tunis immédiatement après chargement de la scène
-            // Évite le "globe" dézoomé en attendant le GPS
             mapView.camera.lookAt(
                 GeoCoordinates(36.8065, 10.1815),
                 MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, 14.0)
@@ -780,8 +600,7 @@ private fun HereMapViewComposable(
         sceneLoaded.value,
         profilePictureUri,
         profileInitials,
-        appColorsMap.primary,
-        appColorsMap.darkSurface
+        appColorsMap.primary
     ) {
         if (!sceneLoaded.value) return@LaunchedEffect
         val loc = currentLocation
@@ -790,13 +609,13 @@ private fun HereMapViewComposable(
             locationMarkerRef.value = null
             return@LaunchedEffect
         }
-        val primaryArgb     = appColorsMap.primary.toArgb()
-        val placeholderArgb = appColorsMap.darkSurface.toArgb()
+        val primaryArgb = appColorsMap.primary.toArgb()
         val bmp = withContext(Dispatchers.IO) {
             val avatar = loadProfilePhotoBitmap(context, profilePictureUri)
             try {
-                createUserLocationMarkerBitmap(avatar, profileInitials, primaryArgb, placeholderArgb)
+                createUserLocationMarkerBitmap(avatar, profileInitials, primaryArgb)
             } finally {
+                // `loadProfilePhotoBitmap` renvoie une copie (pas le bitmap du cache Coil).
                 avatar?.recycle()
             }
         }
@@ -809,7 +628,7 @@ private fun HereMapViewComposable(
                 return@withContext
             }
             locationMarkerRef.value?.let { mapView.mapScene.removeMapMarker(it) }
-            val marker = HereMapMarker(loc, MapImageFactory.fromBitmap(bmp), Anchor2D(0.5, 0.5))
+            val marker = HereMapMarker(loc, MapImageFactory.fromBitmap(bmp), Anchor2D(0.5, 1.0))
             mapView.mapScene.addMapMarker(marker)
             locationMarkerRef.value = marker
         }
@@ -842,6 +661,13 @@ private fun HereMapViewComposable(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
+                fun markReadyIfSized() {
+                    if (view.width > 0 && view.height > 0 && !mapViewDimensionsReady.value) {
+                        mapViewDimensionsReady.value = true
+                    }
+                }
+                markReadyIfSized()
+                view.post { markReadyIfSized() }
             },
             modifier = Modifier.fillMaxSize()
         )
@@ -849,7 +675,7 @@ private fun HereMapViewComposable(
 }
 
 @Composable
-private fun MapLoadErrorContent(message: String) {
+internal fun MapLoadErrorContent(message: String) {
     val c = LocalAppColors.current
     Box(
         modifier = Modifier.fillMaxSize().background(c.darkSurface),
@@ -874,76 +700,141 @@ private fun MapLoadErrorContent(message: String) {
     }
 }
 
+/** Équivalent Swift : Presentation/Home/Componenets/DestinationConfirmedCard.swift */
 @Composable
-private fun BottomSearchBar(
-    modifier: Modifier = Modifier,
-    onWhereToClick: () -> Unit
+private fun RiderDestinationConfirmedBar(
+    pickupTitle: String,
+    destinationTitle: String,
+    fareEstimate: RiderFareEstimate?,
+    onChangeDestination: () -> Unit
 ) {
     val c = LocalAppColors.current
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp, bottom = 28.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = c.surfaceElevated,
+        shadowElevation = 12.dp
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onWhereToClick() },
-            shape           = RoundedCornerShape(32.dp),
-            color           = c.surfaceElevated,
-            shadowElevation = 8.dp
-        ) {
+        Column(Modifier.padding(vertical = 12.dp, horizontal = 4.dp)) {
+            Row(Modifier.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("From", color = c.textSecondary, fontSize = 11.sp, modifier = Modifier.width(40.dp))
+                Text(pickupTitle, color = c.textPrimary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            }
+            Spacer(Modifier.height(8.dp))
             Row(
-                modifier          = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(Icons.Default.Search, null, tint = c.textSecondary, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(12.dp))
-                Text("Where to?", color = c.textSecondary, fontSize = 16.sp, modifier = Modifier.weight(1f))
-                Surface(shape = CircleShape, color = c.surfaceMuted, modifier = Modifier.size(36.dp)) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Refresh, "History", tint = c.primary, modifier = Modifier.size(18.dp))
-                    }
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    Text("To", color = c.textSecondary, fontSize = 11.sp, modifier = Modifier.width(40.dp))
+                    Text(destinationTitle, color = c.textPrimary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                }
+                TextButton(onClick = onChangeDestination) {
+                    Text("Change", color = c.primary, fontWeight = FontWeight.SemiBold)
                 }
             }
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            QuickDestinationChip("Home",  Icons.Default.Home,  Modifier.weight(1f))
-            QuickDestinationChip("Work",  Icons.Default.Place, Modifier.weight(1f))
-            QuickDestinationChip("Saved", Icons.Default.Star,  Modifier.weight(1f))
+            HorizontalDivider(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), color = c.dividerGrey)
+            if (fareEstimate != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = String.format(
+                                Locale.US,
+                                "%.1f km · %d min",
+                                fareEstimate.distanceKm,
+                                fareEstimate.estimatedMinutes
+                            ),
+                            color = c.textPrimary,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = String.format(Locale.US, "%.2f TND", fareEstimate.fareTnd),
+                            color = c.primary,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                Text(
+                    text = "Estimation : même formule que le serveur (base + km + minutes, minimum appliqué).",
+                    color = c.textSecondary,
+                    fontSize = 10.sp,
+                    modifier = Modifier.padding(horizontal = 12.dp).padding(top = 6.dp)
+                )
+            } else {
+                Text(
+                    text = "Position GPS en cours pour estimer distance et prix…",
+                    color = c.textSecondary,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = { /* TODO: ride request (Swift idem) */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+                    .height(54.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = c.primary),
+                shape = RoundedCornerShape(999.dp)
+            ) {
+                Text("Request Ride", color = c.onPrimary, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
 
+/** Barre du bas : ouvre la feuille « Enter your route » (champs From / To + carte). */
 @Composable
-private fun QuickDestinationChip(label: String, icon: ImageVector, modifier: Modifier = Modifier) {
+private fun RiderBottomRouteEntryBar(
+    onOpenRouteSheet: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val c = LocalAppColors.current
     Surface(
-        modifier        = modifier.clickable { },
-        shape           = RoundedCornerShape(32.dp),
-        color           = c.surfaceElevated,
-        shadowElevation = 4.dp
+        modifier = modifier
+            .padding(bottom = 20.dp)
+            .clickable { onOpenRouteSheet() },
+        shape = RoundedCornerShape(32.dp),
+        color = c.surfaceElevated,
+        shadowElevation = 8.dp
     ) {
         Row(
-            modifier              = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, label, tint = c.primary, modifier = Modifier.size(16.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(label, color = c.textPrimary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+            Icon(
+                Icons.Default.Search,
+                contentDescription = null,
+                tint = c.textSecondary,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = stringResource(R.string.map_where_to),
+                color = c.textSecondary,
+                fontSize = 16.sp
+            )
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProfileBottomSheet(
+internal fun ProfileBottomSheet(
     sheetState: SheetState,
     user: com.dadadrive.domain.model.User?,
     onDismiss: () -> Unit,
@@ -1017,8 +908,9 @@ private fun ProfileBottomSheet(
             Spacer(Modifier.height(24.dp))
             HorizontalDivider(color = c.dividerGrey)
             Spacer(Modifier.height(8.dp))
-            ProfileMenuItem(Icons.Default.Edit,      stringResource(R.string.menu_edit_profile),    onClick = onEditProfile)
-            ProfileMenuItem(Icons.Default.Search,    stringResource(R.string.menu_help_support),    onClick = {})
+            ProfileMenuItem(Icons.Default.Edit,    stringResource(R.string.menu_edit_profile),     onClick = onEditProfile)
+            ProfileMenuItem(Icons.Default.Palette, stringResource(R.string.menu_appearance_colors), onClick = onColorSettings)
+            ProfileMenuItem(Icons.Default.Search,  stringResource(R.string.menu_help_support),     onClick = {})
             ProfileMenuItem(Icons.Default.Info,      stringResource(R.string.menu_terms_of_service), onClick = {})
             Spacer(Modifier.height(4.dp))
             HorizontalDivider(color = c.dividerGrey)
@@ -1040,7 +932,12 @@ private suspend fun loadProfilePhotoBitmap(context: Context, url: String?): Bitm
             .allowHardware(false)
             .build()
         when (val result = context.imageLoader.execute(request)) {
-            is SuccessResult -> result.drawable.toBitmap()
+            is SuccessResult -> {
+                val src = result.drawable.toBitmap()
+                val cfg = src.config ?: Bitmap.Config.ARGB_8888
+                // Copie dédiée au marqueur : évite toute aliasing avec le cache Coil / AsyncImage.
+                src.copy(cfg, false)
+            }
             else -> null
         }
     } catch (_: Exception) {
@@ -1049,7 +946,7 @@ private suspend fun loadProfilePhotoBitmap(context: Context, url: String?): Bitm
 }
 
 @Composable
-private fun ProfileMenuItem(
+internal fun ProfileMenuItem(
     icon: ImageVector,
     label: String,
     tint: Color? = null,
