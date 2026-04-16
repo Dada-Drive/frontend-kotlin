@@ -135,3 +135,77 @@ fun createTeardropPickupLocationBitmap(primaryArgb: Int): Bitmap {
 
     return bitmap
 }
+
+/**
+ * Swift-equivalent pushpin bitmap (ball + needle), with tip at image bottom.
+ * Use with Anchor2D(0.5, 1.0) so HERE places the needle tip on coordinates.
+ *
+ * [PUSH_PIN_MAP_SCALE] augmente la taille à l’écran (bitmap plus grand = pin plus lisible sur la carte).
+ */
+private const val PUSH_PIN_MAP_SCALE = 2.1f
+
+fun createPushPinBitmap(colorArgb: Int): Bitmap {
+    val ballRadius = 14f * PUSH_PIN_MAP_SCALE
+    val needleHeight = 22f * PUSH_PIN_MAP_SCALE
+    val needleHalfW = 2f * PUSH_PIN_MAP_SCALE
+    val needleJoinInset = 2f * PUSH_PIN_MAP_SCALE
+    val tipWidth = 1f * PUSH_PIN_MAP_SCALE
+    val width = ballRadius * 2f
+    val height = (ballRadius * 2f) + needleHeight
+
+    val bitmap = Bitmap.createBitmap(width.toInt(), height.toInt(), Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val aa = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    val centerX = width / 2f
+    val centerY = ballRadius
+    val ballDiameter = ballRadius * 2f
+
+    // Needle under the ball (metallic gradient).
+    val needleTop = (ballDiameter - needleJoinInset).coerceAtLeast(0f)
+    val needleRect = RectF(centerX - needleHalfW, needleTop, centerX + needleHalfW, needleTop + needleHeight)
+    val needlePath = Path().apply {
+        moveTo(needleRect.left, needleRect.top)
+        lineTo(needleRect.right, needleRect.top)
+        lineTo(centerX + tipWidth / 2f, needleRect.bottom)
+        lineTo(centerX - tipWidth / 2f, needleRect.bottom)
+        close()
+    }
+    aa.shader = LinearGradient(
+        needleRect.left,
+        needleRect.centerY(),
+        needleRect.right,
+        needleRect.centerY(),
+        intArrayOf(0xFF737373.toInt(), 0xFFC7C7C7.toInt(), 0xFF616161.toInt()),
+        floatArrayOf(0f, 0.5f, 1f),
+        Shader.TileMode.CLAMP
+    )
+    aa.style = Paint.Style.FILL
+    canvas.drawPath(needlePath, aa)
+    aa.shader = null
+
+    // Ball base.
+    aa.color = colorArgb or 0xFF000000.toInt()
+    canvas.drawCircle(centerX, centerY, ballRadius, aa)
+
+    // Ball gloss (radial).
+    aa.shader = android.graphics.RadialGradient(
+        centerX - ballRadius * 0.30f,
+        centerY - ballRadius * 0.40f,
+        ballRadius * 0.85f,
+        intArrayOf(0xB8FFFFFF.toInt(), 0x2EFFFFFF, 0x00FFFFFF),
+        floatArrayOf(0f, 0.55f, 1f),
+        Shader.TileMode.CLAMP
+    )
+    canvas.drawCircle(centerX, centerY, ballRadius, aa)
+    aa.shader = null
+
+    // Specular spot.
+    aa.color = 0x8CFFFFFF.toInt()
+    aa.maskFilter = BlurMaskFilter(3f, BlurMaskFilter.Blur.NORMAL)
+    val spotR = ballRadius * 0.15f
+    canvas.drawCircle(centerX - ballRadius * 0.28f, centerY + ballRadius * 0.20f, spotR, aa)
+    aa.maskFilter = null
+
+    return bitmap
+}

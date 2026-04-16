@@ -36,7 +36,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dadadrive.R
 import com.dadadrive.ui.theme.LocalAppColors
 
 @Composable
@@ -71,7 +73,7 @@ fun RoleSelectionScreen(
             Spacer(Modifier.height(32.dp))
 
             Text(
-                text = "Comment vas-tu\nutiliser DADA Drive ?",
+                text = stringResource(R.string.role_selection_headline),
                 color = c.textPrimary,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
@@ -82,7 +84,7 @@ fun RoleSelectionScreen(
             Spacer(Modifier.height(10.dp))
 
             Text(
-                text = "Choisis ton rôle pour personnaliser ton expérience",
+                text = stringResource(R.string.role_selection_subtitle),
                 color = c.textSecondary,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -96,8 +98,8 @@ fun RoleSelectionScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 RoleCard(
-                    title = "Passager",
-                    subtitle = "Je cherche un trajet",
+                    title = stringResource(R.string.role_passenger_title),
+                    subtitle = stringResource(R.string.role_passenger_subtitle),
                     icon = Icons.Default.Person,
                     role = "rider",
                     isSelected = selectedRole == "rider",
@@ -105,8 +107,8 @@ fun RoleSelectionScreen(
                     modifier = Modifier.weight(1f)
                 )
                 RoleCard(
-                    title = "Conducteur",
-                    subtitle = "Je propose des trajets",
+                    title = stringResource(R.string.role_driver_title),
+                    subtitle = stringResource(R.string.role_driver_subtitle),
                     icon = Icons.Default.Place,
                     role = "driver",
                     isSelected = selectedRole == "driver",
@@ -150,7 +152,7 @@ fun RoleSelectionScreen(
                     )
                 } else {
                     Text(
-                        text = "Continuer",
+                        text = stringResource(R.string.role_continue),
                         color = c.onPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold

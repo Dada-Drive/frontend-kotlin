@@ -87,20 +87,20 @@ fun ColorWheelSettingsScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Retour",
+                            contentDescription = stringResource(R.string.cd_back),
                             tint = colors.onBackground
                         )
                     }
                     Spacer(Modifier.width(4.dp))
                     Column {
                         Text(
-                            text = "Thème de couleurs",
+                            text = stringResource(R.string.settings_color_title),
                             color = colors.onBackground,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Personnalisez l'apparence de l'app",
+                            text = stringResource(R.string.settings_color_subtitle),
                             color = colors.textHint,
                             fontSize = 13.sp
                         )
@@ -117,7 +117,7 @@ fun ColorWheelSettingsScreen(
 
             item {
                 Text(
-                    text = "THÈMES DISPONIBLES",
+                    text = stringResource(R.string.settings_themes_available),
                     color = colors.textHint,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -147,7 +147,7 @@ fun ColorWheelSettingsScreen(
 
             item {
                 Text(
-                    text = "TOUTES LES COULEURS — ${previewScheme.name.uppercase()}",
+                    text = stringResource(R.string.settings_all_colors_title, previewScheme.name.uppercase()),
                     color = colors.textHint,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -200,7 +200,7 @@ private fun ThemePreviewCard(
                 }
                 Spacer(Modifier.width(10.dp))
                 Column {
-                    Text("DADA DRIVE", color = scheme.textPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                    Text(stringResource(R.string.brand_dada_drive), color = scheme.textPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
                     Text(scheme.name, color = scheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                 }
             }
@@ -213,7 +213,7 @@ private fun ThemePreviewCard(
                         .background(scheme.primary),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Continuer", color = scheme.onPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.settings_preview_continue), color = scheme.onPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
                 Box(
                     modifier = Modifier
@@ -223,7 +223,7 @@ private fun ThemePreviewCard(
                         .background(scheme.secondary),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Secondaire", color = scheme.onSecondary, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.settings_preview_secondary), color = scheme.onSecondary, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -278,7 +278,7 @@ private fun ThemeCard(
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Default.Check,
-                    contentDescription = "Sélectionné",
+                    contentDescription = stringResource(R.string.cd_selected),
                     tint = scheme.onPrimary,
                     modifier = Modifier.size(22.dp)
                 )

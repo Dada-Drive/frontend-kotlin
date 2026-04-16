@@ -1,0 +1,1 @@
+{"definitions": {"POI.TrafficLight.Icon.Brightness": ["ref", "Traffic.Icon.Brightness"], "POI.TrafficLight.Icon.Size": ["interpolate", ["linear"], ["zoom"], 0, 13, 20, 13, 24, 26], "POI.TrafficLight.FarThreshold": 0.9}}

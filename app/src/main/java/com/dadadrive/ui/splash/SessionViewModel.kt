@@ -4,6 +4,7 @@ package com.dadadrive.ui.splash
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dadadrive.core.debug.DebugAuthConfig
 import com.dadadrive.data.local.TokenManager
 import com.dadadrive.data.local.UserManager
 import com.dadadrive.data.remote.AuthNavigationEvents
@@ -38,6 +39,7 @@ class SessionViewModel @Inject constructor(
         viewModelScope.launch {
             authNavigationEvents.forceLogout.collect {
                 tokenManager.clearTokens()
+                tokenManager.setGuestBrowseEnabled(false)
                 userManager.clearUser()
                 _sessionState.value = SessionUiState.Unauthenticated
             }
@@ -50,7 +52,11 @@ class SessionViewModel @Inject constructor(
             _sessionState.value = SessionUiState.Loading
             val token = tokenManager.getAccessToken()
             if (token.isNullOrBlank()) {
-                _sessionState.value = SessionUiState.Unauthenticated
+                _sessionState.value = if (tokenManager.isGuestBrowseEnabled()) {
+                    SessionUiState.BrowsingGuest
+                } else {
+                    SessionUiState.Unauthenticated
+                }
                 return@launch
             }
             try {
@@ -91,9 +97,29 @@ class SessionViewModel @Inject constructor(
         return SessionUiState.Authenticated(user)
     }
 
+    /**
+     * Entrée immédiate sur la carte en invité (sans attendre le réseau).
+     * Mise à jour synchrone de l’état pour que la navigation parte tout de suite ;
+     * la déconnexion serveur éventuelle est lancée en arrière-plan.
+     */
+    fun continueWithoutAccount() {
+        tokenManager.setGuestBrowseEnabled(true)
+        tokenManager.clearTokens()
+        if (DebugAuthConfig.shouldInjectStaticUserOnWelcomeSkip()) {
+            userManager.saveUser(DebugAuthConfig.staticSkipUser)
+        } else {
+            userManager.clearUser()
+        }
+        _sessionState.value = SessionUiState.BrowsingGuest
+        // Pas d’appel logout() ici : sans refresh, l’API peut répondre erreur et effacer user local.
+    }
+
     fun forceLogout() {
         viewModelScope.launch {
+            tokenManager.setGuestBrowseEnabled(false)
             runCatching { authRepository.logout() }
+            tokenManager.clearTokens()
+            userManager.clearUser()
             _sessionState.value = SessionUiState.Unauthenticated
         }
     }

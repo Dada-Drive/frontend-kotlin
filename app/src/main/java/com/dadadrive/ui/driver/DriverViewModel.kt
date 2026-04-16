@@ -16,6 +16,7 @@ import com.dadadrive.domain.usecase.driver.GetMyRidesUseCase
 import com.dadadrive.domain.usecase.driver.RefuseRideUseCase
 import com.dadadrive.domain.usecase.driver.SetOnlineStatusUseCase
 import com.dadadrive.domain.usecase.driver.StartRideUseCase
+import com.here.sdk.core.GeoCoordinates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import com.dadadrive.data.remote.ApiErrorParser
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,6 +40,7 @@ class DriverViewModel @Inject constructor(
     private val completeRideUseCase: CompleteRideUseCase,
     private val cancelRideUseCase: CancelRideUseCase
 ) : ViewModel() {
+    private val maxOfferDistanceKm = 3.0
 
     private val _isOnline = MutableStateFlow(false)
     val isOnline: StateFlow<Boolean> = _isOnline.asStateFlow()
@@ -70,6 +73,11 @@ class DriverViewModel @Inject constructor(
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     private var pollJob: Job? = null
+    private var driverLocation: GeoCoordinates? = null
+
+    fun updateDriverLocation(location: GeoCoordinates?) {
+        driverLocation = location
+    }
 
     fun setShowAvailableRides(show: Boolean) {
         _showAvailableRides.value = show
@@ -106,10 +114,7 @@ class DriverViewModel @Inject constructor(
                 },
                 onFailure = { e ->
                     _errorMessage.value = when (e) {
-                        is HttpException -> when (e.code()) {
-                            403 -> "Your account is pending approval"
-                            else -> e.message ?: "Error ${e.code()}"
-                        }
+                        is HttpException -> ApiErrorParser.httpMessage(e)
                         else -> e.message
                     }
                 }
@@ -119,12 +124,22 @@ class DriverViewModel @Inject constructor(
     }
 
     private fun fetchAvailableRides() {
-        if (!_isOnline.value) return
+        if (!_isOnline.value || _activeRide.value != null) {
+            _availableRides.value = emptyList()
+            return
+        }
         viewModelScope.launch {
             _isLoadingRides.value = true
             getAvailableRidesUseCase().fold(
-                onSuccess = { _availableRides.value = it },
-                onFailure = { _errorMessage.value = it.message }
+                onSuccess = { rides ->
+                    _availableRides.value = filterNearbyRides(rides)
+                },
+                onFailure = { e ->
+                    _errorMessage.value = when (e) {
+                        is HttpException -> ApiErrorParser.httpMessage(e)
+                        else -> e.message
+                    }
+                }
             )
             _isLoadingRides.value = false
         }
@@ -141,6 +156,7 @@ class DriverViewModel @Inject constructor(
                     if (assigned != null) {
                         if (_activeRide.value?.id != assigned.id) {
                             _activeRide.value = assigned
+                            _availableRides.value = emptyList()
                             _showActiveRide.value = true
                             stopPolling()
                             startPollingActiveOnly()
@@ -155,13 +171,33 @@ class DriverViewModel @Inject constructor(
     }
 
     fun acceptRide(ride: AvailableRide) {
+        if (!_isOnline.value || _activeRide.value != null) return
+        val loc = driverLocation
+        if (loc != null) {
+            val distance = distanceKm(
+                loc.latitude, loc.longitude,
+                ride.pickupLat, ride.pickupLng
+            )
+            if (distance > maxOfferDistanceKm) {
+                _errorMessage.value = "This request is outside your 3 km area."
+                _availableRides.value = _availableRides.value.filter {
+                    it.id != ride.id
+                }
+                return
+            }
+        }
         viewModelScope.launch {
             _errorMessage.value = null
             acceptRideUseCase(ride.id).fold(
                 onSuccess = {
                     _availableRides.value = _availableRides.value.filter { it.id != ride.id }
                 },
-                onFailure = { e -> _errorMessage.value = e.message }
+                onFailure = { e ->
+                    _errorMessage.value = when (e) {
+                        is HttpException -> ApiErrorParser.httpMessage(e)
+                        else -> e.message
+                    }
+                }
             )
         }
     }
@@ -172,7 +208,12 @@ class DriverViewModel @Inject constructor(
                 onSuccess = {
                     _availableRides.value = _availableRides.value.filter { it.id != ride.id }
                 },
-                onFailure = { e -> _errorMessage.value = e.message }
+                onFailure = { e ->
+                    _errorMessage.value = when (e) {
+                        is HttpException -> ApiErrorParser.httpMessage(e)
+                        else -> e.message
+                    }
+                }
             )
         }
     }
@@ -182,7 +223,12 @@ class DriverViewModel @Inject constructor(
         viewModelScope.launch {
             startRideUseCase(ride.id).fold(
                 onSuccess = { _activeRide.value = it },
-                onFailure = { e -> _errorMessage.value = e.message }
+                onFailure = { e ->
+                    _errorMessage.value = when (e) {
+                        is HttpException -> ApiErrorParser.httpMessage(e)
+                        else -> e.message
+                    }
+                }
             )
         }
     }
@@ -199,7 +245,12 @@ class DriverViewModel @Inject constructor(
                     stopPolling()
                     startPolling()
                 },
-                onFailure = { e -> _errorMessage.value = e.message }
+                onFailure = { e ->
+                    _errorMessage.value = when (e) {
+                        is HttpException -> ApiErrorParser.httpMessage(e)
+                        else -> e.message
+                    }
+                }
             )
         }
     }
@@ -214,7 +265,12 @@ class DriverViewModel @Inject constructor(
                     stopPolling()
                     startPolling()
                 },
-                onFailure = { e -> _errorMessage.value = e.message }
+                onFailure = { e ->
+                    _errorMessage.value = when (e) {
+                        is HttpException -> ApiErrorParser.httpMessage(e)
+                        else -> e.message
+                    }
+                }
             )
         }
     }
@@ -250,5 +306,33 @@ class DriverViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         stopPolling()
+    }
+
+    private fun filterNearbyRides(rides: List<AvailableRide>): List<AvailableRide> {
+        val loc = driverLocation ?: return emptyList()
+        return rides.filter { ride ->
+            val distance = distanceKm(
+                loc.latitude, loc.longitude,
+                ride.pickupLat, ride.pickupLng
+            )
+            distance <= maxOfferDistanceKm
+        }
+    }
+
+    private fun distanceKm(
+        lat1: Double,
+        lng1: Double,
+        lat2: Double,
+        lng2: Double
+    ): Double {
+        val earthRadiusKm = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLng = Math.toRadians(lng2 - lng1)
+        val a = kotlin.math.sin(dLat / 2) * kotlin.math.sin(dLat / 2) +
+            kotlin.math.cos(Math.toRadians(lat1)) *
+            kotlin.math.cos(Math.toRadians(lat2)) *
+            kotlin.math.sin(dLng / 2) * kotlin.math.sin(dLng / 2)
+        val c = 2 * kotlin.math.atan2(kotlin.math.sqrt(a), kotlin.math.sqrt(1 - a))
+        return earthRadiusKm * c
     }
 }

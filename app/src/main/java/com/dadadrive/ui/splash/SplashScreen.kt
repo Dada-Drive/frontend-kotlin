@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,7 +52,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_dadadrive_logo),
-                contentDescription = "DadaDrive Logo",
+                contentDescription = stringResource(R.string.splash_logo_cd),
                 modifier = Modifier
                     .size(130.dp)
                     .clip(RoundedCornerShape(28.dp))
@@ -60,7 +61,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "DADA DRIVE",
+                text = stringResource(R.string.brand_dada_drive),
                 color = c.textPrimary,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
@@ -71,7 +72,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Your ride, your way",
+                text = stringResource(R.string.splash_tagline),
                 color = c.textCaption,
                 fontSize = 14.sp,
                 letterSpacing = 1.sp

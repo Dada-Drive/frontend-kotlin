@@ -41,6 +41,9 @@ object Constants {
     // ── SharedPreferences ─────────────────────────────────
     const val PREFS_NAME = "dadadrive_prefs"
 
+    /** Équivalent Swift : LanguageManager key `app_language` (UserDefaults). */
+    const val PREFS_APP_LANGUAGE = "app_language"
+
     // ── Ride ─────────────────────────────────────────────
     const val DEFAULT_SEARCH_RADIUS_KM = 5
     const val MAX_PASSENGERS = 4

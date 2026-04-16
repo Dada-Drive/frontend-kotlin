@@ -11,8 +11,10 @@ import com.dadadrive.data.remote.model.VerifyOtpRequest
 import com.dadadrive.data.remote.model.VerifyOtpResponse
 import com.dadadrive.data.remote.model.UpdateProfileRequest
 import com.dadadrive.data.remote.model.UpdateProfileResponse
+import com.dadadrive.data.remote.model.LoginRequest
 import com.dadadrive.data.remote.model.LogoutRequest
 import com.dadadrive.data.remote.model.LogoutResponse
+import com.dadadrive.data.remote.model.RegisterRequest
 import com.dadadrive.data.remote.model.UpdateRoleRequest
 import com.dadadrive.data.remote.model.UpdateRoleResponse
 import retrofit2.http.Body
@@ -25,6 +27,12 @@ import retrofit2.http.POST
  * (slash final obligatoire dans [com.dadadrive.core.constants.Constants.BASE_URL] / local.properties).
  */
 interface AuthApiService {
+
+    @POST("auth/login")
+    suspend fun login(@Body body: LoginRequest): AuthResponse
+
+    @POST("auth/register")
+    suspend fun register(@Body body: RegisterRequest): AuthResponse
 
     @POST("auth/google")
     suspend fun googleAuth(@Body request: GoogleAuthRequest): AuthResponse

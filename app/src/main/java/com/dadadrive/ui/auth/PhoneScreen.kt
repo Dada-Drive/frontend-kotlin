@@ -47,13 +47,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.res.stringResource
+import com.dadadrive.R
 import com.dadadrive.ui.theme.LocalAppColors
 
 // ─────────────────────────────────────────────────────────
@@ -117,6 +123,32 @@ fun applyMask(rawDigits: String, mask: String): String {
     return result.toString()
 }
 
+/** Affiche le masque sans altérer la valeur réelle (chiffres seuls) — le curseur reste cohérent. */
+private class PhoneMaskVisualTransformation(private val mask: String) : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val raw = text.text
+        val formatted = applyMask(raw, mask)
+        val mapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                if (offset <= 0) return 0
+                val o = offset.coerceIn(0, raw.length)
+                return applyMask(raw.take(o), mask).length
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                if (raw.isEmpty()) return 0
+                val visual = applyMask(raw, mask)
+                val coerced = offset.coerceIn(0, visual.length)
+                return visual.take(coerced).count { it.isDigit() }
+            }
+        }
+        return TransformedText(AnnotatedString(formatted), mapping)
+    }
+}
+
+private fun defaultPhoneCountry(): Country =
+    commonCountries.find { it.dialCode == "+216" } ?: commonCountries.first()
+
 // ─────────────────────────────────────────────────────────
 // PHONE SCREEN
 // ─────────────────────────────────────────────────────────
@@ -129,8 +161,11 @@ fun PhoneScreen(
 ) {
     val authState by authViewModel.authState.collectAsState()
     var rawDigits by remember { mutableStateOf("") }
-    var selectedCountry by remember { mutableStateOf(commonCountries.first()) }
+    var selectedCountry by remember { mutableStateOf(defaultPhoneCountry()) }
     var showCountryPicker by remember { mutableStateOf(false) }
+    val phoneVisualTransformation = remember(selectedCountry.formatMask) {
+        PhoneMaskVisualTransformation(selectedCountry.formatMask)
+    }
 
     val appColors = LocalAppColors.current
     val bg = MaterialTheme.colorScheme.background
@@ -138,9 +173,8 @@ fun PhoneScreen(
     val isLoading = authState is AuthState.Loading
     val errorMessage = (authState as? AuthState.Error)?.message
 
-    val displayText = applyMask(rawDigits, selectedCountry.formatMask)
     val fullPhone = "${selectedCountry.dialCode}${rawDigits}"
-    val canSubmit = rawDigits.length >= (selectedCountry.maxDigits - 1) && !isLoading
+    val canSubmit = rawDigits.length >= selectedCountry.maxDigits && !isLoading
 
     // Quand le pays change, vider le numéro pour éviter un format invalide
     LaunchedEffect(selectedCountry) {
@@ -149,8 +183,8 @@ fun PhoneScreen(
 
     LaunchedEffect(authState) {
         if (authState is AuthState.OtpSent) {
-            authViewModel.resetState()
             onSuccess(fullPhone)
+            authViewModel.resetState()
         }
     }
 
@@ -179,12 +213,12 @@ fun PhoneScreen(
             Spacer(Modifier.height(8.dp))
 
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour", tint = fg)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back), tint = fg)
             }
 
             Spacer(Modifier.height(24.dp))
             Text(
-                text = "Indiquez votre numéro",
+                text = stringResource(R.string.phone_title),
                 color = fg,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
@@ -192,7 +226,7 @@ fun PhoneScreen(
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                text = "Nous vous enverrons un code par SMS pour sécuriser votre accès à l'expérience DadaDrive.",
+                text = stringResource(R.string.phone_subtitle),
                 color = fg.copy(alpha = 0.6f),
                 fontSize = 15.sp,
                 lineHeight = 22.sp
@@ -224,7 +258,7 @@ fun PhoneScreen(
                     Spacer(Modifier.width(2.dp))
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Changer de pays",
+                        contentDescription = stringResource(R.string.cd_change_country),
                         tint = fg.copy(alpha = 0.5f),
                         modifier = Modifier.size(18.dp)
                     )
@@ -242,15 +276,16 @@ fun PhoneScreen(
 
                 Spacer(Modifier.width(12.dp))
 
-                // Champ de saisie — capture les chiffres bruts, affiche le format
+                // Valeur = chiffres uniquement ; le masque est purement visuel (curseur stable)
                 BasicTextField(
-                    value = displayText,
+                    value = rawDigits,
                     onValueChange = { input ->
                         val digits = input.filter { it.isDigit() }
                         if (digits.length <= selectedCountry.maxDigits) {
                             rawDigits = digits
                         }
                     },
+                    visualTransformation = phoneVisualTransformation,
                     singleLine = true,
                     textStyle = TextStyle(color = fg, fontSize = 16.sp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -366,12 +401,12 @@ fun PhoneScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text("Continuer", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(stringResource(R.string.auth_continue), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
             Spacer(Modifier.height(14.dp))
             Text(
-                text = "ÉTAPE 1 SUR 6",
+                text = stringResource(R.string.auth_flow_step, 1, 6),
                 color = fg.copy(alpha = 0.3f),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,

@@ -28,6 +28,7 @@ class TokenManager @Inject constructor(
         prefs.edit()
             .putString(Constants.PREFS_AUTH_TOKEN, accessToken)
             .putString(Constants.PREFS_REFRESH_TOKEN, refreshToken)
+            .remove(KEY_GUEST_BROWSE)
             .apply()
     }
 
@@ -42,7 +43,16 @@ class TokenManager @Inject constructor(
             .apply()
     }
 
+    /** Exploration sans compte : pas de jeton mais accès carte / UI passager. */
+    fun setGuestBrowseEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_GUEST_BROWSE, enabled).apply()
+    }
+
+    fun isGuestBrowseEnabled(): Boolean =
+        prefs.getBoolean(KEY_GUEST_BROWSE, false)
+
     private companion object {
         private const val ENCRYPTED_PREFS_NAME = "dadadrive_encrypted_tokens"
+        private const val KEY_GUEST_BROWSE = "guest_browse_map_only"
     }
 }

@@ -28,10 +28,10 @@ class AuthViewModel @Inject constructor(
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    fun login(email: String, password: String) {
+    fun login(phone: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
-            val result = loginUseCase(email, password)
+            val result = loginUseCase(phone, password)
             _authState.value = result.fold(
                 onSuccess = { user -> AuthState.Success(user) },
                 onFailure = { e -> AuthState.Error(e.message ?: "Login failed") }

@@ -1,18 +1,21 @@
 package com.dadadrive.data.repository
 
+import android.net.Uri
 import android.util.Log
 import com.dadadrive.data.local.TokenManager
 import com.dadadrive.data.local.UserManager
+import com.dadadrive.data.remote.ApiErrorParser
 import com.dadadrive.data.remote.api.AuthApiService
 import com.dadadrive.data.remote.cloudinary.CloudinaryManager
 import com.dadadrive.data.remote.model.GoogleAuthRequest
+import com.dadadrive.data.remote.model.LoginRequest
+import com.dadadrive.data.remote.model.RegisterRequest
 import com.dadadrive.data.remote.model.SendOtpRequest
 import com.dadadrive.data.remote.model.UpdateProfileRequest
 import com.dadadrive.data.remote.model.LogoutRequest
 import com.dadadrive.data.remote.model.VerifyOtpRequest
 import com.dadadrive.domain.model.User
 import com.dadadrive.domain.repository.AuthRepository
-import kotlinx.coroutines.delay
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -23,27 +26,35 @@ class AuthRepositoryImpl @Inject constructor(
     private val cloudinaryManager: CloudinaryManager
 ) : AuthRepository {
 
-    override suspend fun login(email: String, password: String): Result<User> {
-        delay(1200)
-        return Result.success(
-            User(
-                id = "mock-001",
-                fullName = "Dada User",
-                email = email,
-                phoneNumber = "+1234567890"
+    override suspend fun login(phone: String, password: String): Result<User> {
+        return try {
+            val response = authApiService.login(LoginRequest(phone = phone, password = password))
+            tokenManager.saveTokens(response.accessToken, response.refreshToken)
+            val user = User(
+                id = response.user.id,
+                fullName = response.user.fullName ?: "",
+                email = response.user.email ?: "",
+                phoneNumber = response.user.phone ?: phone,
+                role = response.user.role.ifBlank { "rider" },
+                profilePictureUri = response.user.avatarUrl
             )
-        )
+            userManager.saveUser(user)
+            Result.success(user)
+        } catch (e: HttpException) {
+            val message = when (e.code()) {
+                401 -> ApiErrorParser.httpMessage(e).ifBlank { "Identifiants invalides." }
+                429 -> "Trop de tentatives. Réessayez plus tard."
+                else -> ApiErrorParser.httpMessage(e)
+            }
+            Result.failure(Exception(message))
+        } catch (e: Exception) {
+            Result.failure(Exception("Impossible de se connecter au serveur. Vérifiez votre connexion."))
+        }
     }
 
     override suspend fun loginWithPhone(phoneNumber: String): Result<User> {
-        delay(1200)
-        return Result.success(
-            User(
-                id = "phone-${System.currentTimeMillis()}",
-                fullName = "Utilisateur DadaDrive",
-                email = "",
-                phoneNumber = phoneNumber
-            )
+        return Result.failure(
+            Exception("Connexion par numéro seul indisponible. Utilisez le code OTP ou le mot de passe.")
         )
     }
 
@@ -54,16 +65,50 @@ class AuthRepositoryImpl @Inject constructor(
         phoneNumber: String,
         profilePictureUri: String?
     ): Result<User> {
-        delay(1500)
-        return Result.success(
-            User(
-                id = "mock-${System.currentTimeMillis()}",
-                fullName = fullName,
-                email = email,
-                phoneNumber = phoneNumber,
-                profilePictureUri = profilePictureUri
+        return try {
+            val response = authApiService.register(
+                RegisterRequest(
+                    fullName = fullName,
+                    email = email.ifBlank { null },
+                    phone = phoneNumber.ifBlank { null },
+                    password = password
+                )
             )
-        )
+            tokenManager.saveTokens(response.accessToken, response.refreshToken)
+            var user = User(
+                id = response.user.id,
+                fullName = response.user.fullName ?: fullName,
+                email = response.user.email ?: email,
+                phoneNumber = response.user.phone ?: phoneNumber,
+                role = response.user.role.ifBlank { "pending" },
+                profilePictureUri = response.user.avatarUrl
+            )
+            userManager.saveUser(user)
+
+            if (!profilePictureUri.isNullOrBlank()) {
+                val publicId = cloudinaryManager.publicIdForUser(user.id)
+                cloudinaryManager.uploadImage(Uri.parse(profilePictureUri), publicId)
+                    .onSuccess { cloudUrl ->
+                        try {
+                            authApiService.updateProfile(UpdateProfileRequest(avatarUrl = cloudUrl))
+                            user = user.copy(profilePictureUri = cloudUrl)
+                            userManager.saveUser(user)
+                            userManager.saveCloudinaryPublicId(publicId)
+                        } catch (e: Exception) {
+                            Log.w("AuthRepo", "Avatar sync après inscription échoué (non bloquant)", e)
+                        }
+                    }
+                    .onFailure { e ->
+                        Log.w("AuthRepo", "Upload Cloudinary inscription échoué (non bloquant)", e)
+                    }
+            }
+
+            Result.success(user)
+        } catch (e: HttpException) {
+            Result.failure(Exception(ApiErrorParser.httpMessage(e)))
+        } catch (e: Exception) {
+            Result.failure(Exception("Impossible de se connecter au serveur. Vérifiez votre connexion."))
+        }
     }
 
     override suspend fun sendOtp(phone: String): Result<Unit> {

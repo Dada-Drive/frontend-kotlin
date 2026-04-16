@@ -2,17 +2,23 @@ package com.dadadrive
 
 import android.app.Application
 import android.util.Log
+import com.dadadrive.data.local.LanguagePreferenceStore
 import com.here.sdk.core.engine.AuthenticationMode
 import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
 import com.here.sdk.core.errors.InstantiationErrorException
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
 class DadaDriveApplication : Application() {
 
+    @Inject lateinit var languagePreferenceStore: LanguagePreferenceStore
+
     override fun onCreate() {
         super.onCreate()
+        // Équiv. Swift : LanguageManager + .environment(\\.locale, …) au cold start
+        languagePreferenceStore.syncApplicationLocalesWithStoredOrDeviceDefaults()
         initHereSdk()
     }
 

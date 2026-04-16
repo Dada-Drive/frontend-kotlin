@@ -3,17 +3,19 @@ package com.dadadrive
 
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
@@ -46,6 +48,7 @@ import com.dadadrive.ui.splash.SessionViewModel
 import com.dadadrive.ui.splash.SplashScreen
 import com.dadadrive.ui.theme.DadaDriveTheme
 import com.dadadrive.ui.theme.ThemeViewModel
+import com.dadadrive.ui.wallet.WalletScreen
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import dagger.hilt.android.AndroidEntryPoint
@@ -64,6 +67,7 @@ private sealed class Screen(val route: String) {
     data object DriverSetup : Screen("driver_setup")
     data object EditProfile : Screen("edit_profile")
     data object ColorSettings : Screen("settings/colors")
+    data object Wallet : Screen("wallet")
     data object Otp : Screen("otp/{phone}") {
         fun createRoute(phone: String) = "otp/${java.net.URLEncoder.encode(phone, "UTF-8")}"
     }
@@ -73,7 +77,7 @@ private sealed class Screen(val route: String) {
 }
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,21 +91,24 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            val sessionViewModel: SessionViewModel = hiltViewModel()
-            val themeViewModel: ThemeViewModel = hiltViewModel()
-            val currentTheme by themeViewModel.currentTheme.collectAsState()
-            val customSecondaryArgb by themeViewModel.customSecondaryArgb.collectAsState()
-            val darkTheme = isSystemInDarkTheme()
-            val appColors = remember(currentTheme, darkTheme, customSecondaryArgb) {
-                val secondaryOverride = customSecondaryArgb?.let { argb -> Color(argb) }
-                currentTheme.resolveScheme(darkTheme, secondaryOverride)
-            }
+            val configuration = LocalConfiguration.current
+            key(configuration.locales.toLanguageTags()) {
+                val sessionViewModel: SessionViewModel = hiltViewModel()
+                val themeViewModel: ThemeViewModel = hiltViewModel()
+                val currentTheme by themeViewModel.currentTheme.collectAsState()
+                val customSecondaryArgb by themeViewModel.customSecondaryArgb.collectAsState()
+                val darkTheme = isSystemInDarkTheme()
+                val appColors = remember(currentTheme, darkTheme, customSecondaryArgb) {
+                    val secondaryOverride = customSecondaryArgb?.let { argb -> Color(argb) }
+                    currentTheme.resolveScheme(darkTheme, secondaryOverride)
+                }
 
-            DadaDriveTheme(darkTheme = darkTheme, appColors = appColors) {
-                DadaDriveNavHost(
-                    sessionViewModel = sessionViewModel,
-                    themeViewModel = themeViewModel
-                )
+                DadaDriveTheme(darkTheme = darkTheme, appColors = appColors) {
+                    DadaDriveNavHost(
+                        sessionViewModel = sessionViewModel,
+                        themeViewModel = themeViewModel
+                    )
+                }
             }
         }
     }
@@ -150,12 +157,12 @@ private fun DadaDriveNavHost(
             LaunchedEffect(authState) {
                 when (authState) {
                     is AuthState.Success -> {
-                        authViewModel.resetState()
                         sessionViewModel.refreshSession()
+                        authViewModel.resetState()
                     }
                     is AuthState.NeedsPhone -> {
-                        authViewModel.resetState()
                         navController.navigate(Screen.Phone.createRoute(true))
+                        authViewModel.resetState()
                     }
                     else -> {}
                 }
@@ -163,6 +170,7 @@ private fun DadaDriveNavHost(
 
             WelcomeScreen(
                 authState = authState,
+                onSkipClick = { sessionViewModel.continueWithoutAccount() },
                 onPhoneClick = { navController.navigate(Screen.Onboarding.route) },
                 onGoogleClick = {
                     scope.launch {
@@ -259,6 +267,7 @@ private fun DadaDriveNavHost(
                 profileViewModel = sharedProfileViewModel,
                 onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
                 onNavigateToColorSettings = { navController.navigate(Screen.ColorSettings.route) },
+                onNavigateToWallet = { navController.navigate(Screen.Wallet.route) },
                 onLogout = {
                     sessionViewModel.forceLogout()
                 }
@@ -270,6 +279,7 @@ private fun DadaDriveNavHost(
                 profileViewModel = sharedProfileViewModel,
                 onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
                 onNavigateToColorSettings = { navController.navigate(Screen.ColorSettings.route) },
+                onNavigateToWallet = { navController.navigate(Screen.Wallet.route) },
                 onLogout = { sessionViewModel.forceLogout() }
             )
         }
@@ -287,6 +297,10 @@ private fun DadaDriveNavHost(
                 themeViewModel = themeViewModel
             )
         }
+
+        composable(Screen.Wallet.route) {
+            WalletScreen(onBack = { navController.popBackStack() })
+        }
     }
 }
 
@@ -301,6 +315,7 @@ private fun routesMatch(current: String?, dest: String): Boolean {
 
 private fun sessionToRoute(state: SessionUiState): String? = when (state) {
     SessionUiState.Loading -> null
+    SessionUiState.BrowsingGuest -> Screen.Map.route
     SessionUiState.Unauthenticated -> Screen.Welcome.route
     SessionUiState.NeedsPhone -> Screen.Phone.createRoute(true)
     SessionUiState.NeedsName -> Screen.NameEntry.route

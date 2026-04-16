@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,6 +30,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -54,10 +56,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.res.stringResource
 import com.dadadrive.R
 import com.dadadrive.ui.theme.AppColor
+import com.dadadrive.ui.theme.AppTypography
 import com.dadadrive.ui.theme.AppRadius
 import com.dadadrive.ui.theme.AppSpacing
-import com.dadadrive.ui.theme.AppTypography
-import com.dadadrive.ui.theme.LocalAppColors
 import com.dadadrive.ui.theme.lighter
 import com.dadadrive.ui.theme.darker
 
@@ -65,6 +66,7 @@ import com.dadadrive.ui.theme.darker
 fun WelcomeScreen(
     onPhoneClick: () -> Unit,
     onGoogleClick: () -> Unit,
+    onSkipClick: () -> Unit = {},
     authState: AuthState = AuthState.Idle
 ) {
     val isLoading = authState is AuthState.Loading
@@ -99,14 +101,14 @@ fun WelcomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(LocalAppColors.current.background)
+            .background(AppColor.background)
     ) {
         Orb(440.dp, 220.dp, 120.dp, orb1.dp, AppColor.green.copy(alpha = 0.22f), 8.dp)
         Orb(320.dp, 160.dp, (-140).dp, orb2.dp, AppColor.green.copy(alpha = 0.12f), 12.dp)
         Orb(200.dp, 100.dp, 130.dp, orb3.dp, AppColor.green.copy(alpha = 0.15f), 6.dp)
         GridOverlay()
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
             Spacer(Modifier.weight(1f))
             LogoSection(glow = glow)
             Spacer(Modifier.weight(1f))
@@ -114,7 +116,8 @@ fun WelcomeScreen(
                 isLoading = isLoading,
                 error = error,
                 onPhoneClick = onPhoneClick,
-                onGoogleClick = onGoogleClick
+                onGoogleClick = onGoogleClick,
+                onSkipClick = onSkipClick
             )
         }
     }
@@ -175,6 +178,7 @@ private fun GridOverlay() {
 
 @Composable
 private fun LogoSection(glow: Float) {
+    val cdLogo = stringResource(R.string.cd_dadadrive_logo)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(contentAlignment = Alignment.Center) {
             Box(
@@ -212,7 +216,7 @@ private fun LogoSection(glow: Float) {
                 Text(
                     "🚗",
                     fontSize = 28.sp,
-                    modifier = Modifier.semantics { contentDescription = "DadaDrive logo" }
+                    modifier = Modifier.semantics { contentDescription = cdLogo }
                 )
             }
         }
@@ -222,7 +226,7 @@ private fun LogoSection(glow: Float) {
                 append("Dada")
                 withStyle(SpanStyle(color = AppColor.green.copy(alpha = 0.85f))) { append("Drive") }
             },
-            color = LocalAppColors.current.textPrimary,
+            color = AppColor.textPrimary,
             fontSize = 38.sp,
             fontWeight = FontWeight.Black
         )
@@ -230,7 +234,7 @@ private fun LogoSection(glow: Float) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             CapsuleDash()
             Text(
-                "Your ride, your price.",
+                stringResource(R.string.welcome_tagline),
                 color = AppColor.textHint,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium
@@ -255,23 +259,35 @@ private fun BottomSection(
     isLoading: Boolean,
     error: String?,
     onPhoneClick: () -> Unit,
-    onGoogleClick: () -> Unit
+    onGoogleClick: () -> Unit,
+    onSkipClick: () -> Unit
 ) {
     Column {
         Column(
             modifier = Modifier
                 .padding(horizontal = AppSpacing.l)
                 .background(
-                    LocalAppColors.current.surface.copy(alpha = 0.55f),
+                    AppColor.surface.copy(alpha = 0.55f),
                     RoundedCornerShape(28.dp)
                 )
                 .padding(AppSpacing.xl),
             verticalArrangement = Arrangement.spacedBy(AppSpacing.m)
         ) {
             AuthButton(style = AuthBtnStyle.Google, isLoading = isLoading, onClick = onGoogleClick)
-            DisabledAppleButton()
             DividerOr()
             AuthButton(style = AuthBtnStyle.Phone, isLoading = false, onClick = onPhoneClick)
+            TextButton(
+                onClick = onSkipClick,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.welcome_skip),
+                    color = AppColor.textHint,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp
+                )
+            }
 
             if (!error.isNullOrBlank()) {
                 Row(
@@ -289,7 +305,7 @@ private fun BottomSection(
         }
 
         Text(
-            text = legalText(),
+            text = welcomeLegalAnnotated(),
             color = AppColor.textHint.copy(alpha = 0.7f),
             fontSize = 10.sp,
             textAlign = TextAlign.Center,
@@ -301,21 +317,23 @@ private fun BottomSection(
     }
 }
 
-private fun legalText(): AnnotatedString = buildAnnotatedString {
-    append("By continuing, you agree to our ")
-    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Terms of Service") }
-    append(" and ")
-    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Privacy Policy") }
-    append(".")
+@Composable
+private fun welcomeLegalAnnotated(): AnnotatedString = buildAnnotatedString {
+    append(stringResource(R.string.welcome_legal_prefix))
+    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(stringResource(R.string.welcome_terms)) }
+    append(stringResource(R.string.welcome_legal_and))
+    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(stringResource(R.string.welcome_privacy)) }
+    append(stringResource(R.string.welcome_legal_suffix))
 }
 
 private enum class AuthBtnStyle { Google, Phone }
 
 @Composable
 private fun AuthButton(style: AuthBtnStyle, isLoading: Boolean, onClick: () -> Unit) {
+    val cdGoogle = stringResource(R.string.cd_google_sign_in)
     val isGoogle = style == AuthBtnStyle.Google
-    val buttonBg = if (isGoogle) LocalAppColors.current.surface else AppColor.green
-    val labelColor = if (isGoogle) LocalAppColors.current.textPrimary else Color.Black
+    val buttonBg = if (isGoogle) AppColor.surface else AppColor.green
+    val labelColor = if (isGoogle) AppColor.textPrimary else Color.Black
     val iconBg = if (isGoogle) Color(0xFFEA4335).copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.18f)
     val iconFg = if (isGoogle) Color(0xFFEA4335) else Color.Black
     val arrowColor = if (isGoogle) AppColor.textHint else Color.Black.copy(alpha = 0.5f)
@@ -349,7 +367,7 @@ private fun AuthButton(style: AuthBtnStyle, isLoading: Boolean, onClick: () -> U
                             text = "G",
                             color = iconFg,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.semantics { contentDescription = "Google sign in" }
+                            modifier = Modifier.semantics { contentDescription = cdGoogle }
                         )
                     }
                     if (!isGoogle) Icon(Icons.Default.Phone, null, tint = iconFg, modifier = Modifier.size(15.dp))
@@ -358,9 +376,9 @@ private fun AuthButton(style: AuthBtnStyle, isLoading: Boolean, onClick: () -> U
             Spacer(Modifier.size(AppSpacing.m))
             Text(
                 text = when {
-                    isGoogle && isLoading -> "Signing in..."
-                    isGoogle -> "Continue with Google"
-                    else -> "Continue with Phone"
+                    isGoogle && isLoading -> stringResource(R.string.welcome_signing_in)
+                    isGoogle -> stringResource(R.string.welcome_continue_google)
+                    else -> stringResource(R.string.welcome_continue_phone)
                 },
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
@@ -369,44 +387,6 @@ private fun AuthButton(style: AuthBtnStyle, isLoading: Boolean, onClick: () -> U
             if (!(isGoogle && isLoading)) {
                 Icon(Icons.Default.ArrowForward, null, tint = arrowColor, modifier = Modifier.size(12.dp))
             }
-        }
-    }
-}
-
-@Composable
-private fun DisabledAppleButton() {
-    Box {
-        Button(
-            onClick = {},
-            enabled = false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(AppRadius.full),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,
-                contentColor = Color.Black,
-                disabledContainerColor = Color.White,
-                disabledContentColor = Color.Black
-            )
-        ) { Text(stringResource(R.string.welcome_continue_with_apple), fontWeight = FontWeight.SemiBold) }
-
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clip(RoundedCornerShape(AppRadius.full))
-                .background(LocalAppColors.current.background.copy(alpha = 0.6f)),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            Text(
-                "Coming Soon",
-                color = AppColor.textHint,
-                style = AppTypography.labelS,
-                modifier = Modifier
-                    .padding(end = AppSpacing.m)
-                    .background(LocalAppColors.current.surface, RoundedCornerShape(AppRadius.full))
-                    .padding(horizontal = AppSpacing.m, vertical = AppSpacing.xs)
-            )
         }
     }
 }
@@ -423,12 +403,12 @@ private fun DividerOr() {
                 .height(1.dp)
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color.Transparent, LocalAppColors.current.surface, Color.Transparent)
+                        listOf(Color.Transparent, AppColor.surface, Color.Transparent)
                     )
                 )
         )
         Text(
-            "or",
+            stringResource(R.string.welcome_or),
             color = AppColor.textHint,
             style = AppTypography.labelM,
             modifier = Modifier.padding(horizontal = AppSpacing.m)
@@ -439,7 +419,7 @@ private fun DividerOr() {
                 .height(1.dp)
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color.Transparent, LocalAppColors.current.surface, Color.Transparent)
+                        listOf(Color.Transparent, AppColor.surface, Color.Transparent)
                     )
                 )
         )

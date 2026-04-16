@@ -58,8 +58,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.dadadrive.R
 import com.dadadrive.ui.theme.AppColor
 import com.dadadrive.ui.theme.AppTypography
 import com.dadadrive.ui.theme.AppRadius
@@ -136,14 +138,14 @@ fun EditProfileScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.cd_back),
                         tint = AppColor.textPrimary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
                 Spacer(Modifier.weight(1f))
                 Text(
-                    "Edit Profile",
+                    stringResource(R.string.profile_edit_title),
                     style = AppTypography.headingS,
                     fontWeight = FontWeight.Bold,
                     color = AppColor.textPrimary
@@ -179,7 +181,7 @@ fun EditProfileScreen(
                     if (displayUri != null) {
                         AsyncImage(
                             model = displayUri,
-                            contentDescription = "Profile photo",
+                            contentDescription = stringResource(R.string.cd_photo_profile),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .fillMaxSize()
@@ -216,7 +218,7 @@ fun EditProfileScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Person, // camera.fill equivalent
-                            contentDescription = "Change photo",
+                            contentDescription = stringResource(R.string.cd_change_photo),
                             tint = Color.Black,
                             modifier = Modifier.size(13.dp)
                         )
@@ -241,20 +243,20 @@ fun EditProfileScreen(
                 Spacer(Modifier.height(AppSpacing.xxl))
 
                 // ── Full Name — editable ────────────────────────────────
-                ProfileFieldLabel("Full Name")
+                ProfileFieldLabel(stringResource(R.string.profile_full_name_label))
                 EditableField(
                     value = fullName,
                     onValueChange = { fullName = it },
                     leadingIcon = Icons.Default.Person,
-                    placeholder = "Enter your name"
+                    placeholder = stringResource(R.string.profile_name_placeholder)
                 )
 
                 Spacer(Modifier.height(AppSpacing.l))
 
                 // ── Email — locked ──────────────────────────────────────
-                ProfileFieldLabel("Email")
+                ProfileFieldLabel(stringResource(R.string.profile_email_label))
                 LockedField(
-                    value = user?.email ?: "No email set",
+                    value = user?.email ?: stringResource(R.string.profile_no_email),
                     leadingIcon = Icons.Default.Email,
                     isEmpty = user?.email == null
                 )
@@ -262,9 +264,9 @@ fun EditProfileScreen(
                 Spacer(Modifier.height(AppSpacing.l))
 
                 // ── Phone — locked ──────────────────────────────────────
-                ProfileFieldLabel("Phone Number")
+                ProfileFieldLabel(stringResource(R.string.profile_phone_label))
                 LockedField(
-                    value = user?.phoneNumber ?: "No phone set",
+                    value = user?.phoneNumber ?: stringResource(R.string.profile_no_phone),
                     leadingIcon = Icons.Default.Phone,
                     isEmpty = user?.phoneNumber == null
                 )
@@ -272,9 +274,11 @@ fun EditProfileScreen(
                 Spacer(Modifier.height(AppSpacing.l))
 
                 // ── Role — locked ───────────────────────────────────────
-                ProfileFieldLabel("Role")
+                ProfileFieldLabel(stringResource(R.string.profile_role_label))
                 LockedField(
-                    value = if (user?.role == "driver") "Driver" else "Passenger",
+                    value = stringResource(
+                        if (user?.role == "driver") R.string.role_label_driver else R.string.role_label_passenger
+                    ),
                     leadingIcon = Icons.Default.Place,
                     isEmpty = false
                 )
@@ -308,7 +312,7 @@ fun EditProfileScreen(
                         )
                     } else {
                         Text(
-                            "Save Changes",
+                            stringResource(R.string.profile_save_changes),
                             color = Color.Black,
                             style = AppTypography.headingS,
                             fontWeight = FontWeight.Bold
@@ -400,7 +404,7 @@ private fun LockedField(
         trailingIcon = {
             Icon(
                 Icons.Default.Lock,
-                contentDescription = "Locked",
+                contentDescription = stringResource(R.string.cd_locked),
                 tint = AppColor.textHint,
                 modifier = Modifier.size(12.dp)
             )
@@ -448,7 +452,9 @@ private fun lockedFieldColors(): TextFieldColors {
 
 @Composable
 private fun RoleBadge(role: String) {
-    val label = if (role == "driver") "Driver" else "Passenger"
+    val label = stringResource(
+        if (role == "driver") R.string.role_label_driver else R.string.role_label_passenger
+    )
     Box(
         modifier = Modifier
             .background(

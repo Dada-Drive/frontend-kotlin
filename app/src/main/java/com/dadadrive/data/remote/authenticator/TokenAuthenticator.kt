@@ -31,22 +31,28 @@ class TokenAuthenticator @Inject constructor(
         val path = response.request.url.encodedPath
         if (path.contains("auth/refresh-token")) {
             synchronized(lock) {
-                tokenManager.clearTokens()
-                authNavigationEvents.emitForceLogout()
+                if (!tokenManager.isGuestBrowseEnabled()) {
+                    tokenManager.clearTokens()
+                    authNavigationEvents.emitForceLogout()
+                }
             }
             return null
         }
 
         if (response.request.header(RETRY_HEADER) != null) {
             synchronized(lock) {
-                tokenManager.clearTokens()
-                authNavigationEvents.emitForceLogout()
+                if (!tokenManager.isGuestBrowseEnabled()) {
+                    tokenManager.clearTokens()
+                    authNavigationEvents.emitForceLogout()
+                }
             }
             return null
         }
 
         synchronized(lock) {
             val refreshToken = tokenManager.getRefreshToken() ?: run {
+                // Invité : pas de jeton — laisser la requête échouer sans renvoyer au login
+                if (tokenManager.isGuestBrowseEnabled()) return null
                 tokenManager.clearTokens()
                 authNavigationEvents.emitForceLogout()
                 return null

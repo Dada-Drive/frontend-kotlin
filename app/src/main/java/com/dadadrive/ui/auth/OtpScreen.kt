@@ -54,6 +54,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.dadadrive.R
 import com.dadadrive.core.constants.Constants
 import com.dadadrive.ui.theme.LocalAppColors
 import kotlinx.coroutines.delay
@@ -98,8 +100,8 @@ fun OtpScreen(
     // Navigation au succès
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
-            authViewModel.resetState()
             onSuccess()
+            authViewModel.resetState()
         }
     }
 
@@ -123,7 +125,7 @@ fun OtpScreen(
             }) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Retour",
+                    contentDescription = stringResource(R.string.cd_back),
                     tint = fg
                 )
             }
@@ -292,7 +294,7 @@ fun OtpScreen(
                 val minutes = secondsLeft / 60
                 val seconds = secondsLeft % 60
                 Text(
-                    text = "Renvoyez le code  %02d:%02d".format(minutes, seconds),
+                    text = stringResource(R.string.otp_resend_timer, minutes, seconds),
                     color = fg.copy(alpha = 0.4f),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
@@ -305,7 +307,7 @@ fun OtpScreen(
                     authViewModel.sendOtp(phone)
                 }) {
                     Text(
-                        text = "Renvoyez le code",
+                        text = stringResource(R.string.otp_resend),
                         color = appColors.primary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
@@ -337,16 +339,16 @@ fun OtpScreen(
                         strokeWidth = 2.dp
                     )
                     Spacer(Modifier.width(10.dp))
-                    Text("Vérification...", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(stringResource(R.string.auth_verifying), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 } else {
-                    Text("Continuer", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(stringResource(R.string.auth_continue), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
 
             Spacer(Modifier.height(14.dp))
 
             Text(
-                text = "ÉTAPE 2 SUR 6",
+                text = stringResource(R.string.auth_flow_step, 2, 6),
                 color = fg.copy(alpha = 0.3f),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,

@@ -44,7 +44,11 @@ data class AvailableRide(
     val calculatedFare: Double,
     val vehicleType: String?,
     val status: RideStatus,
-    val expiresAt: String?
+    val expiresAt: String?,
+    /** Course réservée pour un passager tiers — coordonnées à contacter au point de prise en charge. */
+    val pickupForOther: Boolean = false,
+    val passengerName: String? = null,
+    val passengerPhone: String? = null
 )
 
 data class RideOffer(
@@ -71,7 +75,11 @@ data class ActiveRide(
     val calculatedFare: Double,
     val status: RideStatus,
     val startedAt: String?,
-    val completedAt: String?
+    val completedAt: String?,
+    val scheduledAt: String? = null,
+    val pickupForOther: Boolean = false,
+    val passengerName: String? = null,
+    val passengerPhone: String? = null
 )
 
 data class CompleteRideResult(
@@ -81,8 +89,36 @@ data class CompleteRideResult(
     val warning: String?
 )
 
+data class PassengerRideOffer(
+    val id: String,
+    val rideId: String,
+    val driverId: String,
+    val offeredFare: Double,
+    val status: String,
+    val driverName: String?,
+    val driverPhone: String?,
+    val driverRating: Double?,
+    val totalRides: Int?,
+    val vehicleLabel: String?
+)
+
+data class RideRating(
+    val id: String,
+    val rideId: String,
+    val driverId: String?,
+    val score: Int,
+    val comment: String?,
+    val createdAt: String?
+)
+
+data class DriverRatingsStats(
+    val avgRating: Double,
+    val totalRatings: Int
+)
+
 enum class RideStatus {
     Pending,
+    Scheduled,
     Offered,
     Accepted,
     InProgress,
@@ -92,6 +128,7 @@ enum class RideStatus {
 
 fun RideStatus.toApiString(): String = when (this) {
     RideStatus.Pending -> "pending"
+    RideStatus.Scheduled -> "scheduled"
     RideStatus.Offered -> "offered"
     RideStatus.Accepted -> "accepted"
     RideStatus.InProgress -> "in_progress"
@@ -101,6 +138,7 @@ fun RideStatus.toApiString(): String = when (this) {
 
 fun rideStatusFromApi(value: String): RideStatus = when (value) {
     "pending" -> RideStatus.Pending
+    "scheduled" -> RideStatus.Scheduled
     "offered" -> RideStatus.Offered
     "accepted" -> RideStatus.Accepted
     "in_progress" -> RideStatus.InProgress

@@ -6,6 +6,8 @@ import com.dadadrive.core.constants.Constants
 import com.dadadrive.data.local.TokenManager
 import com.dadadrive.data.remote.api.AuthApiService
 import com.dadadrive.data.remote.api.DriverApiService
+import com.dadadrive.data.remote.api.RidesApiService
+import com.dadadrive.data.remote.api.WalletApiService
 import com.dadadrive.data.remote.authenticator.TokenAuthenticator
 import com.dadadrive.data.remote.interceptor.AuthInterceptor
 import com.google.gson.Gson
@@ -89,4 +91,14 @@ object NetworkModule {
     @Singleton
     fun provideDriverApiService(retrofit: Retrofit): DriverApiService =
         retrofit.create(DriverApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideRidesApiService(retrofit: Retrofit): RidesApiService =
+        retrofit.create(RidesApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideWalletApiService(retrofit: Retrofit): WalletApiService =
+        retrofit.create(WalletApiService::class.java)
 }

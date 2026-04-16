@@ -5,6 +5,8 @@ import com.dadadrive.domain.model.User
 
 sealed class SessionUiState {
     data object Loading : SessionUiState()
+    /** Carte / exploration sans compte (pas d’appels API authentifiés). */
+    data object BrowsingGuest : SessionUiState()
     data object Unauthenticated : SessionUiState()
     data object NeedsPhone : SessionUiState()
     data object NeedsName : SessionUiState()

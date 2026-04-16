@@ -24,7 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dadadrive.R
 import com.dadadrive.ui.theme.LocalAppColors
 
 @Composable
@@ -45,14 +47,14 @@ fun NameEntryScreen(
     ) {
         Spacer(Modifier.height(48.dp))
         Text(
-            "What's your name?",
+            stringResource(R.string.name_entry_title),
             color = c.textPrimary,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            "This is how drivers and riders will see you.",
+            stringResource(R.string.name_entry_subtitle),
             color = c.textSecondary,
             fontSize = 14.sp
         )
@@ -62,7 +64,7 @@ fun NameEntryScreen(
             onValueChange = { name = it },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            label = { Text("Full name", color = c.textSecondary) }
+            label = { Text(stringResource(R.string.auth_full_name), color = c.textSecondary) }
         )
         error?.let {
             Spacer(Modifier.height(8.dp))
@@ -85,7 +87,7 @@ fun NameEntryScreen(
                     strokeWidth = 2.dp
                 )
             } else {
-                Text("Continue", color = c.onPrimary, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.auth_continue), color = c.onPrimary, fontWeight = FontWeight.SemiBold)
             }
         }
     }

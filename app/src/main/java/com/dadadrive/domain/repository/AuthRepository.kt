@@ -3,7 +3,8 @@ package com.dadadrive.domain.repository
 import com.dadadrive.domain.model.User
 
 interface AuthRepository {
-    suspend fun login(email: String, password: String): Result<User>
+    /** Connexion mot de passe — backend : `POST /auth/login` avec `phone` + `password`. */
+    suspend fun login(phone: String, password: String): Result<User>
     suspend fun signup(
         fullName: String,
         email: String,

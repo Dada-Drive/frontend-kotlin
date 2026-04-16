@@ -6,6 +6,12 @@ if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
 
+/** Sans guillemets autour de la valeur : evite `BASE_URL=""https://...""` dans BuildConfig. */
+fun Properties.localProp(key: String, default: String = ""): String {
+    val raw = getProperty(key, default)?.trim().orEmpty()
+    return raw.removeSurrounding("\"").removeSurrounding("'")
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -30,21 +36,21 @@ android {
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",
-            "\"${localProperties.getProperty("GOOGLE_WEB_CLIENT_ID", "")}\""
+            "\"${localProperties.localProp("GOOGLE_WEB_CLIENT_ID")}\""
         )
         buildConfigField(
             "String",
             "BASE_URL",
-            "\"${localProperties.getProperty("BASE_URL", "")}\""
+            "\"${localProperties.localProp("BASE_URL")}\""
         )
         buildConfigField("String", "HERE_ACCESS_KEY_ID",
-            "\"${localProperties.getProperty("HERE_ACCESS_KEY_ID", "")}\"")
+            "\"${localProperties.localProp("HERE_ACCESS_KEY_ID")}\"")
         buildConfigField("String", "HERE_ACCESS_KEY_SECRET",
-            "\"${localProperties.getProperty("HERE_ACCESS_KEY_SECRET", "")}\"")
+            "\"${localProperties.localProp("HERE_ACCESS_KEY_SECRET")}\"")
         manifestPlaceholders["HERE_ACCESS_KEY_ID"] =
-            localProperties.getProperty("HERE_ACCESS_KEY_ID", "")
+            localProperties.localProp("HERE_ACCESS_KEY_ID")
         manifestPlaceholders["HERE_ACCESS_KEY_SECRET"] =
-            localProperties.getProperty("HERE_ACCESS_KEY_SECRET", "")
+            localProperties.localProp("HERE_ACCESS_KEY_SECRET")
     }
 
     // ✅ APRÈS (sécurisé)
@@ -84,6 +90,8 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    // AppCompatDelegate.setApplicationLocales — équiv. Swift : .environment(\\.locale, …)
+    implementation("androidx.appcompat:appcompat:1.7.0")
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))

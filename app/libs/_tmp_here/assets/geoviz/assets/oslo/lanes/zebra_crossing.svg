@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Zebra crossing: factor 1 (stripe height = gap height), integer-snapped -->
+  <!-- 8 white horizontal stripes, transparent background & gaps -->
+  <!-- Starts with white at top, ends with a transparent gap at bottom -->
+  <!-- Stripe h = 64, Gap h = 64, Period = 128, Canvas = 1024x1024 -->
+
+  <!-- Stripe 1 -->
+  <rect x="0" y="0"   width="1024" height="64" fill="#FFFFFF"/>
+  <!-- gap: 64 -->
+
+  <!-- Stripe 2 -->
+  <rect x="0" y="128" width="1024" height="64" fill="#FFFFFF"/>
+  <!-- gap: 64 -->
+
+  <!-- Stripe 3 -->
+  <rect x="0" y="256" width="1024" height="64" fill="#FFFFFF"/>
+  <!-- gap: 64 -->
+
+  <!-- Stripe 4 -->
+  <rect x="0" y="384" width="1024" height="64" fill="#FFFFFF"/>
+  <!-- gap: 64 -->
+
+  <!-- Stripe 5 -->
+  <rect x="0" y="512" width="1024" height="64" fill="#FFFFFF"/>
+  <!-- gap: 64 -->
+
+  <!-- Stripe 6 -->
+  <rect x="0" y="640" width="1024" height="64" fill="#FFFFFF"/>
+  <!-- gap: 64 -->
+
+  <!-- Stripe 7 -->
+  <rect x="0" y="768" width="1024" height="64" fill="#FFFFFF"/>
+  <!-- gap: 64 -->
+
+  <!-- Stripe 8 -->
+  <rect x="0" y="896" width="1024" height="64" fill="#FFFFFF"/>
+  <!-- trailing gap: 64 (ends exactly at 1024) -->
+</svg>
+``

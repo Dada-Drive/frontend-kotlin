@@ -12,15 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -39,20 +38,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.dadadrive.R
 import com.dadadrive.ui.theme.AppColor
-import com.dadadrive.ui.theme.AppTypography
 import com.dadadrive.ui.theme.AppRadius
 import com.dadadrive.ui.theme.AppSpacing
+import com.dadadrive.ui.theme.AppTypography
 import kotlinx.coroutines.launch
-
-/**
- * Matches Swift OnboardingView.swift exactly:
- * - Same page content (icon, title, subtitle)
- * - Same top bar layout (back arrow · centred logo · invisible spacer)
- * - Same bottom section (Continue button + legal text)
- * - Same dot indicator
- * - Same colours, spacing, radii from the shared design system
- */
 
 private data class OnboardingPage(
     val icon: ImageVector,
@@ -60,21 +52,20 @@ private data class OnboardingPage(
     val subtitle: String
 )
 
-private val pages = listOf(
-    OnboardingPage(
-        icon = Icons.Default.Person,
-        title = "Your app for fair deals",
-        subtitle = "Choose rides that are right for you"
-    ),
-    OnboardingPage(
-        icon = Icons.Default.LocationOn,
-        title = "Rides across Tunisia",
-        subtitle = "Available in Tunis, Sfax, Sousse and more"
-    )
-)
-
 @Composable
 fun OnboardingScreen(onFinished: () -> Unit) {
+    val pages = listOf(
+        OnboardingPage(
+            icon = Icons.Default.Groups,
+            title = stringResource(R.string.onboarding_page1_title),
+            subtitle = stringResource(R.string.onboarding_page1_subtitle)
+        ),
+        OnboardingPage(
+            icon = Icons.Default.Map,
+            title = stringResource(R.string.onboarding_page2_title),
+            subtitle = stringResource(R.string.onboarding_page2_subtitle)
+        )
+    )
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val scope = rememberCoroutineScope()
     val current = pagerState.currentPage
@@ -85,15 +76,12 @@ fun OnboardingScreen(onFinished: () -> Unit) {
             .background(AppColor.background)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-
-            // ── Top bar: back · logo · invisible spacer ─────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = AppSpacing.l, vertical = AppSpacing.l),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Back button
                 Box(
                     modifier = Modifier
                         .size(44.dp)
@@ -108,24 +96,18 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.cd_back),
                         tint = AppColor.textPrimary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
 
                 Spacer(Modifier.weight(1f))
-
-                // Centred logo — matches Swift LogoView
                 LogoView()
-
                 Spacer(Modifier.weight(1f))
-
-                // Invisible spacer to keep logo centred
                 Spacer(Modifier.size(44.dp))
             }
 
-            // ── Page carousel ───────────────────────────────────────────
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
@@ -135,7 +117,6 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                 OnboardingPageView(page = pages[index])
             }
 
-            // ── Dot indicators ──────────────────────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -148,15 +129,14 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                             .padding(horizontal = AppSpacing.s / 2)
                             .size(8.dp)
                             .background(
-                                color = if (idx == current) AppColor.textPrimary
+                                if (idx == current) AppColor.textPrimary
                                 else AppColor.textPrimary.copy(alpha = 0.3f),
-                                shape = CircleShape
+                                CircleShape
                             )
                     )
                 }
             }
 
-            // ── Bottom section: Continue button + legal ─────────────────
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -164,7 +144,6 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.m)
             ) {
-                // Continue button — green, full-width, pill shape, black text, bold
                 Button(
                     onClick = onFinished,
                     shape = RoundedCornerShape(AppRadius.full),
@@ -177,20 +156,18 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                         .height(56.dp)
                 ) {
                     Text(
-                        "Continue",
+                        stringResource(R.string.onboarding_continue),
                         style = AppTypography.headingS,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                // Legal text — matches Swift: "Joining our app means you agree with our
-                // **Terms of Use** and **Privacy Policy**"
                 Text(
                     text = buildAnnotatedString {
-                        append("Joining our app means you agree with our ")
-                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Terms of Use") }
-                        append(" and ")
-                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Privacy Policy") }
+                        append(stringResource(R.string.onboarding_legal_prefix))
+                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(stringResource(R.string.onboarding_terms)) }
+                        append(stringResource(R.string.onboarding_legal_and))
+                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(stringResource(R.string.onboarding_privacy)) }
                     },
                     style = AppTypography.labelS,
                     color = AppColor.textHint,
@@ -202,13 +179,6 @@ fun OnboardingScreen(onFinished: () -> Unit) {
     }
 }
 
-// ── Single onboarding page ──────────────────────────────────────────────────
-// Matches Swift OnboardingPageView exactly:
-// - Two overlapping rotated green rounded rectangles
-// - Icon on top (black tint)
-// - Title (displayMedium, bold, textPrimary, center)
-// - Subtitle (bodyM, textHint, center)
-
 @Composable
 private fun OnboardingPageView(page: OnboardingPage) {
     Column(
@@ -218,14 +188,12 @@ private fun OnboardingPageView(page: OnboardingPage) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Illustration area — two overlapping rotated rectangles + icon
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(260.dp),
             contentAlignment = Alignment.Center
         ) {
-            // Background rect 1 — 220×200, rotated -10°, offset(-20, 10) in Swift
             Box(
                 modifier = Modifier
                     .size(width = 220.dp, height = 200.dp)
@@ -233,7 +201,6 @@ private fun OnboardingPageView(page: OnboardingPage) {
                     .background(AppColor.green, RoundedCornerShape(24.dp))
                     .align(Alignment.Center)
             )
-            // Background rect 2 — 180×180, rotated +8°, offset(20, -10) in Swift
             Box(
                 modifier = Modifier
                     .size(180.dp)
@@ -241,7 +208,6 @@ private fun OnboardingPageView(page: OnboardingPage) {
                     .background(AppColor.green, RoundedCornerShape(24.dp))
                     .align(Alignment.Center)
             )
-            // Icon — 120×120, black, on top
             Icon(
                 imageVector = page.icon,
                 contentDescription = null,
@@ -252,10 +218,9 @@ private fun OnboardingPageView(page: OnboardingPage) {
 
         Spacer(Modifier.height(AppSpacing.xl))
 
-        // Title — displayMedium (26sp bold), textPrimary, center
         Text(
             text = page.title,
-            style = AppTypography.displayMedium,
+            style = AppTypography.headingL,
             fontWeight = FontWeight.Bold,
             color = AppColor.textPrimary,
             textAlign = TextAlign.Center
@@ -263,7 +228,6 @@ private fun OnboardingPageView(page: OnboardingPage) {
 
         Spacer(Modifier.height(AppSpacing.m))
 
-        // Subtitle — bodyM (14sp regular), textHint, center
         Text(
             text = page.subtitle,
             style = AppTypography.bodyM,
@@ -273,13 +237,9 @@ private fun OnboardingPageView(page: OnboardingPage) {
     }
 }
 
-// ── Logo ────────────────────────────────────────────────────────────────────
-// Matches Swift LogoView exactly:
-// - Green rounded rect (32×32, cornerRadius 8) with "D" (black, 18sp, black weight)
-// - "DadaDrive" text (headingM = 18sp semibold, bold, textPrimary)
-
 @Composable
 private fun LogoView() {
+    val appTitle = stringResource(R.string.app_name)
     Row(
         horizontalArrangement = Arrangement.spacedBy(AppSpacing.s),
         verticalAlignment = Alignment.CenterVertically
@@ -298,7 +258,7 @@ private fun LogoView() {
             )
         }
         Text(
-            text = "DadaDrive",
+            text = appTitle,
             style = AppTypography.headingM,
             fontWeight = FontWeight.Bold,
             color = AppColor.textPrimary

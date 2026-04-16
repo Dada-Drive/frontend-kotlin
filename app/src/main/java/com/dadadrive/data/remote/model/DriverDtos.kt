@@ -100,7 +100,10 @@ data class AvailableRideDto(
     @SerializedName("calculated_fare") val calculatedFare: Double,
     @SerializedName("vehicle_type") val vehicleType: String?,
     val status: String,
-    @SerializedName("expires_at") val expiresAt: String?
+    @SerializedName("expires_at") val expiresAt: String?,
+    @SerializedName(value = "is_for_someone_else", alternate = ["pickup_for_other"]) val pickupForOther: Boolean? = null,
+    @SerializedName("passenger_name") val passengerName: String? = null,
+    @SerializedName("passenger_phone") val passengerPhone: String? = null
 )
 
 fun AvailableRideDto.toDomain() = AvailableRide(
@@ -118,7 +121,10 @@ fun AvailableRideDto.toDomain() = AvailableRide(
     calculatedFare = calculatedFare,
     vehicleType = vehicleType,
     status = rideStatusFromApi(status),
-    expiresAt = expiresAt
+    expiresAt = expiresAt,
+    pickupForOther = pickupForOther == true,
+    passengerName = passengerName,
+    passengerPhone = passengerPhone
 )
 
 data class RideOfferResponseDto(
@@ -168,7 +174,11 @@ data class ActiveRideDto(
     @SerializedName("calculated_fare") val calculatedFare: Double,
     val status: String,
     @SerializedName("started_at") val startedAt: String?,
-    @SerializedName("completed_at") val completedAt: String?
+    @SerializedName("completed_at") val completedAt: String?,
+    @SerializedName("scheduled_at") val scheduledAt: String? = null,
+    @SerializedName(value = "is_for_someone_else", alternate = ["pickup_for_other"]) val pickupForOther: Boolean? = null,
+    @SerializedName("passenger_name") val passengerName: String? = null,
+    @SerializedName("passenger_phone") val passengerPhone: String? = null
 )
 
 fun ActiveRideDto.toDomain() = ActiveRide(
@@ -187,7 +197,11 @@ fun ActiveRideDto.toDomain() = ActiveRide(
     calculatedFare = calculatedFare,
     status = rideStatusFromApi(status),
     startedAt = startedAt,
-    completedAt = completedAt
+    completedAt = completedAt,
+    scheduledAt = scheduledAt,
+    pickupForOther = pickupForOther == true,
+    passengerName = passengerName,
+    passengerPhone = passengerPhone
 )
 
 data class CompleteRideResponseDto(

@@ -36,12 +36,14 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -74,135 +76,139 @@ internal fun MapHomeTopHeader(
     onProfileClick: () -> Unit,
     onSearchClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
+    onWalletClick: () -> Unit = {},
+    walletAmountText: String = "0",
+    isWalletLoading: Boolean = false,
     showOfflineStatusBadge: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val c = LocalAppColors.current
-    val dark = isSystemInDarkTheme()
     val headerInk = c.textPrimary
-    val logoDiameter = 30.dp
-    val logoRing = if (dark) headerInk else Color.Black
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = c.surface,
-        shadowElevation = if (dark) 0.dp else 2.dp,
-        tonalElevation = if (dark) 1.dp else 0.dp
+    Row(
+        modifier = modifier
+            .statusBarsPadding()
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .statusBarsPadding()
-                .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .size(50.dp)
+                .clip(CircleShape)
+                .clickable(onClick = onProfileClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .border(2.dp, c.primary, CircleShape)
+                    .padding(2.dp)
+                    .clip(CircleShape)
+                    .background(c.darkInput),
+                contentAlignment = Alignment.Center
+            ) {
+                val initialsColor = if (c.darkInput.luminance() > 0.45f) c.textPrimary else Color.White
+                if (!avatarUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = avatarUrl,
+                        contentDescription = stringResource(R.string.cd_profile),
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text(profileInitials, color = initialsColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 2.dp, y = 2.dp)
+                    .size(13.dp)
+                    .background(c.primary, CircleShape)
+                    .border(1.5.dp, Color.White, CircleShape)
+            )
+            if (showOfflineStatusBadge) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 2.dp, y = (-2).dp)
+                        .size(16.dp)
+                        .background(Color(0xFFE53935), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(11.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        Surface(
+            shape = RoundedCornerShape(999.dp),
+            color = mapTopOverlayPillColor(),
+            shadowElevation = 2.dp
         ) {
             Row(
-                modifier = Modifier.wrapContentWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(logoDiameter + 4.dp)
-                        .border(width = 2.dp, color = logoRing, shape = CircleShape)
-                        .padding(2.dp),
+                        .size(26.dp)
+                        .background(c.primary, RoundedCornerShape(6.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_dadadrive_logo),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(logoDiameter)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+                    Text("D", color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.Black)
                 }
-                Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "DADA DRIVE",
+                    text = stringResource(R.string.brand_dada_drive),
                     color = headerInk,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp,
                     maxLines = 1
                 )
             }
-            Spacer(Modifier.weight(1f))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        Surface(
+            modifier = Modifier.size(50.dp).clickable(onClick = onWalletClick),
+            shape = CircleShape,
+            color = mapTopOverlayPillColor(),
+            shadowElevation = 2.dp
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                IconButton(
-                    onClick = onSearchClick,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = "Search",
-                        tint = headerInk,
-                        modifier = Modifier.size(22.dp)
+                Icon(
+                    imageVector = Icons.Filled.AccountBalanceWallet,
+                    contentDescription = stringResource(R.string.cd_wallet),
+                    tint = c.primary,
+                    modifier = Modifier.size(14.dp)
+                )
+                if (isWalletLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(10.dp),
+                        strokeWidth = 1.4.dp,
+                        color = headerInk
                     )
-                }
-                IconButton(
-                    onClick = onNotificationsClick,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Notifications,
-                        contentDescription = "Notifications",
-                        tint = headerInk,
-                        modifier = Modifier.size(22.dp)
+                } else {
+                    Text(
+                        text = walletAmountText,
+                        color = headerInk,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
                     )
-                }
-                Box(
-                    modifier = Modifier
-                        .padding(start = 0.dp, end = 2.dp)
-                        .size(40.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .border(2.dp, c.primary, CircleShape)
-                            .padding(2.dp)
-                            .clip(CircleShape)
-                            .clickable(onClick = onProfileClick)
-                            .background(c.darkInput),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val initialsColor =
-                            if (c.darkInput.luminance() > 0.45f) c.textPrimary else Color.White
-                        if (!avatarUrl.isNullOrBlank()) {
-                            AsyncImage(
-                                model = avatarUrl,
-                                contentDescription = "Profile",
-                                modifier = Modifier.fillMaxSize().clip(CircleShape),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Text(
-                                profileInitials,
-                                color = initialsColor,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    if (showOfflineStatusBadge) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .offset(x = 2.dp, y = (-2).dp)
-                                .size(16.dp)
-                                .background(Color(0xFFE53935), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Close,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(11.dp)
-                            )
-                        }
-                    }
                 }
             }
         }
@@ -335,7 +341,7 @@ internal fun MapBrandPill(modifier: Modifier = Modifier) {
             }
             Spacer(Modifier.width(10.dp))
             Text(
-                text = "DadaDrive",
+                text = stringResource(R.string.app_name),
                 color = c.textPrimary,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp
@@ -356,7 +362,7 @@ internal fun MapNotificationButton(modifier: Modifier = Modifier) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = Icons.Default.Notifications,
-                contentDescription = "Notifications",
+                contentDescription = stringResource(R.string.cd_notifications),
                 tint = c.textPrimary,
                 modifier = Modifier.size(22.dp)
             )
@@ -527,7 +533,7 @@ internal fun MapSideFloatingControls(
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Icon(
                     Icons.Outlined.Map,
-                    contentDescription = "Map type",
+                    contentDescription = stringResource(R.string.cd_map_type),
                     tint = typeIconTint,
                     modifier = Modifier.size(mapIcon)
                 )

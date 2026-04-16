@@ -10,16 +10,15 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * Estimates road distance and trip minutes so [FareCalculator] matches what riders send to
- * `POST /rides` (see backend). Swift repo does not implement this client-side; HERE routing
- * could replace the heuristic later.
+ * Heuristiques distance / durée pour paramètres `distance_km` et `estimated_minutes`
+ * envoyés à `GET /rides/fare` et au tracé HERE.
  */
 object RideRouteEstimator {
 
     /** Great-circle distance tends to underestimate driving distance — light detour factor. */
     private const val ROAD_DISTANCE_FACTOR = 1.25
 
-    /** Derive minutes for the fare formula (backend expects `estimated_minutes` ≥ 1). */
+    /** Derive minutes for the fare query (backend expects `estimated_minutes` ≥ 1). */
     private const val ASSUMED_URBAN_SPEED_KMH = 28.0
 
     fun haversineKm(a: GeoCoordinates, b: GeoCoordinates): Double =
@@ -44,18 +43,6 @@ object RideRouteEstimator {
         val distanceKm = max(0.1, straightLineKm * ROAD_DISTANCE_FACTOR)
         val minutes = max(1, (distanceKm / ASSUMED_URBAN_SPEED_KMH * 60.0).roundToInt())
         return distanceKm to minutes
-    }
-
-    fun estimateFareFromPickupToDrop(pickup: GeoCoordinates, dropoff: GeoCoordinates): RiderFareEstimate {
-        val straight = haversineKm(pickup, dropoff)
-        val (distanceKm, minutes) = estimateDistanceAndMinutes(straight)
-        val fare = FareCalculator.calculateFare(distanceKm, minutes)
-        return RiderFareEstimate(
-            straightLineKm = straight,
-            distanceKm = distanceKm,
-            estimatedMinutes = minutes,
-            fareTnd = fare
-        )
     }
 }
 
