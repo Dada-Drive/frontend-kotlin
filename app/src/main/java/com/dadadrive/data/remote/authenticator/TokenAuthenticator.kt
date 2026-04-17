@@ -29,6 +29,12 @@ class TokenAuthenticator @Inject constructor(
 
     override fun authenticate(route: Route?, response: Response): Request? {
         val path = response.request.url.encodedPath
+
+        // N'essaye pas de refresh pour les requêtes sans Bearer initial.
+        // Evite de déclencher une "expiration de session" sur des endpoints publics (login/register...).
+        val hadBearerAuth = !response.request.header("Authorization").isNullOrBlank()
+        if (!hadBearerAuth) return null
+
         if (path.contains("auth/refresh-token")) {
             synchronized(lock) {
                 if (!tokenManager.isGuestBrowseEnabled()) {

@@ -163,6 +163,13 @@ class DriverViewModel @Inject constructor(
                         } else {
                             _activeRide.value = assigned
                         }
+                    } else if (_activeRide.value != null) {
+                        // Passenger may have cancelled from their app: clear stale driver active ride UI.
+                        _activeRide.value = null
+                        _showActiveRide.value = false
+                        _availableRides.value = emptyList()
+                        stopPolling()
+                        startPolling()
                     }
                 },
                 onFailure = { }

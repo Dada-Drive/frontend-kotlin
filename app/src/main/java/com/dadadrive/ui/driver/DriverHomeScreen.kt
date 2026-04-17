@@ -470,18 +470,18 @@ private fun IncomingRidePopup(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "Nouvelle course",
+                    text = stringResource(R.string.driver_incoming_ride_title),
                     color = c.textPrimary,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Black
                 )
                 Text(
-                    text = "Pickup: ${ride.pickupAddress}",
+                    text = stringResource(R.string.driver_pickup_line, ride.pickupAddress),
                     color = c.textPrimary,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "Dropoff: ${ride.dropoffAddress}",
+                    text = stringResource(R.string.driver_dropoff_line, ride.dropoffAddress),
                     color = c.textSecondary
                 )
                 val riderInfo = listOfNotNull(
@@ -490,13 +490,13 @@ private fun IncomingRidePopup(
                 ).joinToString(" · ")
                 if (riderInfo.isNotBlank()) {
                     Text(
-                        text = "Client: $riderInfo",
+                        text = stringResource(R.string.driver_passenger_info, riderInfo),
                         color = c.textSecondary,
                         fontSize = 13.sp
                     )
                 }
                 Text(
-                    text = String.format(Locale.US, "%.2f TND", ride.calculatedFare),
+                    text = stringResource(R.string.driver_fare_amount, ride.calculatedFare),
                     color = c.primary,
                     fontWeight = FontWeight.Black,
                     fontSize = 28.sp
@@ -515,7 +515,7 @@ private fun IncomingRidePopup(
                         onClick = onRefuse,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Refuser", color = c.errorRed, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.driver_refuse), color = c.errorRed, fontWeight = FontWeight.SemiBold)
                     }
                     Button(
                         onClick = onAccept,
@@ -524,7 +524,7 @@ private fun IncomingRidePopup(
                         colors = ButtonDefaults.buttonColors(containerColor = c.primary)
                     ) {
                         Text(
-                            "Accepter (${secondsLeft}s)",
+                            stringResource(R.string.driver_accept) + " (${secondsLeft}s)",
                             color = c.onPrimary,
                             fontWeight = FontWeight.Bold
                         )
@@ -570,7 +570,7 @@ private fun DriverTopOverlay(
                     color = c.surfaceMuted
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Menu, contentDescription = null, tint = c.textPrimary, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.cd_open_menu), tint = c.textPrimary, modifier = Modifier.size(18.dp))
                     }
                 }
                 Row(
@@ -586,7 +586,7 @@ private fun DriverTopOverlay(
                     ) {
                         Text("D", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 13.sp)
                     }
-                    Text("DadaDrive", color = c.textPrimary, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                    Text(stringResource(R.string.app_name), color = c.textPrimary, fontWeight = FontWeight.Bold, fontSize = 24.sp)
                 }
             }
         }
@@ -675,7 +675,7 @@ private fun DriverHomeBottomPanel(
                 DriverQuickAction(Icons.Default.DirectionsCar, stringResource(R.string.driver_menu_my_rides), onClick = onOpenRides)
                 DriverQuickAction(Icons.Default.AccountBalanceWallet, stringResource(R.string.wallet_title), onClick = onOpenWallet)
                 DriverQuickAction(Icons.Default.BarChart, stringResource(R.string.driver_menu_statistics), onClick = onOpenStatistics)
-                DriverQuickAction(Icons.Default.Settings, "Settings", onClick = onOpenSettings)
+                DriverQuickAction(Icons.Default.Settings, stringResource(R.string.common_settings), onClick = onOpenSettings)
             }
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -778,8 +778,8 @@ private fun DriverSideMenuOverlay(
                             }
                         }
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                            Text("💳 $walletAmountText DADA", color = Color.White, fontSize = 12.sp)
-                            Text("🚗 $ridesCount rides", color = Color.White, fontSize = 12.sp)
+                            Text(stringResource(R.string.driver_side_menu_wallet_line, walletAmountText), color = Color.White, fontSize = 12.sp)
+                            Text(stringResource(R.string.driver_side_menu_rides_line, ridesCount), color = Color.White, fontSize = 12.sp)
                         }
                     }
                 }
@@ -868,7 +868,7 @@ private fun DriverStatisticsSheet(totalRides: Int, walletBalance: Double, onClos
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             DriverStatCard(totalRides.toString(), stringResource(R.string.driver_stats_total_rides), "", modifier = Modifier.weight(1f))
             DriverStatCard("—", stringResource(R.string.driver_stats_rating), "", modifier = Modifier.weight(1f))
-            DriverStatCard(String.format(Locale.US, "%.0f", walletBalance), "Balance", "", modifier = Modifier.weight(1f))
+            DriverStatCard(String.format(Locale.US, "%.0f", walletBalance), stringResource(R.string.driver_stats_wallet_balance), "", modifier = Modifier.weight(1f))
         }
         Text(stringResource(R.string.driver_tips_title), color = c.textPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
         DriverTip(stringResource(R.string.driver_tip_peak))

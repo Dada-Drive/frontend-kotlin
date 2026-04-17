@@ -14,6 +14,7 @@ import com.dadadrive.data.remote.model.SendOtpRequest
 import com.dadadrive.data.remote.model.UpdateProfileRequest
 import com.dadadrive.data.remote.model.LogoutRequest
 import com.dadadrive.data.remote.model.VerifyOtpRequest
+import com.dadadrive.data.remote.model.toDomainUser
 import com.dadadrive.domain.model.User
 import com.dadadrive.domain.repository.AuthRepository
 import retrofit2.HttpException
@@ -212,6 +213,19 @@ class AuthRepositoryImpl @Inject constructor(
             Result.failure(Exception(message))
         } catch (e: Exception) {
             Result.failure(Exception("Impossible de se connecter au serveur. Vérifiez votre connexion."))
+        }
+    }
+
+    override suspend fun getCurrentUser(): Result<User> {
+        return try {
+            val response = authApiService.getMe()
+            val user = response.user.toDomainUser()
+            userManager.saveUser(user)
+            Result.success(user)
+        } catch (e: HttpException) {
+            Result.failure(e)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 

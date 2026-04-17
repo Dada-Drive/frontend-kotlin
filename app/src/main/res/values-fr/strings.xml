@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DadaDrive</string>
     <string name="app_version_label">DadaDrive v1.0</string>
@@ -44,6 +44,11 @@
     <string name="role_continue">Continuer</string>
 
     <string name="map_move_to_set_pickup">Déplacez la carte pour le départ</string>
+    <string name="map_move_to_set">Déplacez la carte pour le départ</string>
+    <string name="map_confirm_pickup">Confirmer le départ</string>
+    <string name="map_outside_tunisia">Hors zone desservie</string>
+    <string name="map_outside_tunisia_title">En dehors de la Tunisie</string>
+    <string name="map_outside_tunisia_hint">Déplacez l’épingle vers une zone prise en charge.</string>
     <string name="map_getting_address">Récupération de l\'adresse…</string>
     <string name="map_pickup_location">Lieu de prise en charge</string>
     <string name="map_pickup_callout_title">Point de prise en charge</string>
@@ -60,6 +65,7 @@
     <string name="map_route_destination_hint">À</string>
     <string name="map_route_origin_placeholder">Votre position actuelle</string>
     <string name="map_route_change">Modifier</string>
+    <string name="map_route_remove_stop">Supprimer l\'arrêt</string>
     <string name="map_request_ride">Demander une course</string>
     <string name="map_requesting_ride">Demande en cours…</string>
     <string name="map_ride_request_sent">Demande envoyée aux chauffeurs disponibles à proximité.</string>
@@ -76,7 +82,7 @@
     <string name="map_cancel_ride">Annuler la course</string>
     <string name="map_load_error">Erreur de chargement de la carte</string>
     <string name="map_route_option">Itinéraire %1$d</string>
-    <string name="map_fare_estimate_note">Estimation : même formule que le serveur (base + km + minutes, minimum appliqué).</string>
+    <string name="map_fare_estimate_note">Estimation : le prix est basé sur le temps (minimum appliqué) ; la distance est affichée pour l\'itinéraire.</string>
     <string name="map_gps_fare_loading">Position GPS en cours pour estimer distance et prix…</string>
     <string name="map_enter_route">Entrez votre itinéraire</string>
     <string name="map_pickup_now">Ramassage maintenant</string>
@@ -90,6 +96,17 @@
     <string name="map_passenger_name_placeholder">Nom (facultatif)</string>
     <string name="map_passenger_phone_placeholder">Téléphone (obligatoire)</string>
     <string name="map_ride_scheduled_confirmation">Course programmée le %1$s. Les chauffeurs seront proposés plus près de l\'heure.</string>
+    <string name="map_rate_ride_title">Noter cette course</string>
+    <string name="map_rate_loading">Chargement de la note...</string>
+    <string name="common_loading">Chargement...</string>
+    <string name="map_rate_your_rating">Votre note : %1$d/5%2$s</string>
+    <string name="map_rate_submit">Envoyer la note</string>
+    <string name="map_rate_submitting">Envoi...</string>
+    <string name="map_scheduled_rides_title">Courses planifiées</string>
+    <string name="map_no_upcoming_scheduled_rides">Aucune course planifiée à venir</string>
+    <string name="map_scheduled_label">Planifiée</string>
+    <string name="map_from_address">De : %1$s</string>
+    <string name="map_to_address">À : %1$s</string>
     <string name="map_error_pickup_location_missing">Point de départ manquant.</string>
     <string name="map_error_destination_missing">Destination manquante.</string>
     <string name="map_error_pickup_address_missing">Adresse de départ manquante.</string>
@@ -100,6 +117,7 @@
     <string name="map_error_pick_driver_failed">Impossible de confirmer ce chauffeur.</string>
     <string name="map_error_cancel_ride_failed">Impossible d\'annuler la course.</string>
     <string name="map_error_load_offers_failed">Impossible de charger les offres des chauffeurs.</string>
+    <string name="map_error_load_scheduled_rides_failed">Impossible de charger les courses planifiees pour le moment.</string>
     <string name="driver_pickup_for_other_hint">Prise en charge pour un autre passager (contact au départ)</string>
     <string name="map_no_address_results">Aucune adresse — essayez d\'autres mots.</string>
     <string name="map_mode_default">Par défaut</string>
@@ -120,6 +138,8 @@
     <string name="cd_photo_profile">Photo de profil</string>
     <string name="brand_dada_drive">DADA DRIVE</string>
 
+    <string name="common_settings">Paramètres</string>
+    <string name="cd_open_menu">Ouvrir le menu</string>
     <string name="menu_language">Langue</string>
     <string name="menu_language_follow_device">Utiliser la langue de l’appareil</string>
     <string name="menu_edit_profile">Modifier le profil</string>
@@ -201,8 +221,14 @@
     <string name="driver_ride_completed">Course terminée</string>
     <string name="driver_commission">Commission : %1$s</string>
     <string name="driver_new_balance">Nouveau solde : %1$s</string>
-    <string name="driver_dropoff_arrow">→ %1$s</string>
+    <string name="driver_dropoff_arrow">â†’ %1$s</string>
     <string name="driver_fare_amount">%1$.2f TND</string>
+    <string name="driver_booker_info">Réservation : %1$s</string>
+    <string name="driver_passenger_info">Passager : %1$s</string>
+    <string name="driver_incoming_ride_title">Nouvelle course</string>
+    <string name="driver_side_menu_wallet_line">💳 %1$s DADA</string>
+    <string name="driver_side_menu_rides_line">🚗 %1$d courses</string>
+    <string name="driver_stats_wallet_balance">Solde</string>
 
     <string name="profile_edit_title">Modifier le profil</string>
     <string name="profile_full_name_label">Nom complet</string>
@@ -235,5 +261,6 @@
     <string name="lang_system">Langue du système</string>
     <string name="lang_english">Anglais</string>
     <string name="lang_french">Français</string>
-    <string name="lang_arabic">العربية</string>
+    <string name="lang_arabic">Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©</string>
 </resources>
+

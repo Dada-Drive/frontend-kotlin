@@ -109,9 +109,8 @@ class RidesRepositoryImpl @Inject constructor(
      * Copie la formule backend (`fareConfig.js`) pour le mode dégradé uniquement —
      * pas de fichier de config client : la source de vérité reste le serveur.
      */
-    private fun fallbackFare(distanceKm: Double, estimatedMinutes: Int): Double {
+    private fun fallbackFare(_distanceKm: Double, estimatedMinutes: Int): Double {
         val raw = FALLBACK_BASE_FARE +
-            distanceKm * FALLBACK_PRICE_PER_KM +
             estimatedMinutes * FALLBACK_PRICE_PER_MINUTE
         val clamped = max(raw, FALLBACK_MIN_FARE)
         return BigDecimal.valueOf(clamped).setScale(2, RoundingMode.HALF_UP).toDouble()
@@ -120,7 +119,6 @@ class RidesRepositoryImpl @Inject constructor(
     private companion object {
         private const val TAG = "RidesRepository"
         private const val FALLBACK_BASE_FARE = 1.5
-        private const val FALLBACK_PRICE_PER_KM = 0.5
         private const val FALLBACK_PRICE_PER_MINUTE = 0.1
         private const val FALLBACK_MIN_FARE = 3.0
     }

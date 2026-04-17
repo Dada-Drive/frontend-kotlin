@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DadaDrive</string>
     <string name="app_version_label">DadaDrive v1.0</string>
@@ -44,6 +44,11 @@
     <string name="role_continue">Continue</string>
 
     <string name="map_move_to_set_pickup">Move map to set pickup</string>
+    <string name="map_move_to_set">Move map to set pickup</string>
+    <string name="map_confirm_pickup">Confirm pickup</string>
+    <string name="map_outside_tunisia">Outside service area</string>
+    <string name="map_outside_tunisia_title">Outside Tunisia</string>
+    <string name="map_outside_tunisia_hint">Move the pin to a supported area.</string>
     <string name="map_getting_address">Getting address…</string>
     <string name="map_pickup_location">Pickup location</string>
     <string name="map_pickup_callout_title">Pickup point</string>
@@ -60,6 +65,7 @@
     <string name="map_route_destination_hint">To</string>
     <string name="map_route_origin_placeholder">Votre position actuelle</string>
     <string name="map_route_change">Change</string>
+    <string name="map_route_remove_stop">Remove stop</string>
     <string name="map_request_ride">Request Ride</string>
     <string name="map_requesting_ride">Requesting…</string>
     <string name="map_ride_request_sent">Ride request sent to nearby available drivers.</string>
@@ -76,7 +82,7 @@
     <string name="map_cancel_ride">Cancel ride</string>
     <string name="map_load_error">Map loading error</string>
     <string name="map_route_option">Route %1$d</string>
-    <string name="map_fare_estimate_note">Estimate: same formula as the server (base + km + minutes, minimum applied).</string>
+    <string name="map_fare_estimate_note">Estimate: fare is based on time (minimum applied); distance is shown for the route.</string>
     <string name="map_gps_fare_loading">Getting GPS position to estimate distance and price…</string>
     <string name="map_enter_route">Enter your route</string>
     <string name="map_pickup_now">Pickup now</string>
@@ -90,6 +96,17 @@
     <string name="map_passenger_name_placeholder">Name (optional)</string>
     <string name="map_passenger_phone_placeholder">Phone (required)</string>
     <string name="map_ride_scheduled_confirmation">Ride scheduled for %1$s. Drivers will be matched closer to pickup time.</string>
+    <string name="map_rate_ride_title">Rate this ride</string>
+    <string name="map_rate_loading">Loading rating...</string>
+    <string name="common_loading">Loading...</string>
+    <string name="map_rate_your_rating">Your rating: %1$d/5%2$s</string>
+    <string name="map_rate_submit">Submit rating</string>
+    <string name="map_rate_submitting">Submitting...</string>
+    <string name="map_scheduled_rides_title">Scheduled rides</string>
+    <string name="map_no_upcoming_scheduled_rides">No upcoming scheduled rides</string>
+    <string name="map_scheduled_label">Scheduled</string>
+    <string name="map_from_address">From: %1$s</string>
+    <string name="map_to_address">To: %1$s</string>
     <string name="map_error_pickup_location_missing">Pickup location is missing.</string>
     <string name="map_error_destination_missing">Destination is missing.</string>
     <string name="map_error_pickup_address_missing">Pickup address is missing.</string>
@@ -100,6 +117,7 @@
     <string name="map_error_pick_driver_failed">Could not confirm this driver.</string>
     <string name="map_error_cancel_ride_failed">Could not cancel ride.</string>
     <string name="map_error_load_offers_failed">Could not load driver offers.</string>
+    <string name="map_error_load_scheduled_rides_failed">Could not load scheduled rides right now.</string>
     <string name="driver_pickup_for_other_hint">Pickup for another passenger (contact at pickup)</string>
     <string name="map_no_address_results">No address found — try other words.</string>
     <string name="map_mode_default">Default</string>
@@ -122,6 +140,8 @@
     <string name="cd_photo_profile">Profile photo</string>
     <string name="brand_dada_drive">DADA DRIVE</string>
 
+    <string name="common_settings">Settings</string>
+    <string name="cd_open_menu">Open menu</string>
     <string name="menu_language">Language</string>
     <string name="menu_language_follow_device">Use device language</string>
     <string name="menu_edit_profile">Edit Profile</string>
@@ -203,10 +223,14 @@
     <string name="driver_ride_completed">Ride completed</string>
     <string name="driver_commission">Commission: %1$s</string>
     <string name="driver_new_balance">New balance: %1$s</string>
-    <string name="driver_dropoff_arrow">→ %1$s</string>
+    <string name="driver_dropoff_arrow">â†’ %1$s</string>
     <string name="driver_fare_amount">%1$.2f TND</string>
     <string name="driver_booker_info">Booker: %1$s</string>
     <string name="driver_passenger_info">Passenger: %1$s</string>
+    <string name="driver_incoming_ride_title">New ride request</string>
+    <string name="driver_side_menu_wallet_line">💳 %1$s DADA</string>
+    <string name="driver_side_menu_rides_line">🚗 %1$d rides</string>
+    <string name="driver_stats_wallet_balance">Balance</string>
     <string name="driver_menu_my_rides">My Rides</string>
     <string name="driver_menu_statistics">Statistics</string>
     <string name="driver_menu_account">ACCOUNT</string>
@@ -263,5 +287,6 @@
     <string name="lang_system">System Default</string>
     <string name="lang_english">English</string>
     <string name="lang_french">Français</string>
-    <string name="lang_arabic">العربية</string>
+    <string name="lang_arabic">Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©</string>
 </resources>
+

@@ -8,8 +8,6 @@ import com.dadadrive.core.debug.DebugAuthConfig
 import com.dadadrive.data.local.TokenManager
 import com.dadadrive.data.local.UserManager
 import com.dadadrive.data.remote.AuthNavigationEvents
-import com.dadadrive.data.remote.api.AuthApiService
-import com.dadadrive.data.remote.model.toDomainUser
 import com.dadadrive.domain.model.User
 import com.dadadrive.domain.repository.AuthRepository
 import com.dadadrive.domain.repository.DriverRepository
@@ -25,7 +23,6 @@ import javax.inject.Inject
 @HiltViewModel
 class SessionViewModel @Inject constructor(
     private val tokenManager: TokenManager,
-    private val authApiService: AuthApiService,
     private val userManager: UserManager,
     private val driverRepository: DriverRepository,
     private val authRepository: AuthRepository,
@@ -60,16 +57,30 @@ class SessionViewModel @Inject constructor(
                 return@launch
             }
             try {
-                val me = authApiService.getMe()
-                val dto = me.user
-                val user = dto.toDomainUser()
-                userManager.saveUser(user)
-                _sessionState.value = nextStateAfterMe(dto.phone, dto.fullName, dto.role, user)
+                val currentUserResult = authRepository.getCurrentUser()
+                val user = currentUserResult.getOrThrow()
+                _sessionState.value = nextStateAfterMe(
+                    user.phoneNumber,
+                    user.fullName,
+                    user.role,
+                    user
+                )
+            } catch (e: HttpException) {
+                Log.w("Session", "getMe http failed: code=${e.code()} msg=${e.message()}")
+                if (e.code() == 401 || e.code() == 403) {
+                    tokenManager.clearTokens()
+                    userManager.clearUser()
+                    _sessionState.value = SessionUiState.Unauthenticated
+                } else {
+                    val cached = userManager.getUser()
+                    _sessionState.value = cached?.let { SessionUiState.Authenticated(it) }
+                        ?: SessionUiState.Unauthenticated
+                }
             } catch (e: Exception) {
-                Log.w("Session", "getMe failed: ${e.message}")
-                tokenManager.clearTokens()
-                userManager.clearUser()
-                _sessionState.value = SessionUiState.Unauthenticated
+                Log.w("Session", "getMe network/unknown failed: ${e.message}")
+                val cached = userManager.getUser()
+                _sessionState.value = cached?.let { SessionUiState.Authenticated(it) }
+                    ?: SessionUiState.Unauthenticated
             }
         }
     }

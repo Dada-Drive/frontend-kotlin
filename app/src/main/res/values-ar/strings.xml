@@ -44,6 +44,11 @@
     <string name="role_continue">متابعة</string>
 
     <string name="map_move_to_set_pickup">حرّك الخريطة لتحديد الانطلاق</string>
+    <string name="map_move_to_set">حرّك الخريطة لتحديد الانطلاق</string>
+    <string name="map_confirm_pickup">تأكيد الانطلاق</string>
+    <string name="map_outside_tunisia">خارج نطاق الخدمة</string>
+    <string name="map_outside_tunisia_title">خارج تونس</string>
+    <string name="map_outside_tunisia_hint">حرّك الدبوس إلى منطقة مدعومة.</string>
     <string name="map_getting_address">جاري جلب العنوان…</string>
     <string name="map_pickup_location">نقطة الانطلاق</string>
     <string name="map_pickup_callout_title">نقطة الانطلاق</string>
@@ -76,7 +81,7 @@
     <string name="map_cancel_ride">إلغاء الرحلة</string>
     <string name="map_load_error">خطأ في تحميل الخريطة</string>
     <string name="map_route_option">المسار %1$d</string>
-    <string name="map_fare_estimate_note">تقدير: نفس صيغة الخادم (أساس + كم + دقائق، مع حد أدنى).</string>
+    <string name="map_fare_estimate_note">تقدير: السعر يعتمد على الوقت (مع حد أدنى)، والمسافة تُعرض لبيان المسار.</string>
     <string name="map_gps_fare_loading">جاري تحديد GPS لتقدير المسافة والسعر…</string>
     <string name="map_enter_route">أدخل مسارك</string>
     <string name="map_pickup_now">الانطلاق الآن</string>
@@ -100,6 +105,7 @@
     <string name="map_error_pick_driver_failed">تعذّر تأكيد هذا السائق.</string>
     <string name="map_error_cancel_ride_failed">تعذّر إلغاء الرحلة.</string>
     <string name="map_error_load_offers_failed">تعذّر تحميل عروض السائقين.</string>
+    <string name="map_error_load_scheduled_rides_failed">تعذّر تحميل الرحلات المجدولة حالياً.</string>
     <string name="driver_pickup_for_other_hint">التقاط راكب آخر (التواصل عند الانطلاق)</string>
     <string name="map_no_address_results">لا نتائج — جرّب كلمات أخرى.</string>
     <string name="map_mode_default">افتراضي</string>
