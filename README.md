@@ -171,28 +171,70 @@ app/src/main/java/tn/dadadrive/
 ### Prérequis
 
 - Android Studio Hedgehog (ou plus récent)
-- JDK 17+
-- Un compte Firebase (pour Auth + Firestore)
-- Une clé API Google Maps
+- JDK 17+ (le projet compile en `JavaVersion.VERSION_11`)
+- Backend `dada-api` accessible (par défaut `http://10.0.2.2:3000/api/v1` en debug — voir `backend-integration.md`)
+- Identifiants HERE Maps (`HERE_ACCESS_KEY_ID` + `HERE_ACCESS_KEY_SECRET`) — obtenus via la console HERE Developer
+- Compte Firebase **uniquement** pour Crashlytics + FCM + Analytics (le fichier `app/google-services.json` est un **stub local** versionné depuis la phase R-0.1 ; remplacer par le vrai fichier pour la prod)
 
 ### Installation
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://github.com/ton-username/dadadrive.git
-cd dadadrive
+git clone https://github.com/Dada-Drive/frontend-kotlin.git
+cd frontend-kotlin
 
-# 2. Ouvrir dans Android Studio
-# File > Open > sélectionner le dossier DadaDrive
+# 2. Copier le template de secrets et remplir les valeurs
+cp local.properties.template local.properties
+# Édite local.properties pour renseigner sdk.dir, HERE_*, BACKEND_BASE_URL_*, etc.
 
-# 3. Ajouter le fichier google-services.json
-# Télécharge-le depuis Firebase Console et place-le dans app/
+# 3. (Optionnel) Remplacer le stub google-services.json par le vrai fichier
+#    depuis Firebase Console si tu veux Crashlytics/FCM réels en debug.
 
-# 4. Ajouter ta clé Google Maps dans local.properties
-MAPS_API_KEY=ta_cle_ici
-
-# 5. Synchroniser Gradle et lancer l'app
+# 4. Synchroniser et lancer
+./gradlew :app:assembleDebug
+# Puis : Android Studio > Run > app  (variante debug par défaut)
 ```
+
+### Build variants
+
+Trois `buildTypes` sont déclarés dans [`app/build.gradle.kts`](app/build.gradle.kts) :
+
+| Variant   | `applicationIdSuffix` | URL backend par défaut                       | Cert pinning | Signing                                                            |
+|-----------|-----------------------|----------------------------------------------|--------------|--------------------------------------------------------------------|
+| `debug`   | `.debug`              | `http://10.0.2.2:3000/api/v1`                | OFF          | debug                                                              |
+| `staging` | `.staging`            | `https://staging-api.turbodrive.tn/api/v1`   | ON           | debug                                                              |
+| `release` | *(aucun)*             | `https://api.turbodrive.tn/api/v1`           | ON           | release si `ENABLE_RELEASE_SIGNING=true` (+ keystore configuré), sinon debug |
+
+Les URLs sont surchargeables via `BACKEND_BASE_URL_DEBUG` / `_STAGING` / `_RELEASE` dans `local.properties`.
+
+```bash
+./gradlew :app:assembleDebug      # APK debug
+./gradlew :app:assembleStaging    # APK staging (cert pinning ON, signing debug)
+./gradlew :app:assembleRelease    # APK release (minify + R8 + cert pinning ON)
+```
+
+### Secrets locaux
+
+Tous les secrets vivent dans `local.properties` à la racine du projet (non versionné, ignoré par `.gitignore`). Le fichier [`local.properties.template`](local.properties.template) sert de référence ; chaque clé est documentée inline.
+
+| Clé                          | Rôle                                                                 | Obligatoire        |
+|------------------------------|----------------------------------------------------------------------|--------------------|
+| `sdk.dir`                    | Chemin local du SDK Android                                          | ✅                 |
+| `GOOGLE_WEB_CLIENT_ID`       | OAuth 2.0 « Web application » pour Google Sign-In (Credential Manager) | ✅ (auth)          |
+| `BACKEND_BASE_URL_DEBUG`     | URL backend variant `debug` (défaut : `http://10.0.2.2:3000/api/v1`) | ⚠️ recommandé      |
+| `BACKEND_BASE_URL_STAGING`   | URL backend variant `staging`                                        | ⚠️ recommandé      |
+| `BACKEND_BASE_URL_RELEASE`   | URL backend variant `release`                                        | ⚠️ recommandé      |
+| `HERE_ACCESS_KEY_ID`         | Clé d'accès HERE SDK                                                 | ✅ (cartes)        |
+| `HERE_ACCESS_KEY_SECRET`     | Secret HERE SDK                                                      | ✅ (cartes)        |
+| `MAPBOX_ACCESS_TOKEN`        | Placeholder pour le futur SDK Mapbox (roadmap)                       | ❌ (pas encore utilisé) |
+| `CERTIFICATE_PINS`           | Pins SHA-256 pour le certificate pinning OkHttp                      | ⚠️ recommandé (staging/release) |
+| `ENABLE_RELEASE_SIGNING`     | `true` pour signer l'APK release avec un keystore réel               | ❌ (défaut `false`) |
+| `KEYSTORE_PATH`              | Chemin du keystore release                                           | si `ENABLE_RELEASE_SIGNING=true` |
+| `KEYSTORE_STORE_PASSWORD`    | Mot de passe du store                                                | si `ENABLE_RELEASE_SIGNING=true` |
+| `KEYSTORE_KEY_ALIAS`         | Alias de la clé                                                      | si `ENABLE_RELEASE_SIGNING=true` |
+| `KEYSTORE_KEY_PASSWORD`      | Mot de passe de la clé                                               | si `ENABLE_RELEASE_SIGNING=true` |
+
+> **À propos de `google-services.json`** : le fichier `app/google-services.json` actuellement versionné est un **stub local** mis en place lors de la phase R-0.1 pour que `compileDebugKotlin` passe sans dépendance Firebase Console. Pour activer Crashlytics, FCM et Analytics réels (typiquement en staging/release), remplace-le par le fichier obtenu via Firebase Console pour l'`applicationId` correspondant (`com.dadadrive`, `com.dadadrive.debug`, `com.dadadrive.staging`).
 
 ---
 
