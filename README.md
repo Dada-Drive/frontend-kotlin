@@ -33,18 +33,24 @@ DadaDrive est une application mobile Android qui permet :
 
 | Composant | Technologie |
 |---|---|
-| Langage | Kotlin |
+| Langage | Kotlin 2.0.21 |
 | Architecture | MVVM + Clean Architecture |
-| UI | Jetpack Compose / XML Fragments |
-| Navigation | Jetpack Navigation Component |
-| Injection de dépendances | Hilt (Dagger) |
-| Réseau | Retrofit + OkHttp |
-| Base de données locale | Room |
-| Temps réel | Firebase Firestore / WebSocket |
-| Cartes & GPS | Google Maps SDK / Mapbox |
-| Authentification | Firebase Auth |
+| UI | Jetpack Compose (Material 3, BOM 2024.09.00) |
+| Navigation | Jetpack Navigation Compose |
+| Injection de dépendances | Hilt 2.56.1 (Dagger) + KSP |
+| Réseau HTTP | Retrofit 2.11.0 + OkHttp 4.12.0 |
+| Sérialisation | kotlinx.serialization 1.7.3 + Gson converter |
+| Base de données locale | Room 2.6.1 |
+| Stockage chiffré | androidx.security:security-crypto (token store) |
+| Temps réel | Socket.IO 2.1.0 (`io.socket:socket.io-client`) |
+| Cartes & GPS | HERE SDK Explore 4.25.5 (AAR local) — Mapbox prévu en remplacement (roadmap `design-system.md`) |
+| Authentification | Google Sign-In (`play-services-auth` 21.3.0) → JWT custom + `TokenAuthenticator` (pas Firebase Auth) |
+| Crash & monitoring | Firebase Crashlytics + Analytics + FCM (BOM 33.12.0) — **pas Firestore, pas Firebase Auth** |
 | Reactive programming | Kotlin Coroutines + Flow |
-| Tests | JUnit, Mockito, Espresso |
+| Tests unitaires | JUnit 4.13.2 + MockK 1.13.11 + MockWebServer 4.12.0 |
+| Tests UI / snapshot | Compose `ui-test-junit4` + Paparazzi 2.0.0-alpha02 |
+| Tests instrumentation | androidx.test.espresso 3.7.0 *(legacy, peu utilisé)* |
+| Lint & qualité | ktlint 12.1.2 + detekt 1.23.8 |
 
 ---
 
@@ -74,7 +80,7 @@ DadaDrive suit le pattern **MVVM (Model – View – ViewModel)** combiné aux p
 ┌──────────────▼──────────────────────────┐
 │            DATA LAYER                   │
 │   Repositories · Room · Retrofit        │
-│   Firebase · Sources de données         │
+│   Socket.IO · Crashlytics/FCM           │
 └─────────────────────────────────────────┘
 ```
 
@@ -90,7 +96,7 @@ Survit aux rotations d'écran. Appelle les `UseCase` du domaine, expose les éta
 Contient les `UseCase` (ex: `GetNearbyDriversUseCase`, `BookRideUseCase`) et les interfaces `Repository`. Cette couche est **100% Kotlin pur**, sans dépendance Android — facilitant les tests unitaires.
 
 **Data Layer** — La source de vérité.  
-Implémente les interfaces du domaine. Orchestre les données entre la base locale (Room), l'API distante (Retrofit) et Firebase. Contient aussi les `DTO` (objets de transfert) et les `DAO`.
+Implémente les interfaces du domaine. Orchestre les données entre la base locale (Room), l'API distante (Retrofit), le canal temps réel (Socket.IO) et Firebase (Crashlytics + FCM + Analytics — **pas Firestore, pas Firebase Auth**). Contient aussi les `DTO` (objets de transfert) et les `DAO`.
 
 ---
 
