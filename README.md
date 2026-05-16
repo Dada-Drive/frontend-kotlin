@@ -102,34 +102,66 @@ Implémente les interfaces du domaine. Orchestre les données entre la base loca
 
 ## Structure des dossiers
 
+> **Note importante** : le code Kotlin réside sous `tn.dadadrive.*`. L'`applicationId` et le `namespace` Android (déclarés dans `app/build.gradle.kts`) restent `com.dadadrive` — c'est sous ce dernier package qu'est généré le `R` Android. Ne pas confondre les deux.
+
 ```
-app/src/main/java/com/dadadrive/
+app/src/main/java/tn/dadadrive/
 │
-├── data/
-│   ├── local/
-│   │   ├── dao/              # Interfaces Room DAO (requêtes BDD locale)
-│   │   └── database/         # Configuration AppDatabase Room
-│   ├── remote/
-│   │   ├── api/              # Interfaces Retrofit (endpoints REST)
-│   │   └── dto/              # Modèles de réponse API (Data Transfer Objects)
-│   └── repository/           # Implémentations concrètes des repositories
+├── app/             # DadaDriveApplication, MainActivity, AppProcessLifecycleBridge
 │
-├── domain/
-│   ├── model/                # Entités métier (User, Ride, Driver, Location...)
-│   ├── repository/           # Interfaces abstraites des repositories
-│   └── usecase/              # Cas d'utilisation (BookRide, TrackDriver, Pay...)
+├── core/            # Briques transverses (sans dépendance présentation)
+│   ├── constants/        # Clés / URLs / valeurs partagées
+│   ├── debug/            # Helpers DEBUG (configs alternatives)
+│   ├── designsystem/     # Tokens, composants UI design system
+│   ├── diagnostics/      # Boot diagnostics, crash reporting
+│   ├── extensions/       # Extensions Kotlin/Android transverses
+│   ├── language/         # Sélecteur de langue (FR / AR / EN)
+│   ├── logging/          # Wrappers Timber
+│   ├── phone/            # Validation/format numéros tunisiens
+│   ├── pricing/          # Calculs tarifaires (parité Swift)
+│   ├── theme/            # Couleurs, typo (LocalAppColors)
+│   ├── utils/            # Helpers génériques (date, IO, …)
+│   └── validation/       # DateParseResult & co (R-0.2)
 │
-├── ui/
-│   ├── auth/
-│   │   ├── login/            # Écran connexion (Fragment + ViewModel)
-│   │   └── register/         # Écran inscription (Fragment + ViewModel)
-│   ├── home/                 # Carte principale + recherche de chauffeur
-│   ├── files/                # Historique de courses et documents
-│   ├── profile/              # Profil utilisateur et paramètres
-│   └── common/               # Composants UI réutilisables (boutons, dialogs...)
+├── data/            # Implémentations concrètes (sources de données)
+│   ├── local/            # Room DAO + AppDatabase
+│   ├── network/          # Retrofit (api, dto, interceptors, authenticator)
+│   ├── repositories/     # Implémentations des interfaces domaine
+│   ├── socket/           # Wrapper Socket.IO (temps réel)
+│   └── storage/          # Stockage chiffré (security-crypto)
 │
-├── di/                       # Modules Hilt (injection de dépendances)
-└── utils/                    # Extensions Kotlin, constantes, helpers
+├── di/              # Modules Hilt (binds + provides)
+│
+├── domain/          # Logique métier pure (100% Kotlin, sans Android)
+│   ├── model/            # Entités principales
+│   ├── models/           # Modèles additionnels (sous-domaines)
+│   ├── protocols/        # Interfaces transverses
+│   └── usecases/         # Cas d'utilisation (BookRide, CreateDriverProfile, …)
+│
+├── map/             # HERE SDK : caméra, overlays, helpers carte
+│
+├── presentation/    # Écrans Compose (un sous-dossier par feature)
+│   ├── auth/             # Login / Sign-Up Google Sign-In
+│   ├── branding/         # Splash branding
+│   ├── common/           # Composants partagés inter-écrans
+│   ├── components/       # Composants UI atomiques réutilisables
+│   ├── driverhome/       # Écran principal chauffeur
+│   ├── driversetup/      # Onboarding chauffeur (Personal/License/Vehicle)
+│   ├── files/            # Historique documents/courses
+│   ├── home/             # Écran d'accueil utilisateur
+│   ├── language/         # Sélecteur de langue
+│   ├── map/              # Écran carte + bottom sheets
+│   ├── navigation/       # AppNavHost (Navigation Compose)
+│   ├── notifications/    # FCM in-app
+│   ├── onboarding/       # Onboarding utilisateur (pages d'intro)
+│   ├── profile/          # Profil utilisateur & paramètres
+│   ├── role/             # Sélecteur Driver / Rider
+│   ├── session/          # Gestion session/token
+│   ├── settings/         # Paramètres avancés (ColorWheel, …)
+│   ├── splash/           # Splash screen
+│   └── wallet/           # Portefeuille / paiements
+│
+└── utils/           # Helpers transverses non liés au domaine
 ```
 
 ---
