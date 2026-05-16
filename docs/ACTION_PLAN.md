@@ -306,7 +306,8 @@ BUILD SUCCESSFUL in 11s
 
 ---
 
-### Phase R-0.6 — Activer certificate pinning effectif
+### Phase R-0.6 — Activer certificate pinning effectif ✅ (structurel)
+**Statut** : Structurel terminé — commits `b5069d7`, `234e7ba`, `9a62b9c`, `921e736` (poussés sur `origin/main`). Code prêt, **vrais pins en attente côté ops**.
 **Objectif** : pins SHA-256 renseignés pour staging et release ; log Crashlytics sur échec.
 **Sévérité** : Bloquant prod — **Effort** : 1–2 h
 **Dépendances** : accès ops / certs
@@ -320,16 +321,34 @@ BUILD SUCCESSFUL in 11s
 
 **Fichiers touchés**
 - `frontend-kotlin/local.properties.template`
-- `frontend-kotlin/app/build.gradle.kts` (lecture BuildConfig)
+- `frontend-kotlin/app/build.gradle.kts` (lecture BuildConfig — déjà en place R-0.1)
 - `frontend-kotlin/app/src/main/java/tn/dadadrive/di/NetworkModule.kt` (handler échec)
+- `frontend-kotlin/app/src/main/java/tn/dadadrive/core/network/CertificatePinningParser.kt` (nouveau)
+- `frontend-kotlin/app/src/main/java/tn/dadadrive/core/network/CertificatePinningReporter.kt` (nouveau)
+- `frontend-kotlin/app/src/test/java/tn/dadadrive/core/network/CertificatePinningParserTest.kt` (nouveau, 10 tests)
+- `frontend-kotlin/README.md` (section "Certificate pinning")
 
 **Critères d'acceptation**
-- [ ] `CERTIFICATE_PINS` non vide en staging/release
-- [ ] `ENABLE_CERT_PINNING = true` en staging/release
-- [ ] Sur pin invalide : non-fatal Crashlytics report émis
+- [x] `CERTIFICATE_PINS` documenté dans `local.properties.template` (commit `b5069d7`)
+- [x] Parser extrait + 10 tests unitaires JUnit4 verts (commit `234e7ba`)
+- [x] `CertificatePinningReporter` Interceptor attaché aux 2 OkHttpClient : `log(...)` + `recordException(...)` + **re-throw** (commit `9a62b9c`)
+- [x] README documente la procédure `openssl s_client` + format `host|sha256/…=` + règle 2-pins-min + injection CI Secrets pour R-0.8 (commit `921e736`)
+- [x] Aucun pin réel commité — seul `local.properties.template` contient des placeholders A/B/C explicitement factices
+- [x] `ENABLE_CERT_PINNING = true` reste OK en staging+release (inchangé)
+- [ ] **Pins réels staging fournis par ops** → à coller dans `local.properties` (gitignored)
+- [ ] **Pins réels release fournis par ops** → idem
+- [ ] **Test E2E pin invalide reporté** (cf. note ci-dessous)
 
 **Vérification**
 - Build staging avec pin invalide ⇒ requête échoue avec `SSLPeerUnverifiedException` ; Logcat montre le report Crashlytics.
+
+> **Note — Test E2E reporté (dette tracée)**
+> Le test bout-en-bout (`SSLPeerUnverifiedException` + breadcrumb Crashlytics sur un pin volontairement invalide) n'a **pas** été exécuté lors du commit structurel : un émulateur Android n'était pas disponible dans la session. La couverture statique est en place :
+> - 10 tests unitaires du parser couvrent Valid / Invalid / whitespace / malformed
+> - Le `CertificatePinningReporter` a été relu manuellement (re-throw confirmé)
+> - `BuildConfig.CERTIFICATE_PINS` vide ⇒ pas de pinning attaché ⇒ comportement debug inchangé
+>
+> **À faire** : lors de la première session avec émulateur, suivre la procédure documentée dans `README.md` section "Tester un pin invalide" et cocher la case ci-dessus.
 
 **Risques & Rollback**
 - Risque : casser staging si pins erronés. **Mitigation** : tester d'abord avec un pin valide connu (récupéré via `openssl s_client`).
