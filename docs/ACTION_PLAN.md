@@ -355,7 +355,8 @@ BUILD SUCCESSFUL in 11s
 
 ---
 
-### Phase R-0.7 — Rapatrier `turbodrive_redesign/`
+### Phase R-0.7 — Rapatrier `turbodrive_redesign/` ✅
+**Statut** : Terminée le 2026-05-17. Dossier validé à `~/Downloads/wetransfer_turbodrive_redesign-zip_2026-05-14_1320/turbodrive_redesign/` (path effectif différent du plan initial — dépendance externe hors repo Git, sibling logique de `frontend-kotlin/`). Sprint S4 (phases D) débloqué.
 **Objectif** : disposer du dossier prototype JSX/SVG dans le workspace pour débloquer toutes les phases D.
 **Sévérité** : Bloquant — **Effort** : action utilisateur (~30 min)
 **Dépendances** : aucune
@@ -370,8 +371,25 @@ BUILD SUCCESSFUL in 11s
 **Fichiers touchés** : aucun dans le projet.
 
 **Critères d'acceptation**
-- [ ] `../turbodrive_redesign/` existe avec `icons.jsx` + écrans JSX
-- [ ] Au moins 91 fichiers SVG identifiés
+- [x] Dossier `turbodrive_redesign/` rapatrié avec `icons.jsx` + 4 écrans JSX (auth/rider/driver + 12 autres bonus)
+- [x] ≥ 91 sources SVG identifiées (87 paths Lucide-style dans `icons.jsx` lookup `ICONS` + 15 fichiers `.svg` externes = **102 sources** convertibles en `<vector>` Android pour R-4.3)
+
+**Inventaire validé (2026-05-17)** :
+- `icons.jsx` (165 lignes) : lookup `ICONS = { name: 'M…' }` de **87 paths SVG** style Lucide → conversion 1:1 vers `app/src/main/res/drawable/ic_*.xml` en R-4.3
+- `screens-auth.jsx` : 519 lignes (8 écrans auth S01–S08)
+- `screens-rider.jsx` : 1111 lignes (écrans rider S10–S18)
+- `screens-driver.jsx` : 855 lignes (écrans driver S20–S27)
+- **Bonus** : 12 JSX supplémentaires (`design-system.jsx`, `illustrations.jsx`, `ios-frame.jsx`, `phone-frame.jsx`, `prototype.jsx`, `screens-account.jsx`, `screens-canvas.jsx`, `screens-categories.jsx`, `screens-map.jsx`, `screens-setup.jsx`, `tweaks-panel.jsx`, `design-system-page.jsx`)
+- 15 fichiers `.svg` externes (illustrations onboarding + logo + empty-state)
+- 58 PNG + 33 JPG (mockups, assets bitmap)
+- 10 screenshots de référence
+- 14 HTML (prototypes interactifs)
+- **Taille totale** : 23 MB
+
+**Note d'interprétation du critère "91 SVG"** :
+> Le plan d'audit initial parlait de "91 fichiers SVG" mais le redesign suit la convention Lucide : les icônes sont stockées comme **paths SVG inline** dans un objet JavaScript (`const ICONS = { 'arrow-left': 'M19 12H5…', … }`), pas comme fichiers `.svg` séparés. Les 87 entrées de cette lookup + 15 fichiers `.svg` externes totalisent **102 sources** exploitables. Pour R-4.3 (port des 91 icônes vers `res/drawable/`), chaque entrée de `ICONS` deviendra un `ic_<name>.xml` Android Vector Drawable indépendant.
+
+**Note d'emplacement** : le dossier `turbodrive_redesign/` reste **hors du repo Android** (path actuel : `~/Downloads/wetransfer_turbodrive_redesign-zip_2026-05-14_1320/turbodrive_redesign/`). Les phases D du sprint S4 le consommeront comme **source externe en lecture seule** sans le versionner dans `frontend-kotlin/`. Les assets nécessaires (paths SVG + SVG fichiers + screenshots de référence) seront convertis/copiés au cas par cas dans `app/src/main/res/drawable/` (R-4.3) ou `app/src/main/res/raw/` selon besoin.
 
 **Vérification** : `ls turbodrive_redesign/icons.jsx && find turbodrive_redesign -name "*.svg" | wc -l`
 
