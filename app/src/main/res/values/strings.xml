@@ -384,6 +384,17 @@
     <string name="driver_next">Next</string>
     <string name="driver_submit">Submit</string>
     <string name="driver_setup_error_profile_vehicle">Driver profile already exists or the details are invalid. Check the fields and try again.</string>
+    <string name="driver_setup_error_missing_fields">Some required information is missing. Please review every step.</string>
+    <string name="driver_setup_error_cin_date">The CIN issue date is invalid. Use the DDMMYYYY format.</string>
+    <string name="driver_setup_error_license_expiry">The license expiry date is invalid. Use the DDMMYYYY format.</string>
+    <string name="driver_setup_error_plate">The plate number could not be parsed. Example: 123 TUN 4567.</string>
+    <string name="driver_setup_error_cin_front">CIN front photo is required.</string>
+    <string name="driver_setup_error_cin_back">CIN back photo is required.</string>
+    <string name="driver_setup_error_license_front">License front photo is required.</string>
+    <string name="driver_setup_error_license_back">License back photo is required.</string>
+    <string name="driver_setup_error_vehicle_front">Vehicle front photo is required.</string>
+    <string name="driver_setup_error_vehicle_side">Vehicle side photo is required.</string>
+    <string name="driver_setup_error_vehicle_back">Vehicle back photo is required.</string>
     <string name="cd_prev_month">Previous month</string>
     <string name="cd_next_month">Next month</string>
 

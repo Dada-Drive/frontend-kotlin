@@ -89,6 +89,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.R
+import tn.dadadrive.core.validation.DateParseResult
 import tn.dadadrive.presentation.components.BlackCloseIconButton
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
@@ -721,6 +722,9 @@ internal fun underscoreDateToIso(u: String): String? {
         String.format(Locale.US, "%04d-%02d-%02d", ld.year, ld.monthValue, ld.dayOfMonth)
     }.getOrNull()
 }
+
+internal fun parseUnderscoreDate(u: String): DateParseResult =
+    underscoreDateToIso(u)?.let { DateParseResult.Valid(it) } ?: DateParseResult.Invalid
 
 private val IsoDatePattern = Regex("""^\d{4}-\d{2}-\d{2}$""")
 

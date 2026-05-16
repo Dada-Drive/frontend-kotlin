@@ -351,6 +351,17 @@
     <string name="driver_next">التالي</string>
     <string name="driver_submit">إرسال</string>
     <string name="driver_setup_error_profile_vehicle">يوجد ملف سائق مسبقاً أو البيانات غير صالحة. راجع الحقول ثم أعد المحاولة.</string>
+    <string name="driver_setup_error_missing_fields">بعض المعلومات المطلوبة ناقصة. راجع كل خطوة.</string>
+    <string name="driver_setup_error_cin_date">تاريخ إصدار بطاقة التعريف غير صالح. الصيغة المطلوبة: ي‌ي‌ش‌ش‌س‌س‌س‌س.</string>
+    <string name="driver_setup_error_license_expiry">تاريخ انتهاء رخصة السياقة غير صالح. الصيغة المطلوبة: ي‌ي‌ش‌ش‌س‌س‌س‌س.</string>
+    <string name="driver_setup_error_plate">تعذّر قراءة رقم اللوحة. مثال: 123 TUN 4567.</string>
+    <string name="driver_setup_error_cin_front">صورة بطاقة التعريف (الوجه) مطلوبة.</string>
+    <string name="driver_setup_error_cin_back">صورة بطاقة التعريف (الظهر) مطلوبة.</string>
+    <string name="driver_setup_error_license_front">صورة رخصة السياقة (الوجه) مطلوبة.</string>
+    <string name="driver_setup_error_license_back">صورة رخصة السياقة (الظهر) مطلوبة.</string>
+    <string name="driver_setup_error_vehicle_front">صورة المركبة من الأمام مطلوبة.</string>
+    <string name="driver_setup_error_vehicle_side">صورة المركبة من الجانب مطلوبة.</string>
+    <string name="driver_setup_error_vehicle_back">صورة المركبة من الخلف مطلوبة.</string>
     <string name="cd_prev_month">الشهر السابق</string>
     <string name="cd_next_month">الشهر التالي</string>
 

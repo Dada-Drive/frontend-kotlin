@@ -383,6 +383,17 @@
     <string name="driver_next">Suivant</string>
     <string name="driver_submit">Envoyer</string>
     <string name="driver_setup_error_profile_vehicle">Profil conducteur déjà existant ou informations invalides. Vérifiez les champs puis réessayez.</string>
+    <string name="driver_setup_error_missing_fields">Des informations obligatoires sont manquantes. Vérifiez chaque étape.</string>
+    <string name="driver_setup_error_cin_date">La date de délivrance de la CIN est invalide. Format attendu : JJMMAAAA.</string>
+    <string name="driver_setup_error_license_expiry">La date d\'expiration du permis est invalide. Format attendu : JJMMAAAA.</string>
+    <string name="driver_setup_error_plate">Numéro de plaque illisible. Exemple : 123 TUN 4567.</string>
+    <string name="driver_setup_error_cin_front">La photo de la CIN (recto) est requise.</string>
+    <string name="driver_setup_error_cin_back">La photo de la CIN (verso) est requise.</string>
+    <string name="driver_setup_error_license_front">La photo du permis (recto) est requise.</string>
+    <string name="driver_setup_error_license_back">La photo du permis (verso) est requise.</string>
+    <string name="driver_setup_error_vehicle_front">La photo avant du véhicule est requise.</string>
+    <string name="driver_setup_error_vehicle_side">La photo latérale du véhicule est requise.</string>
+    <string name="driver_setup_error_vehicle_back">La photo arrière du véhicule est requise.</string>
     <string name="cd_prev_month">Mois précédent</string>
     <string name="cd_next_month">Mois suivant</string>
 
