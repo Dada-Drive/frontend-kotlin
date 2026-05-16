@@ -238,91 +238,28 @@ Tous les secrets vivent dans `local.properties` à la racine du projet (non vers
 
 ---
 
-## Pusher le projet sur Git
+## Contribuer
 
-Suis ces étapes dans ton terminal (PowerShell ou Git Bash) depuis le dossier `DadaDrive` :
+Le dépôt est déjà initialisé sur GitHub (`origin = https://github.com/Dada-Drive/frontend-kotlin.git`). Le workflow standard depuis un terminal macOS/Linux :
 
-### Étape 1 — Initialiser le dépôt Git
+```bash
+# 1. Cloner (ou pull la dernière main)
+git clone https://github.com/Dada-Drive/frontend-kotlin.git
+cd frontend-kotlin
 
-```powershell
-cd "C:\Users\User\Desktop\DadaDrive"
-git init
+# 2. Créer une branche feature
+git checkout -b feature/<short-slug>
+
+# 3. Coder · committer en Conventional Commits
+git add <fichiers ciblés>
+git commit -m "feat(scope): description courte"
+
+# 4. Pusher la branche puis ouvrir une PR vers main
+git push -u origin feature/<short-slug>
+gh pr create --base main
 ```
 
-### Étape 2 — Créer le fichier .gitignore
-
-```powershell
-# Télécharge le .gitignore recommandé pour Android
-Invoke-WebRequest -Uri "https://www.toptal.com/developers/gitignore/api/android,kotlin,androidstudio" -OutFile ".gitignore"
-```
-
-> Ou crée-le manuellement avec le contenu minimal :
-> ```
-> *.iml
-> .gradle/
-> /local.properties
-> /.idea/
-> .DS_Store
-> /build/
-> /captures/
-> google-services.json
-> ```
-
-### Étape 3 — Ajouter tous les fichiers
-
-```powershell
-git add .
-```
-
-### Étape 4 — Faire le premier commit
-
-```powershell
-git commit -m "feat: initial project structure with MVVM architecture"
-```
-
-### Étape 5 — Créer le dépôt sur GitHub
-
-1. Va sur [github.com/new](https://github.com/new)
-2. Nomme le dépôt `dadadrive`
-3. Ne coche **pas** "Initialize with README" (on en a déjà un)
-4. Clique **Create repository**
-
-### Étape 6 — Lier et pusher
-
-```powershell
-git remote add origin https://github.com/ton-username/dadadrive.git
-git branch -M main
-git push -u origin main
-```
-
-### Vérification
-
-```powershell
-# Voir le statut
-git status
-
-# Voir les commits
-git log --oneline
-
-# Voir la branche distante liée
-git remote -v
-```
-
----
-
-## Workflow Git recommandé
-
-```powershell
-# Créer une branche pour chaque fonctionnalité
-git checkout -b feature/auth-login
-
-# Après tes modifications
-git add .
-git commit -m "feat(auth): add login screen with ViewModel"
-git push origin feature/auth-login
-
-# Puis créer une Pull Request sur GitHub
-```
+> Les commits suivent [Conventional Commits](https://www.conventionalcommits.org) (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`, `test`, …). Les hooks pre-commit (ktlint + detekt) doivent passer avant push.
 
 ---
 
