@@ -12,6 +12,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import tn.dadadrive.core.constants.Constants
+import tn.dadadrive.core.network.CertificatePinningReporter
 import tn.dadadrive.core.network.parseCertificatePins
 import tn.dadadrive.data.network.api.AuthApiService
 import tn.dadadrive.data.network.api.DriverApiService
@@ -52,6 +53,7 @@ object NetworkModule {
         redactingHttpLoggingInterceptor: RedactingHttpLoggingInterceptor,
     ): OkHttpClient =
         OkHttpClient.Builder()
+            .addInterceptor(CertificatePinningReporter())
             .addInterceptor(defaultHeadersInterceptor)
             .apply {
                 if (BuildConfig.DEBUG) {
@@ -76,6 +78,7 @@ object NetworkModule {
             OkHttpClient.Builder()
                 .authenticator(tokenAuthenticator)
                 .addInterceptor(retryInterceptor)
+                .addInterceptor(CertificatePinningReporter())
                 .addInterceptor(defaultHeadersInterceptor)
                 .addInterceptor(authInterceptor)
                 .connectTimeout(Constants.CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
