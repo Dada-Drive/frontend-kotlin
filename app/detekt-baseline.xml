@@ -1,0 +1,255 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:DriverSetupComponents.kt$encoded.size &lt;= 1100 || (working.width &lt;= 72 &amp;&amp; working.height &lt;= 72 &amp;&amp; quality &lt;= 25)</ID>
+    <ID>ComplexCondition:MapPassengerRoutingController.kt$MapPassengerRoutingController$pAnchor != null &amp;&amp; dAnchor != null &amp;&amp; distanceMeters(pickup, pAnchor) &lt;= MapViewModelConstants.PASSENGER_ROUTE_GPS_RESCHEDULE_METERS &amp;&amp; distanceMeters(drop, dAnchor) &lt;= MapViewModelConstants.PASSENGER_ROUTE_GPS_RESCHEDULE_METERS &amp;&amp; stopsUnchanged</ID>
+    <ID>CyclomaticComplexMethod:DriverSetupComponents.kt$internal fun DriverVehiclePreset.categoryIcon(): ImageVector</ID>
+    <ID>CyclomaticComplexMethod:DriverSetupComponents.kt$internal fun DriverVehiclePreset.categoryImageAssetName(): String?</ID>
+    <ID>CyclomaticComplexMethod:MapLocationController.kt$MapLocationController$private fun updateHeadingFromLocation(loc: Location)</ID>
+    <ID>CyclomaticComplexMethod:MapRideOperations.kt$MapRideOperations$fun requestRide()</ID>
+    <ID>CyclomaticComplexMethod:PresentableErrorMapper.kt$PresentableErrorMapper$@StringRes private fun stringResForBackendCode(code: String): Int?</ID>
+    <ID>CyclomaticComplexMethod:RouteHeadingSnapper.kt$RouteHeadingSnapper$fun match( position: GeoCoordinates, polylines: List&lt;GeoPolyline&gt;, referenceHeadingDeg: Float? = null, maxSnapMeters: Double = 30.0, maxReferenceDivergenceDeg: Float = 90f, ): Match?</ID>
+    <ID>ForEachOnRange:MapRiderDestinationConfirmedBar.kt$1..5</ID>
+    <ID>ForbiddenComment:MapScreen.kt$/* TODO: notifications */</ID>
+    <ID>FunctionOnlyReturningConstant:TeardropPickupPinBitmap.kt$fun teardropPickupPinAnchorYNormalized(): Double</ID>
+    <ID>FunctionParameterNaming:RidesRepositoryImpl.kt$RidesRepositoryImpl$_distanceKm: Double</ID>
+    <ID>ImplicitDefaultLocale:PoiComponents.kt$String.format("%.1f km", dist / 1000.0)</ID>
+    <ID>LargeClass:MapViewModel.kt$MapViewModel : ViewModel</ID>
+    <ID>LongMethod:MapPassengerRoutingController.kt$MapPassengerRoutingController.&lt;no name provided&gt;$override fun onRouteCalculated( routingError: RoutingError?, routes: MutableList&lt;Route&gt;?, )</ID>
+    <ID>LongMethod:MapRideOperations.kt$MapRideOperations$fun requestRide()</ID>
+    <ID>LongMethod:TokenAuthenticator.kt$TokenAuthenticator$override fun authenticate( route: Route?, response: Response, ): Request?</ID>
+    <ID>LongMethod:UserLocationMarkerBitmap.kt$fun createUserLocationMarkerBitmap( avatar: Bitmap?, initials: String, primaryArgb: Int, ): Bitmap</ID>
+    <ID>LongParameterList:DriverRepository.kt$DriverRepository$( licenseNumber: String, licenseExpiry: String, cin: String, cinDeliveredAt: String, cinPhotoFront: String, cinPhotoBack: String, licensePhotoFront: String, licensePhotoBack: String, )</ID>
+    <ID>LongParameterList:DriverRepository.kt$DriverRepository$( make: String, model: String, year: Int, plateNumber: String, color: String, vehicleType: String, seats: Int, photoFront: String, photoSide: String, photoBack: String, )</ID>
+    <ID>LongParameterList:DriverSetupViewModel.kt$DriverSetupViewModel$( fullLicenseNumber: String, licenseExpiry: String, cin: String, cinDeliveredAt: String, cinPhotoFront: String, cinPhotoBack: String, licensePhotoFront: String, licensePhotoBack: String, make: String, model: String, year: Int, plateNumber: String, color: String, vehicleType: String, seats: Int, photoFront: String, photoSide: String, photoBack: String, onComplete: () -&gt; Unit, )</ID>
+    <ID>LongParameterList:DriverUseCases.kt$CreateDriverProfileUseCase$( licenseNumber: String, licenseExpiry: String, cin: String, cinDeliveredAt: String, cinPhotoFront: String, cinPhotoBack: String, licensePhotoFront: String, licensePhotoBack: String, )</ID>
+    <ID>LongParameterList:DriverUseCases.kt$CreateVehicleUseCase$( make: String, model: String, year: Int, plateNumber: String, color: String, vehicleType: String, seats: Int, photoFront: String, photoSide: String, photoBack: String, )</ID>
+    <ID>LongParameterList:DriverViewModel.kt$DriverViewModel$( private val setOnlineStatusUseCase: SetOnlineStatusUseCase, private val getAvailableRidesUseCase: GetAvailableRidesUseCase, private val acceptRideUseCase: AcceptRideUseCase, private val refuseRideUseCase: RefuseRideUseCase, private val getMyRidesUseCase: GetMyRidesUseCase, private val startRideUseCase: StartRideUseCase, private val completeRideUseCase: CompleteRideUseCase, private val cancelRideUseCase: CancelRideUseCase, private val activeRideDraftCache: ActiveRideDraftCache, )</ID>
+    <ID>LongParameterList:MapLocationController.kt$MapLocationController$( private val context: Context, private val fusedLocationClient: FusedLocationProviderClient, private val scope: CoroutineScope, private val currentLocation: MutableStateFlow&lt;GeoCoordinates?&gt;, private val locationAccuracy: MutableStateFlow&lt;Float?&gt;, private val locationHeadingDegrees: MutableStateFlow&lt;Float?&gt;, private val currentAddress: MutableStateFlow&lt;String?&gt;, private val isTracking: MutableStateFlow&lt;Boolean&gt;, private val onAfterFusedLocationFix: () -&gt; Unit, )</ID>
+    <ID>LongParameterList:MapPassengerRoutingController.kt$MapPassengerRoutingController$( private val scope: CoroutineScope, private val routingEngine: RoutingEngine, private val ridesRepository: RidesRepository, private val pickupOverride: MutableStateFlow&lt;GeoCoordinates?&gt;, private val currentLocation: MutableStateFlow&lt;GeoCoordinates?&gt;, private val confirmedDestination: MutableStateFlow&lt;GeoCoordinates?&gt;, private val riderFareEstimate: MutableStateFlow&lt;RiderFareEstimate?&gt;, private val passengerRouteGeometries: MutableStateFlow&lt;List&lt;GeoPolyline&gt;&gt;, private val passengerTrafficSpans: MutableStateFlow&lt;List&lt;PassengerTrafficSpan&gt;&gt;, private val passengerRouteOptions: MutableStateFlow&lt;List&lt;PassengerRouteOption&gt;&gt;, private val selectedPassengerRouteIndex: MutableStateFlow&lt;Int&gt;, private val intermediateStopCoordinatesProvider: () -&gt; List&lt;GeoCoordinates&gt; = { emptyList() }, )</ID>
+    <ID>LongParameterList:MapRideOperations.kt$MapRideOperations$( private val context: Context, private val scope: CoroutineScope, private val ridesRepository: RidesRepository, private val activeRideDraftCache: ActiveRideDraftCache, private val passengerRouting: MapPassengerRoutingController, private val confirmedDestination: MutableStateFlow&lt;GeoCoordinates?&gt;, private val pickupOverrideLabel: MutableStateFlow&lt;String?&gt;, private val currentAddress: MutableStateFlow&lt;String?&gt;, private val destinationLabel: MutableStateFlow&lt;String?&gt;, private val passengerRouteOptions: MutableStateFlow&lt;List&lt;PassengerRouteOption&gt;&gt;, private val selectedPassengerRouteIndex: MutableStateFlow&lt;Int&gt;, private val riderFareEstimate: MutableStateFlow&lt;RiderFareEstimate?&gt;, private val ridePickupNow: MutableStateFlow&lt;Boolean&gt;, private val rideForMe: MutableStateFlow&lt;Boolean&gt;, private val rideScheduledAtEpochMs: MutableStateFlow&lt;Long?&gt;, private val passengerBookingName: MutableStateFlow&lt;String&gt;, private val passengerBookingPhone: MutableStateFlow&lt;String&gt;, private val isRequestingRide: MutableStateFlow&lt;Boolean&gt;, private val rideRequestError: MutableStateFlow&lt;String?&gt;, private val lastRequestedRide: MutableStateFlow&lt;ActiveRide?&gt;, private val incomingRideOffers: MutableStateFlow&lt;List&lt;PassengerRideOffer&gt;&gt;, private val isLoadingRideOffers: MutableStateFlow&lt;Boolean&gt;, private val pickingOfferId: MutableStateFlow&lt;String?&gt;, private val matchedRideOffer: MutableStateFlow&lt;PassengerRideOffer?&gt;, private val isRideMatched: MutableStateFlow&lt;Boolean&gt;, private val scheduledRides: MutableStateFlow&lt;List&lt;ActiveRide&gt;&gt;, private val isLoadingScheduledRides: MutableStateFlow&lt;Boolean&gt;, private val scheduledRidesError: MutableStateFlow&lt;String?&gt;, private val rideRating: MutableStateFlow&lt;RideRating?&gt;, private val isLoadingRideRating: MutableStateFlow&lt;Boolean&gt;, private val rideRatingError: MutableStateFlow&lt;String?&gt;, private val isSubmittingRideRating: MutableStateFlow&lt;Boolean&gt;, private val submitRideRatingError: MutableStateFlow&lt;String?&gt;, private val driverRatingsStats: MutableStateFlow&lt;DriverRatingsStats&gt;, /** Supplies any rider-entered intermediate stops, filtered to only on-route ones. */ private val pendingIntermediateStopsProvider: () -&gt; List&lt;RideStop&gt; = { emptyList() }, private val onIntermediateStopsPosted: () -&gt; Unit = {}, )</ID>
+    <ID>LongParameterList:RidesRepository.kt$RidesRepository$( pickupLat: Double, pickupLng: Double, pickupAddress: String, dropoffLat: Double, dropoffLng: Double, dropoffAddress: String, distanceKm: Double, estimatedMinutes: Int, vehicleType: String? = null, scheduledAtIso: String? = null, pickupForOther: Boolean = false, passengerName: String? = null, passengerPhone: String? = null, )</ID>
+    <ID>LongParameterList:SessionViewModel.kt$SessionViewModel$( private val tokenManager: TokenManager, private val userManager: UserManager, private val driverRepository: DriverRepository, private val authRepository: AuthRepository, private val authNavigationEvents: AuthNavigationEvents, private val pushTokenRegistrar: PushTokenRegistrar, private val sessionProfileCache: SessionProfileCache, private val walletRepository: WalletRepository, )</ID>
+    <ID>LoopWithTooManyJumpStatements:HereMapViewComposable.kt$while</ID>
+    <ID>LoopWithTooManyJumpStatements:MapPassengerRoutingController.kt$MapPassengerRoutingController.&lt;no name provided&gt;$for</ID>
+    <ID>LoopWithTooManyJumpStatements:MapTrafficUtils.kt$MapTrafficUtils$for</ID>
+    <ID>LoopWithTooManyJumpStatements:RetryInterceptor.kt$RetryInterceptor$while</ID>
+    <ID>LoopWithTooManyJumpStatements:RouteHeadingSnapper.kt$RouteHeadingSnapper$for</ID>
+    <ID>MagicNumber:AuthRepositoryImpl.kt$AuthRepositoryImpl$429</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0.5f</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0x3C1976D2</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0x3C2196F3</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xEE1A1A1A</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xEEF5F5F5</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF0D47A1</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF111111</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF121212</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF1565C0</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF1877F2</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF1976D2</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF1A1A1A</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF1E88E5</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF2196F3</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF2A2A2A</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF43A047</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF444444</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF4CAF50</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF555555</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF616161</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF666666</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF757575</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF888888</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF90CAF9</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF9E9E9E</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFAAAAAA</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFB00020</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFBBBBBB</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFBBDEFB</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFBDBDBD</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFCCCCCC</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFE0E0E0</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFE53935</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFEA4335</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFEEEEEE</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFF5F5F5</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFFB8C00</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFFF9800</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFFFEDED</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFFFFFFF</ID>
+    <ID>MagicNumber:ColorWheelSettingsScreen.kt$0xFF</ID>
+    <ID>MagicNumber:DriverSetupComponents.kt$0.5f</ID>
+    <ID>MagicNumber:DriverSetupComponents.kt$1100</ID>
+    <ID>MagicNumber:DriverSetupComponents.kt$11f</ID>
+    <ID>MagicNumber:DriverSetupComponents.kt$25</ID>
+    <ID>MagicNumber:DriverSetupComponents.kt$72</ID>
+    <ID>MagicNumber:DriverSetupComponents.kt$9f</ID>
+    <ID>MagicNumber:HereMapViewComposable.kt$180f</ID>
+    <ID>MagicNumber:HereMapViewComposable.kt$360f</ID>
+    <ID>MagicNumber:HereMapViewComposable.kt$TaxiRotationCache$0.7f</ID>
+    <ID>MagicNumber:LogRedaction.kt$LogRedaction$120</ID>
+    <ID>MagicNumber:MapLocationController.kt$MapLocationController$360f</ID>
+    <ID>MagicNumber:MapRideOperations.kt$MapRideOperations$2_500L</ID>
+    <ID>MagicNumber:MapRideOperations.kt$MapRideOperations$401</ID>
+    <ID>MagicNumber:MapRideOperations.kt$MapRideOperations$403</ID>
+    <ID>MagicNumber:MapRideOperations.kt$MapRideOperations$404</ID>
+    <ID>MagicNumber:MapTrafficUtils.kt$MapTrafficUtils$0.1</ID>
+    <ID>MagicNumber:MapViewModel.kt$MapViewModel$10_000L</ID>
+    <ID>MagicNumber:MapViewModel.kt$MapViewModel$1e-7</ID>
+    <ID>MagicNumber:MapViewModel.kt$MapViewModel$320</ID>
+    <ID>MagicNumber:MapViewModel.kt$MapViewModel$45</ID>
+    <ID>MagicNumber:PoiMarkerManager.kt$PoiMarkerManager$180.0</ID>
+    <ID>MagicNumber:PresentableErrorMapper.kt$PresentableErrorMapper$400</ID>
+    <ID>MagicNumber:PresentableErrorMapper.kt$PresentableErrorMapper$401</ID>
+    <ID>MagicNumber:PresentableErrorMapper.kt$PresentableErrorMapper$403</ID>
+    <ID>MagicNumber:PresentableErrorMapper.kt$PresentableErrorMapper$404</ID>
+    <ID>MagicNumber:PresentableErrorMapper.kt$PresentableErrorMapper$409</ID>
+    <ID>MagicNumber:PresentableErrorMapper.kt$PresentableErrorMapper$422</ID>
+    <ID>MagicNumber:PresentableErrorMapper.kt$PresentableErrorMapper$429</ID>
+    <ID>MagicNumber:PresentableErrorMapper.kt$PresentableErrorMapper$502</ID>
+    <ID>MagicNumber:PresentableErrorMapper.kt$PresentableErrorMapper$503</ID>
+    <ID>MagicNumber:RetryPolicy.kt$RetryPolicy$429</ID>
+    <ID>MagicNumber:RetryPolicy.kt$RetryPolicy$502</ID>
+    <ID>MagicNumber:RetryPolicy.kt$RetryPolicy$503</ID>
+    <ID>MagicNumber:RouteHeadingSnapper.kt$RouteHeadingSnapper$180f</ID>
+    <ID>MagicNumber:RouteHeadingSnapper.kt$RouteHeadingSnapper$360.0</ID>
+    <ID>MagicNumber:RouteHeadingSnapper.kt$RouteHeadingSnapper$360f</ID>
+    <ID>MagicNumber:SessionViewModel.kt$SessionViewModel$404</ID>
+    <ID>MagicNumber:SessionViewModel.kt$SessionViewModel$5_000</ID>
+    <ID>MagicNumber:SnakeAnimator.kt$SnakeAnimator$1_000_000L</ID>
+    <ID>MagicNumber:SnakeAnimator.kt$SnakeAnimator$1e-9</ID>
+    <ID>MagicNumber:SnakeAnimator.kt$SnakeAnimator$6</ID>
+    <ID>MagicNumber:SocketService.kt$SocketService$200</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$0.05f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$0.10f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$0.16f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$0.22f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$0.25f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$0.28f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$0.45f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$0.55f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$0.60f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$0.75f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$1.5f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$11.5f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$2.5f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$360f</ID>
+    <ID>MagicNumber:TeardropPickupPinBitmap.kt$90f</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0x402563EB</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0x403B82F6</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0x80000000</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF0A0A0A</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF0A0A0C</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF161618</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF16A34A</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF1877F2</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF1D4ED8</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF1E3A5F</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF1F1F22</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF22222A</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF22C55E</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF2563EB</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF28282D</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF2A2A2E</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF3A3A40</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF3B0E13</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF3B82F6</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF454540</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF5C5C5C</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF6E6E68</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF8A8A85</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFA8A8A2</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFB5B3AC</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFCFCABE</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFD97706</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFDBEAFE</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFDC2626</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFE5E2D8</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFEA4335</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFEDEAE0</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFEF4444</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFF1EFEA</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFF4F4F0</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFF59E0B</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFF6F5F1</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFFEE2E2</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFFFFFFF</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$0.05f</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$0.10f</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$0.25f</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$0.45f</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$0.55f</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$0.60f</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$0.75f</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$1.2f</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$1.5f</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$11.5f</ID>
+    <ID>MagicNumber:UserLocationMarkerBitmap.kt$2.5f</ID>
+    <ID>MagicNumber:UserRepositoryImpl.kt$UserRepositoryImpl$400</ID>
+    <ID>MatchingDeclarationName:DadaCoinWidgets.kt$DadaCoinMetal</ID>
+    <ID>MatchingDeclarationName:DesignIconButton.kt$DesignIconButtonVariant</ID>
+    <ID>MatchingDeclarationName:PhoneScreen.kt$Country</ID>
+    <ID>MatchingDeclarationName:PrimaryButton.kt$PrimaryButtonState</ID>
+    <ID>MatchingDeclarationName:TeardropPickupPinBitmap.kt$TeardropPinLayout</ID>
+    <ID>NestedBlockDepth:AuthRepositoryImpl.kt$AuthRepositoryImpl$override suspend fun loginWithGoogle(idToken: String): Result&lt;User&gt;</ID>
+    <ID>NestedBlockDepth:AuthRepositoryImpl.kt$AuthRepositoryImpl$override suspend fun signup( fullName: String, email: String, password: String, phoneNumber: String, profilePictureUri: String?, ): Result&lt;User&gt;</ID>
+    <ID>NestedBlockDepth:RouteHeadingSnapper.kt$RouteHeadingSnapper$fun match( position: GeoCoordinates, polylines: List&lt;GeoPolyline&gt;, referenceHeadingDeg: Float? = null, maxSnapMeters: Double = 30.0, maxReferenceDivergenceDeg: Float = 90f, ): Match?</ID>
+    <ID>ReturnCount:MapRideOperations.kt$MapRideOperations$fun requestRide()</ID>
+    <ID>ReturnCount:SessionViewModel.kt$SessionViewModel$private suspend fun nextStateAfterMe( phone: String?, fullName: String?, roleRaw: String, user: User, ): SessionState</ID>
+    <ID>SwallowedException:AuthRepositoryImpl.kt$AuthRepositoryImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:AuthRepositoryImpl.kt$AuthRepositoryImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CloudinaryManager.kt$CloudinaryManager$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DadaDriveApplication.kt$DadaDriveApplication$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DadaDriveApplication.kt$DadaDriveApplication$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MapTrafficUtils.kt$MapTrafficUtils$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:OtpAutofill.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:RidesRepositoryImpl.kt$RidesRepositoryImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:TokenManager.kt$TokenManager$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:UserRepositoryImpl.kt$UserRepositoryImpl$e: Exception</ID>
+    <ID>TooManyFunctions:DriverRepositoryImpl.kt$DriverRepositoryImpl : DriverRepository</ID>
+    <ID>TooManyFunctions:DriverSetupComponents.kt$tn.dadadrive.presentation.driversetup.DriverSetupComponents.kt</ID>
+    <ID>TooManyFunctions:DriverViewModel.kt$DriverViewModel : ViewModel</ID>
+    <ID>TooManyFunctions:MapRideOperations.kt$MapRideOperations</ID>
+    <ID>TooManyFunctions:MapViewModel.kt$MapViewModel : ViewModel</ID>
+    <ID>TooManyFunctions:RidesRepositoryImpl.kt$RidesRepositoryImpl : RidesRepository</ID>
+    <ID>UnusedParameter:BootDiagnostics.kt$BootDiagnostics$application: Application</ID>
+    <ID>UnusedParameter:DriverVehicleStep.kt$customColorText: String</ID>
+    <ID>UnusedParameter:DriverVehicleStep.kt$onCustomColorChange: (String) -&gt; Unit</ID>
+    <ID>UnusedParameter:HereMapViewComposable.kt$destinationPinColor: Color = LocalAppColors.current.errorRed</ID>
+    <ID>UnusedParameter:MapChrome.kt$onNotificationsClick: () -&gt; Unit = {}</ID>
+    <ID>UnusedParameter:MapChrome.kt$onSearchClick: () -&gt; Unit = {}</ID>
+    <ID>UnusedParameter:MapChrome.kt$showOfflineStatusBadge: Boolean = false</ID>
+    <ID>UnusedParameter:MapChrome.kt$walletAmountText: String = "0"</ID>
+    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$driverRatingsStats: DriverRatingsStats</ID>
+    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$isLoadingOffers: Boolean</ID>
+    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$isLoadingScheduledRides: Boolean</ID>
+    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$onCancelRideRequest: () -&gt; Unit</ID>
+    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$scheduledRides: List&lt;ActiveRide&gt;</ID>
+    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$scheduledRidesError: String?</ID>
+    <ID>UnusedParameter:MapRouteInputComponents.kt$staticTextColor: Color? = null</ID>
+    <ID>UnusedParameter:MapRoutePickerComponents.kt$activeField: ActiveRouteField</ID>
+    <ID>UnusedParameter:MapRouteSheet.kt$onPickupNowToggle: () -&gt; Unit</ID>
+    <ID>UnusedParameter:MapRouteSheet.kt$pickupNow: Boolean</ID>
+    <ID>UnusedParameter:MapRouteSheet.kt$sheetState: SheetState? = null</ID>
+    <ID>UnusedParameter:MapScreenUiComponents.kt$mapViewRef: MutableState&lt;HereMapView?&gt;</ID>
+    <ID>UnusedParameter:MapStopUtils.kt$polylines: List&lt;GeoPolyline&gt;</ID>
+    <ID>UnusedParameter:PickupPinOverlay.kt$isLoading: Boolean = false</ID>
+    <ID>UnusedParameter:RidesRepositoryImpl.kt$RidesRepositoryImpl$_distanceKm: Double</ID>
+    <ID>UnusedParameter:WelcomeScreen.kt$contentColor: Color</ID>
+    <ID>UnusedParameter:WelcomeScreen.kt$onSkipClick: () -&gt; Unit = {}</ID>
+    <ID>UnusedPrivateMember:AppTextField.kt$@Preview(showBackground = true) @Composable private fun AppTextFieldErrorPreview()</ID>
+    <ID>UnusedPrivateMember:AppTextField.kt$@Preview(showBackground = true) @Composable private fun AppTextFieldPreview()</ID>
+    <ID>UnusedPrivateMember:LoadingView.kt$@Preview(showBackground = true, backgroundColor = 0xFF000000) @Composable private fun LoadingViewNoMessagePreview()</ID>
+    <ID>UnusedPrivateMember:LoadingView.kt$@Preview(showBackground = true, backgroundColor = 0xFF000000) @Composable private fun LoadingViewPreview()</ID>
+    <ID>UnusedPrivateMember:PrimaryButton.kt$@Preview(showBackground = true) @Composable private fun PrimaryButtonDisabledPreview()</ID>
+    <ID>UnusedPrivateMember:PrimaryButton.kt$@Preview(showBackground = true) @Composable private fun PrimaryButtonLoadingPreview()</ID>
+    <ID>UnusedPrivateMember:PrimaryButton.kt$@Preview(showBackground = true) @Composable private fun PrimaryButtonPreview()</ID>
+    <ID>UnusedPrivateProperty:DriverHomeScreen.kt$val walletLoading by walletViewModel.isLoading.collectAsState()</ID>
+    <ID>UnusedPrivateProperty:HereMapViewComposable.kt$var lastAppliedFitRouteRequestId by remember { mutableIntStateOf(0) }</ID>
+    <ID>UnusedPrivateProperty:MapRouteSheet.kt$private const val SCHEDULE_PICKUP_MIN_LEAD_MS = 30L * 60L * 1000L</ID>
+    <ID>UnusedPrivateProperty:MapViewModel.kt$MapViewModel$private var intermediateStopSearchJob: Job? = null</ID>
+    <ID>UnusedPrivateProperty:PhoneScreen.kt$val isDarkUi = false</ID>
+    <ID>UnusedPrivateProperty:ScheduleForLaterSheet.kt$val now = remember { Calendar.getInstance() }</ID>
+  </CurrentIssues>
+</SmellBaseline>
