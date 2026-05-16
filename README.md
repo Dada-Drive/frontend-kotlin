@@ -305,6 +305,56 @@ Bypass exceptionnel : `git commit --no-verify` (à utiliser avec parcimonie — 
 
 ---
 
+## Certificate pinning
+
+L'app épingle les certificats des backends `staging` et `release` via OkHttp `CertificatePinner` (`rules.md §4.6`, phase R-0.6). Le pinning est :
+- **désactivé** en `debug` (`BuildConfig.ENABLE_CERT_PINNING = false`) ;
+- **activé** en `staging` et `release` (`true`) si `BuildConfig.CERTIFICATE_PINS` est non vide.
+
+Tout `SSLPeerUnverifiedException` (cert qui ne matche pas un pin) est loggué dans Crashlytics avec un breadcrumb `[cert-pinning] host=…` puis **re-thrown** ; la requête échoue côté UI (jamais avalée silencieusement).
+
+### Configurer les pins en local
+
+Ajouter dans `local.properties` (gitignored — voir `local.properties.template:CERTIFICATE_PINS`) :
+
+```properties
+CERTIFICATE_PINS=api-staging.dadadrive.tn|sha256/AAAA…=|sha256/BBBB…=,api.dadadrive.tn|sha256/CCCC…=|sha256/DDDD…=
+```
+
+Convention : `host|sha256/PIN_BASE64=` séparés par virgule ; **2 pins minimum par host** (cert actuel + cert backup) pour survivre à une rotation.
+
+### Récupérer un pin SHA-256 depuis un host
+
+```bash
+echo | openssl s_client -servername HOST -connect HOST:443 2>/dev/null \
+  | openssl x509 -pubkey -noout \
+  | openssl pkey -pubin -outform DER \
+  | openssl dgst -sha256 -binary \
+  | openssl enc -base64
+```
+
+Exemple : `HOST=api.dadadrive.tn`. Le résultat est la partie après `sha256/`.
+
+### CI / GitHub Actions
+
+Les vrais pins **ne sont jamais commités** dans le repo. Ils vivent dans :
+- `local.properties` côté dev (gitignored)
+- GitHub Actions Secret `CERTIFICATE_PINS` côté CI (cf. R-0.8)
+
+Le workflow CI doit injecter ce secret dans `local.properties` avant `./gradlew assemble` :
+
+```yaml
+- run: echo "CERTIFICATE_PINS=${{ secrets.CERTIFICATE_PINS }}" >> local.properties
+```
+
+### Tester un pin invalide (validation manuelle)
+
+1. Mettre dans `local.properties` un pin volontairement faux (ex: `sha256/AAA…AAA=`).
+2. `./gradlew :app:assembleStagingDebug` puis installer l'APK.
+3. Déclencher une requête réseau → `SSLPeerUnverifiedException` côté Logcat + report Crashlytics.
+
+---
+
 ## Documentation
 
 | Fichier | Contenu |
