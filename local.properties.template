@@ -19,6 +19,13 @@ HERE_ACCESS_KEY_SECRET=
 # Roadmap Phase 0 — Mapbox (quand le SDK remplacera HERE)
 MAPBOX_ACCESS_TOKEN=
 
+# Certificate pinning (rules.md §4.6 — R-0.6) — voir README "Certificate pinning"
+# Format : "host|sha256/BASE64=" séparés par virgule ; multi-pin par host autorisé.
+# Exemple FACTICE (ne PAS utiliser tel quel) :
+# CERTIFICATE_PINS=api-staging.dadadrive.tn|sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=|sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=,api.dadadrive.tn|sha256/CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=
+# Activé via BuildConfig.ENABLE_CERT_PINNING (true en staging+release, false en debug).
+CERTIFICATE_PINS=
+
 # true + valid keystore + passwords → release/staging-style artifacts signed for store; omit/false → debug signing for release build type (local ./gradlew build).
 ENABLE_RELEASE_SIGNING=false
 KEYSTORE_PATH=
