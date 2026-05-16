@@ -12,7 +12,7 @@
 - [Architecture MVVM](#architecture-mvvm)
 - [Structure des dossiers](#structure-des-dossiers)
 - [Mise en route](#mise-en-route)
-- [Pusher le projet sur Git](#pusher-le-projet-sur-git)
+- [Contribuer](#contribuer)
 
 ---
 
@@ -61,8 +61,8 @@ DadaDrive suit le pattern **MVVM (Model – View – ViewModel)** combiné aux p
 ```
 ┌─────────────────────────────────────────┐
 │              UI LAYER (View)            │
-│   Fragments · Activities · Composables  │
-│   Observe → LiveData / StateFlow        │
+│   Composables (Compose-only)            │
+│   Observe → StateFlow / collectAsState  │
 └──────────────┬──────────────────────────┘
                │ observe / call
 ┌──────────────▼──────────────────────────┐
@@ -87,7 +87,7 @@ DadaDrive suit le pattern **MVVM (Model – View – ViewModel)** combiné aux p
 ### Rôle de chaque couche
 
 **UI Layer** — Ce que l'utilisateur voit et avec quoi il interagit.  
-Contient les `Fragment`, `Activity`, `ViewModel` liés à l'UI. Elle observe les données exposées par le ViewModel via `LiveData` ou `StateFlow` et ne contient **aucune logique métier**.
+Contient une `MainActivity` hôte unique et les écrans Composables (Jetpack Compose). Elle observe les données exposées par le ViewModel via `StateFlow` (`collectAsState`) et ne contient **aucune logique métier**.
 
 **ViewModel Layer** — Le pont entre l'UI et la logique.  
 Survit aux rotations d'écran. Appelle les `UseCase` du domaine, expose les états UI, et gère les événements utilisateur.
@@ -283,14 +283,6 @@ Comportement :
 - **Échec** → message explicite avec rappel d'`./gradlew ktlintFormat` pour auto-fix.
 
 Bypass exceptionnel : `git commit --no-verify` (à utiliser avec parcimonie — la CI continuera à gater).
-
----
-
-## Contributeurs
-
-| Nom | Rôle |
-|---|---|
-| [@ton-username](https://github.com/ton-username) | Lead Developer |
 
 ---
 
