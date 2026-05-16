@@ -264,6 +264,25 @@ gh pr create --base main
 
 > Les commits suivent [Conventional Commits](https://www.conventionalcommits.org) (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`, `test`, …).
 
+### Convention commits — footer phase
+
+Tout commit lié à une phase de remédiation référencée dans [`ACTION_PLAN.md`](../ACTION_PLAN.md) **doit** porter un footer explicite :
+
+- `Closes R-X.Y` — la phase est fermée par ce commit (dernier commit de la phase).
+- `Refs R-X.Y` — commit contribuant à la phase sans la clôturer (split en plusieurs commits, ou correctif post-phase).
+
+Exemple :
+
+```text
+refactor(driversetup): replace !! with explicit guards in submit flow
+
+Removes 10 non-null assertions from DriverSetupScreen.onFooterClick…
+
+Closes R-0.2
+```
+
+Permet `git log --grep="R-0.2"` pour retrouver l'historique d'une phase sans dépendre d'un changelog manuel.
+
 ### Hooks Git (obligatoire pour tout nouveau dev)
 
 Le projet installe un hook `pre-commit` qui exécute `ktlintCheck` + `detekt` sur les fichiers Kotlin **stagés**. Un commit avec violation est refusé avec un message d'aide.
