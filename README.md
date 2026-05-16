@@ -1,5 +1,7 @@
 # 🚗 DadaDrive
 
+[![Android CI](https://github.com/Dada-Drive/frontend-kotlin/actions/workflows/android-ci.yml/badge.svg?branch=main)](https://github.com/Dada-Drive/frontend-kotlin/actions/workflows/android-ci.yml)
+
 > Application Android de transport à la demande — inspirée de Bolt/Uber.  
 > Connecte les passagers à des chauffeurs en temps réel, avec suivi GPS, paiement intégré et historique de courses.
 
@@ -341,11 +343,66 @@ Les vrais pins **ne sont jamais commités** dans le repo. Ils vivent dans :
 - `local.properties` côté dev (gitignored)
 - GitHub Actions Secret `CERTIFICATE_PINS` côté CI (cf. R-0.8)
 
-Le workflow CI doit injecter ce secret dans `local.properties` avant `./gradlew assemble` :
+Le workflow CI génère `local.properties` à la volée à partir des secrets GitHub avant chaque tâche Gradle :
 
 ```yaml
-- run: echo "CERTIFICATE_PINS=${{ secrets.CERTIFICATE_PINS }}" >> local.properties
+- run: |
+    {
+      echo "sdk.dir=$ANDROID_HOME"
+      echo "CERTIFICATE_PINS=${{ secrets.CERTIFICATE_PINS }}"
+      # ...autres secrets
+    } > local.properties
 ```
+
+---
+
+## ⚙️ Continuous Integration (R-0.8)
+
+**Workflow** : [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) — lancé sur chaque `push` et `pull_request` ciblant `main`.
+
+**Lien Actions** : <https://github.com/Dada-Drive/frontend-kotlin/actions/workflows/android-ci.yml>
+
+### Jobs (4)
+
+| Job | Tâche Gradle | Timeout | Dépendance |
+|---|---|---|---|
+| `lint` | `ktlintCheck detekt` (parité hook pre-commit R-0.4) | 20 min | — |
+| `unit-test` | `:app:testDebugUnitTest` | 30 min | — |
+| `snapshot` | `:app:verifyPaparazziDebug` | 30 min | — |
+| `build-debug` | `:app:assembleDebug` | 30 min | `lint` |
+
+JDK 17 Temurin, Gradle 8.13 (détecté via wrapper), cache Gradle automatique (`gradle/actions/setup-gradle@v4`). `concurrency` annule les builds obsolètes sur push successifs. Artifacts (test reports + Paparazzi diffs) uploadés uniquement en cas d'échec.
+
+**Parité local ↔ CI** : le job `lint` exécute exactement les mêmes commandes que [`scripts/pre-commit.sh`](scripts/pre-commit.sh) (`./gradlew ktlintCheck detekt`). Si le hook passe localement, le job `lint` passera en CI.
+
+### Secrets à configurer
+
+**URL** : <https://github.com/Dada-Drive/frontend-kotlin/settings/secrets/actions>
+
+| Secret | Criticité | Source | Comportement si absent |
+|---|---|---|---|
+| `HERE_ACCESS_KEY_ID` | ✅ **critique** | Ops / HERE portal | Build échoue (HERE SDK auth) |
+| `HERE_ACCESS_KEY_SECRET` | ✅ **critique** | Ops / HERE portal | Build échoue (HERE SDK auth) |
+| `GOOGLE_WEB_CLIENT_ID` | ⚠️ soft | Firebase Console → OAuth Web Client | Google Sign-In KO en runtime, build OK |
+| `CERTIFICATE_PINS` | ⚠️ soft | `openssl s_client` (cf. section Pinning ci-dessus) | Pinning désactivé en debug, build OK |
+
+> **Note** : la première run CI échouera tant que les 2 secrets critiques `HERE_*` ne sont pas configurés. C'est attendu — configurer puis relancer manuellement via l'onglet Actions.
+
+### Activer la branch protection sur `main`
+
+**URL** : <https://github.com/Dada-Drive/frontend-kotlin/settings/branches>
+
+1. Cliquer **Add branch protection rule**
+2. **Branch name pattern** : `main`
+3. Cocher **Require status checks to pass before merging**
+4. Cocher **Require branches to be up to date before merging**
+5. Dans la liste des status checks, sélectionner les 4 jobs :
+   - `Lint (ktlint + detekt)`
+   - `Unit tests`
+   - `Paparazzi snapshots`
+   - `Build debug APK`
+6. (Optionnel) Cocher **Require a pull request before merging** pour interdire les push directs sur `main`
+7. **Create**
 
 ### Tester un pin invalide (validation manuelle)
 
