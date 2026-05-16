@@ -19,12 +19,12 @@ fi
 ln -sf "$TARGET_REL" "$HOOK"
 chmod +x "$REPO_ROOT/scripts/pre-commit.sh"
 
-resolved="$(cd "$(dirname "$HOOK")" && readlink "$HOOK" || true)"
-if [[ -x "$REPO_ROOT/scripts/pre-commit.sh" ]]; then
+resolved="$(readlink "$HOOK" 2>/dev/null || true)"
+if [[ -x "$REPO_ROOT/scripts/pre-commit.sh" && -n "$resolved" ]]; then
   echo "[install-hooks] OK -- pre-commit installed at $HOOK"
   echo "[install-hooks]    -> $resolved"
 else
-  echo "[install-hooks] ERROR: hook target is not executable" >&2
+  echo "[install-hooks] ERROR: hook target is not executable or symlink missing" >&2
   exit 1
 fi
 
