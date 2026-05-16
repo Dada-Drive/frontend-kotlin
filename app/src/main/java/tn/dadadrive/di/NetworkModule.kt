@@ -1,7 +1,18 @@
 package tn.dadadrive.di
 
 import com.dadadrive.BuildConfig
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import okhttp3.CertificatePinner
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import tn.dadadrive.core.constants.Constants
+import tn.dadadrive.core.network.parseCertificatePins
 import tn.dadadrive.data.network.api.AuthApiService
 import tn.dadadrive.data.network.api.DriverApiService
 import tn.dadadrive.data.network.api.NotificationApiService
@@ -13,16 +24,6 @@ import tn.dadadrive.data.network.interceptor.DefaultHeadersInterceptor
 import tn.dadadrive.data.network.interceptor.RedactingHttpLoggingInterceptor
 import tn.dadadrive.data.network.interceptor.RetryInterceptor
 import tn.dadadrive.data.storage.TokenStorage
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import okhttp3.CertificatePinner
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -30,7 +31,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
     @Provides
     @Singleton
     fun provideGson(): Gson = GsonBuilder().create()
@@ -42,8 +42,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAuthInterceptor(tokenStorage: TokenStorage): AuthInterceptor =
-        AuthInterceptor(tokenStorage)
+    fun provideAuthInterceptor(tokenStorage: TokenStorage): AuthInterceptor = AuthInterceptor(tokenStorage)
 
     @Provides
     @Singleton
@@ -73,14 +72,15 @@ object NetworkModule {
         tokenAuthenticator: TokenAuthenticator,
         redactingHttpLoggingInterceptor: RedactingHttpLoggingInterceptor,
     ): OkHttpClient {
-        val builder = OkHttpClient.Builder()
-            .authenticator(tokenAuthenticator)
-            .addInterceptor(retryInterceptor)
-            .addInterceptor(defaultHeadersInterceptor)
-            .addInterceptor(authInterceptor)
-            .connectTimeout(Constants.CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .readTimeout(Constants.READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .writeTimeout(Constants.WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        val builder =
+            OkHttpClient.Builder()
+                .authenticator(tokenAuthenticator)
+                .addInterceptor(retryInterceptor)
+                .addInterceptor(defaultHeadersInterceptor)
+                .addInterceptor(authInterceptor)
+                .connectTimeout(Constants.CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .readTimeout(Constants.READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .writeTimeout(Constants.WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         if (BuildConfig.DEBUG) {
             builder.addInterceptor(redactingHttpLoggingInterceptor)
         }
@@ -90,25 +90,21 @@ object NetworkModule {
 
     private fun certificatePinnerOrNull(): CertificatePinner? {
         if (!BuildConfig.ENABLE_CERT_PINNING) return null
-        val raw = BuildConfig.CERTIFICATE_PINS.trim()
-        if (raw.isEmpty()) return null
+        val pins = parseCertificatePins(BuildConfig.CERTIFICATE_PINS)
+        if (pins.isEmpty()) return null
         val pinBuilder = CertificatePinner.Builder()
-        var any = false
-        for (group in raw.split(',').map { it.trim() }.filter { it.isNotEmpty() }) {
-            val parts = group.split('|').map { it.trim() }.filter { it.isNotEmpty() }
-            if (parts.size < 2) continue
-            val host = parts[0]
-            for (pin in parts.drop(1)) {
-                pinBuilder.add(host, pin)
-                any = true
-            }
+        for ((host, pin) in pins) {
+            pinBuilder.add(host, pin)
         }
-        return if (any) pinBuilder.build() else null
+        return pinBuilder.build()
     }
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit =
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        gson: Gson,
+    ): Retrofit =
         Retrofit.Builder()
             .baseUrl(Constants.BASE_URL)
             .client(okHttpClient)
@@ -117,26 +113,21 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAuthApiService(retrofit: Retrofit): AuthApiService =
-        retrofit.create(AuthApiService::class.java)
+    fun provideAuthApiService(retrofit: Retrofit): AuthApiService = retrofit.create(AuthApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideDriverApiService(retrofit: Retrofit): DriverApiService =
-        retrofit.create(DriverApiService::class.java)
+    fun provideDriverApiService(retrofit: Retrofit): DriverApiService = retrofit.create(DriverApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideRidesApiService(retrofit: Retrofit): RidesApiService =
-        retrofit.create(RidesApiService::class.java)
+    fun provideRidesApiService(retrofit: Retrofit): RidesApiService = retrofit.create(RidesApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideNotificationApiService(retrofit: Retrofit): NotificationApiService =
-        retrofit.create(NotificationApiService::class.java)
+    fun provideNotificationApiService(retrofit: Retrofit): NotificationApiService = retrofit.create(NotificationApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideWalletApiService(retrofit: Retrofit): WalletApiService =
-        retrofit.create(WalletApiService::class.java)
+    fun provideWalletApiService(retrofit: Retrofit): WalletApiService = retrofit.create(WalletApiService::class.java)
 }
