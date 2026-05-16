@@ -305,6 +305,15 @@ Bypass exceptionnel : `git commit --no-verify` (à utiliser avec parcimonie — 
 
 ---
 
+## Documentation
+
+| Fichier | Contenu |
+|---|---|
+| [`docs/ACTION_PLAN.md`](docs/ACTION_PLAN.md) | Plan d'action de remédiation (sprints S0 → S5+). Source de vérité pour les phases `R-X.Y` référencées dans les commits. |
+| [`app/detekt-baseline-meta.md`](app/detekt-baseline-meta.md) | Inventaire de la dette detekt parquée en baseline et planning de résorption. |
+
+---
+
 ## Licence
 
 Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
