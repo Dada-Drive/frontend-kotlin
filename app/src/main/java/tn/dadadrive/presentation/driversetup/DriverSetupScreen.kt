@@ -217,6 +217,7 @@ fun DriverSetupScreen(
         onBack()
     }
 
+    @Suppress("ReturnCount") // Guard ladder over 9 nullable fields; each branch surfaces a distinct localized error.
     fun onFooterClick() {
         when (step) {
             SetupStep.Personal -> if (personalOk) step = SetupStep.License
