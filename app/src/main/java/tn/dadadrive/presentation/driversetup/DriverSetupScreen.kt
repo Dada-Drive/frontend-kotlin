@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dadadrive.R
+import tn.dadadrive.core.validation.DateParseResult
 
 @Composable
 fun DriverSetupScreen(
@@ -96,6 +97,8 @@ fun DriverSetupScreen(
 
     var activeSlot by remember { mutableStateOf<PhotoSlot?>(null) }
     var showSourcePicker by remember { mutableStateOf(false) }
+
+    var submitError by remember { mutableStateOf<Int?>(null) }
 
     fun applyBitmap(bmp: Bitmap) = when (activeSlot) {
         PhotoSlot.CinFront -> cinFrontBmp = bmp
@@ -199,27 +202,77 @@ fun DriverSetupScreen(
             SetupStep.Personal -> if (personalOk) step = SetupStep.License
             SetupStep.License -> if (licenseOk) step = SetupStep.Vehicle
             SetupStep.Vehicle -> {
-                if (!vehicleOk) return
-                val plate = normalizedPlate ?: return
+                if (!personalOk || !licenseOk || !vehicleOk) {
+                    submitError = R.string.driver_setup_error_missing_fields
+                    return
+                }
+                val plate = normalizedPlate ?: run {
+                    submitError = R.string.driver_setup_error_plate
+                    return
+                }
+                val cinIso = when (val r = parseUnderscoreDate(cinDeliveredAt.trim())) {
+                    is DateParseResult.Valid -> r.iso
+                    DateParseResult.Invalid -> {
+                        submitError = R.string.driver_setup_error_cin_date
+                        return
+                    }
+                }
+                val licIso = when (val r = parseUnderscoreDate(licenseExpiryInput.trim())) {
+                    is DateParseResult.Valid -> r.iso
+                    DateParseResult.Invalid -> {
+                        submitError = R.string.driver_setup_error_license_expiry
+                        return
+                    }
+                }
+                val cinFront = cinFrontBmp ?: run {
+                    submitError = R.string.driver_setup_error_cin_front
+                    return
+                }
+                val cinBack = cinBackBmp ?: run {
+                    submitError = R.string.driver_setup_error_cin_back
+                    return
+                }
+                val licFront = licenseFrontBmp ?: run {
+                    submitError = R.string.driver_setup_error_license_front
+                    return
+                }
+                val licBack = licenseBackBmp ?: run {
+                    submitError = R.string.driver_setup_error_license_back
+                    return
+                }
+                val vFront = vehicleFrontBmp ?: run {
+                    submitError = R.string.driver_setup_error_vehicle_front
+                    return
+                }
+                val vSide = vehicleSideBmp ?: run {
+                    submitError = R.string.driver_setup_error_vehicle_side
+                    return
+                }
+                val vBack = vehicleBackBmp ?: run {
+                    submitError = R.string.driver_setup_error_vehicle_back
+                    return
+                }
+                val seats = requireNotNull(seatsInt) { "seatsInt non-null per vehicleOk" }
+                submitError = null
                 viewModel.submitDriverSetup(
                     fullLicenseNumber = "TN-${licenseSuffix.trim()}",
-                    licenseExpiry = underscoreDateToIso(licenseExpiryInput.trim())!!,
+                    licenseExpiry = licIso,
                     cin = cinNumber.trim(),
-                    cinDeliveredAt = underscoreDateToIso(cinDeliveredAt.trim())!!,
-                    cinPhotoFront = cinFrontBmp!!.toBase64(),
-                    cinPhotoBack = cinBackBmp!!.toBase64(),
-                    licensePhotoFront = licenseFrontBmp!!.toBase64(),
-                    licensePhotoBack = licenseBackBmp!!.toBase64(),
+                    cinDeliveredAt = cinIso,
+                    cinPhotoFront = cinFront.toBase64(),
+                    cinPhotoBack = cinBack.toBase64(),
+                    licensePhotoFront = licFront.toBase64(),
+                    licensePhotoBack = licBack.toBase64(),
                     make = vehicleMake.trim(),
                     model = vehicleModel.trim(),
                     year = yearInt,
                     plateNumber = plate,
                     color = resolvedColor,
                     vehicleType = resolvedVehicleType,
-                    seats = seatsInt!!,
-                    photoFront = vehicleFrontBmp!!.toBase64(),
-                    photoSide = vehicleSideBmp!!.toBase64(),
-                    photoBack = vehicleBackBmp!!.toBase64(),
+                    seats = seats,
+                    photoFront = vFront.toBase64(),
+                    photoSide = vSide.toBase64(),
+                    photoBack = vBack.toBase64(),
                     onComplete = onComplete
                 )
             }
@@ -374,13 +427,23 @@ fun DriverSetupScreen(
             )
         }
 
-        DriverErrorSnackbar(
-            message = vmError,
-            onDismiss = { viewModel.dismissError() },
+        Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .windowInsetsPadding(WindowInsets.safeDrawing)
                 .padding(horizontal = 24.dp, vertical = 12.dp)
-        )
+        ) {
+            DriverErrorSnackbar(
+                message = vmError,
+                onDismiss = { viewModel.dismissError() }
+            )
+            if (vmError != null && submitError != null) {
+                Spacer(Modifier.height(8.dp))
+            }
+            DriverErrorSnackbar(
+                message = submitError?.let { stringResource(it) },
+                onDismiss = { submitError = null }
+            )
+        }
     }
 }
