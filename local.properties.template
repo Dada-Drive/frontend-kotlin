@@ -1,0 +1,27 @@
+# Copier vers local.properties (non versionné). Voir roadmap.md Phase 0 + rules.md §20.
+sdk.dir=
+
+GOOGLE_WEB_CLIENT_ID=
+# OAuth 2.0 « Web application » (Firebase : Project settings → Your apps → Web app client ID, ou Google Cloud Console → Credentials). Pas l’ID client Android. Requis pour « Continue with Google » (Credential Manager). Ajoutez aussi l’empreinte SHA-1 du keystore debug pour com.dadadrive.debug dans Firebase.
+
+# Backend dada-api (backend-integration.md §1.1)
+# Émulateur Android : 10.0.2.2 = machine hôte. Appareil physique + hotspot Windows : souvent 192.168.137.1 (adapter « Local Area Connection* »).
+BACKEND_BASE_URL_DEBUG=http://192.168.137.1:3000/api/v1
+BACKEND_BASE_URL_STAGING=https://staging-api.turbodrive.tn/api/v1
+BACKEND_BASE_URL_RELEASE=https://api.turbodrive.tn/api/v1
+# Optionnel : une seule URL pour tous les build types (ancien nom)
+# BASE_URL=
+
+# HERE SDK (carte actuelle — le design roadmap Mapbox viendra avec design-system.md)
+HERE_ACCESS_KEY_ID=
+HERE_ACCESS_KEY_SECRET=
+
+# Roadmap Phase 0 — Mapbox (quand le SDK remplacera HERE)
+MAPBOX_ACCESS_TOKEN=
+
+# true + valid keystore + passwords → release/staging-style artifacts signed for store; omit/false → debug signing for release build type (local ./gradlew build).
+ENABLE_RELEASE_SIGNING=false
+KEYSTORE_PATH=
+KEYSTORE_STORE_PASSWORD=
+KEYSTORE_KEY_ALIAS=
+KEYSTORE_KEY_PASSWORD=

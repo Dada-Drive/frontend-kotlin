@@ -1,0 +1,19 @@
+# Aligné rules.md §19 — renforcer progressivement (ignoreFailures retirable dans app/build.gradle.kts).
+config:
+  validation: true
+
+build:
+  maxIssues: 10000
+
+complexity:
+  LongParameterList:
+    active: true
+    functionThreshold: 8
+    ignoreDefaultParameters: true
+
+style:
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+    excludePackageStatements: true
+    excludeImportStatements: true
