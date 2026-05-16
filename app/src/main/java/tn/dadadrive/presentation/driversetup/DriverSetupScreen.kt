@@ -7,7 +7,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -56,7 +55,7 @@ import tn.dadadrive.core.validation.DateParseResult
 fun DriverSetupScreen(
     onComplete: () -> Unit,
     onBack: () -> Unit,
-    viewModel: DriverSetupViewModel = hiltViewModel()
+    viewModel: DriverSetupViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val screenWidthDp = LocalConfiguration.current.screenWidthDp
@@ -100,26 +99,31 @@ fun DriverSetupScreen(
 
     var submitError by remember { mutableStateOf<Int?>(null) }
 
-    fun applyBitmap(bmp: Bitmap) = when (activeSlot) {
-        PhotoSlot.CinFront -> cinFrontBmp = bmp
-        PhotoSlot.CinBack -> cinBackBmp = bmp
-        PhotoSlot.LicenseFront -> licenseFrontBmp = bmp
-        PhotoSlot.LicenseBack -> licenseBackBmp = bmp
-        PhotoSlot.VehicleFront -> vehicleFrontBmp = bmp
-        PhotoSlot.VehicleSide -> vehicleSideBmp = bmp
-        PhotoSlot.VehicleBack -> vehicleBackBmp = bmp
-        null -> {}
-    }
+    fun applyBitmap(bmp: Bitmap) =
+        when (activeSlot) {
+            PhotoSlot.CinFront -> cinFrontBmp = bmp
+            PhotoSlot.CinBack -> cinBackBmp = bmp
+            PhotoSlot.LicenseFront -> licenseFrontBmp = bmp
+            PhotoSlot.LicenseBack -> licenseBackBmp = bmp
+            PhotoSlot.VehicleFront -> vehicleFrontBmp = bmp
+            PhotoSlot.VehicleSide -> vehicleSideBmp = bmp
+            PhotoSlot.VehicleBack -> vehicleBackBmp = bmp
+            null -> {}
+        }
 
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { context.uriToBitmap(it)?.let { bmp -> applyBitmap(bmp) } }
-    }
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bmp ->
-        bmp?.let { applyBitmap(it) }
-    }
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) cameraLauncher.launch(null)
-    }
+    val galleryLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            uri?.let { context.uriToBitmap(it)?.let { bmp -> applyBitmap(bmp) } }
+        }
+    val cameraLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bmp ->
+            bmp?.let { applyBitmap(it) }
+        }
+    val permissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) cameraLauncher.launch(null)
+        }
+
     fun openPhotoFor(slot: PhotoSlot) {
         activeSlot = slot
         showSourcePicker = true
@@ -129,68 +133,84 @@ fun DriverSetupScreen(
         PhotoSourcePickerDialog(
             onCamera = {
                 showSourcePicker = false
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                     cameraLauncher.launch(null)
-                else
+                } else {
                     permissionLauncher.launch(Manifest.permission.CAMERA)
+                }
             },
-            onGallery = { showSourcePicker = false; galleryLauncher.launch("image/*") },
-            onDismiss = { showSourcePicker = false }
+            onGallery = {
+                showSourcePicker = false
+                galleryLauncher.launch("image/*")
+            },
+            onDismiss = { showSourcePicker = false },
         )
     }
 
-    val personalOk = cinFrontBmp != null && cinBackBmp != null &&
-        cinNumber.trim().isNotEmpty() && isValidPastOrPresentDate(cinDeliveredAt.trim())
+    val personalOk =
+        cinFrontBmp != null && cinBackBmp != null &&
+            cinNumber.trim().isNotEmpty() && isValidPastOrPresentDate(cinDeliveredAt.trim())
 
-    val licenseOk = licenseFrontBmp != null && licenseBackBmp != null &&
-        licenseSuffix.trim().isNotEmpty() &&
-        isValidPastOrPresentDate(licenseIssueInput.trim()) &&
-        isValidFutureDate(licenseExpiryInput.trim()) &&
-        licenseCategories.contains('B')
+    val licenseOk =
+        licenseFrontBmp != null && licenseBackBmp != null &&
+            licenseSuffix.trim().isNotEmpty() &&
+            isValidPastOrPresentDate(licenseIssueInput.trim()) &&
+            isValidFutureDate(licenseExpiryInput.trim()) &&
+            licenseCategories.contains('B')
 
     val yearInt = vehicleYear.toIntOrNull() ?: 0
-    val normalizedPlate = remember(plateInput) {
-        val cleaned = plateInput.trim().replace(Regex("\\s+"), " ")
-        val source = if (Regex("(?i)\\bTUN\\b").containsMatchIn(cleaned)) cleaned else cleaned
-        val match = Regex("(\\d{1,3})\\s*(?:[Tt][Uu][Nn]\\s*)?(\\S+)").find(source)
-        match?.let {
-            val digits = it.groupValues[1].padStart(3, '0')
-            val serial = it.groupValues[2].uppercase()
-            "$digits TUN $serial"
+    val normalizedPlate =
+        remember(plateInput) {
+            val cleaned = plateInput.trim().replace(Regex("\\s+"), " ")
+            val source = if (Regex("(?i)\\bTUN\\b").containsMatchIn(cleaned)) cleaned else cleaned
+            val match = Regex("(\\d{1,3})\\s*(?:[Tt][Uu][Nn]\\s*)?(\\S+)").find(source)
+            match?.let {
+                val digits = it.groupValues[1].padStart(3, '0')
+                val serial = it.groupValues[2].uppercase()
+                "$digits TUN $serial"
+            }
         }
-    }
-    val resolvedVehicleType = if (vehiclePreset == DriverVehiclePreset.Other)
-        customVehicleType.trim() else vehiclePreset.apiSlug
-    val typeOk = resolvedVehicleType.isNotEmpty() &&
-        (vehiclePreset != DriverVehiclePreset.Other || customVehicleType.trim().isNotEmpty())
+    val resolvedVehicleType =
+        if (vehiclePreset == DriverVehiclePreset.Other) {
+            customVehicleType.trim()
+        } else {
+            vehiclePreset.apiSlug
+        }
+    val typeOk =
+        resolvedVehicleType.isNotEmpty() &&
+            (vehiclePreset != DriverVehiclePreset.Other || customVehicleType.trim().isNotEmpty())
     val resolvedColor = if (vehicleColorSlug == "other") customColorText.trim() else vehicleColorSlug
     val colorOk = resolvedColor.isNotEmpty() && (vehicleColorSlug != "other" || customColorText.trim().length >= 2)
     val seatsInt = seatInput.toIntOrNull()
-    val vehicleOk = vehicleFrontBmp != null && vehicleSideBmp != null && vehicleBackBmp != null &&
-        normalizedPlate != null && vehicleMake.trim().isNotEmpty() &&
-        vehicleModel.trim().isNotEmpty() && colorOk &&
-        yearInt >= 1990 && typeOk && seatsInt != null && seatsInt in 1..99
+    val vehicleOk =
+        vehicleFrontBmp != null && vehicleSideBmp != null && vehicleBackBmp != null &&
+            normalizedPlate != null && vehicleMake.trim().isNotEmpty() &&
+            vehicleModel.trim().isNotEmpty() && colorOk &&
+            yearInt >= 1990 && typeOk && seatsInt != null && seatsInt in 1..99
 
-    val footerEnabled = when (step) {
-        SetupStep.Personal -> personalOk
-        SetupStep.License -> licenseOk
-        SetupStep.Vehicle -> vehicleOk
-    } && !loading
+    val footerEnabled =
+        when (step) {
+            SetupStep.Personal -> personalOk
+            SetupStep.License -> licenseOk
+            SetupStep.Vehicle -> vehicleOk
+        } && !loading
 
-    val footerText = when (step) {
-        SetupStep.Vehicle -> stringResource(R.string.driver_submit)
-        else -> stringResource(R.string.driver_next)
-    }
+    val footerText =
+        when (step) {
+            SetupStep.Vehicle -> stringResource(R.string.driver_submit)
+            else -> stringResource(R.string.driver_next)
+        }
 
     fun onHeaderBack() {
-        step = when {
-            step == SetupStep.License -> SetupStep.Personal
-            step == SetupStep.Vehicle -> SetupStep.License
-            else -> {
-                onBack()
-                return
+        step =
+            when {
+                step == SetupStep.License -> SetupStep.Personal
+                step == SetupStep.Vehicle -> SetupStep.License
+                else -> {
+                    onBack()
+                    return
+                }
             }
-        }
     }
 
     fun onHeaderClose() {
@@ -206,52 +226,62 @@ fun DriverSetupScreen(
                     submitError = R.string.driver_setup_error_missing_fields
                     return
                 }
-                val plate = normalizedPlate ?: run {
-                    submitError = R.string.driver_setup_error_plate
-                    return
-                }
-                val cinIso = when (val r = parseUnderscoreDate(cinDeliveredAt.trim())) {
-                    is DateParseResult.Valid -> r.iso
-                    DateParseResult.Invalid -> {
-                        submitError = R.string.driver_setup_error_cin_date
+                val plate =
+                    normalizedPlate ?: run {
+                        submitError = R.string.driver_setup_error_plate
                         return
                     }
-                }
-                val licIso = when (val r = parseUnderscoreDate(licenseExpiryInput.trim())) {
-                    is DateParseResult.Valid -> r.iso
-                    DateParseResult.Invalid -> {
-                        submitError = R.string.driver_setup_error_license_expiry
+                val cinIso =
+                    when (val r = parseUnderscoreDate(cinDeliveredAt.trim())) {
+                        is DateParseResult.Valid -> r.iso
+                        DateParseResult.Invalid -> {
+                            submitError = R.string.driver_setup_error_cin_date
+                            return
+                        }
+                    }
+                val licIso =
+                    when (val r = parseUnderscoreDate(licenseExpiryInput.trim())) {
+                        is DateParseResult.Valid -> r.iso
+                        DateParseResult.Invalid -> {
+                            submitError = R.string.driver_setup_error_license_expiry
+                            return
+                        }
+                    }
+                val cinFront =
+                    cinFrontBmp ?: run {
+                        submitError = R.string.driver_setup_error_cin_front
                         return
                     }
-                }
-                val cinFront = cinFrontBmp ?: run {
-                    submitError = R.string.driver_setup_error_cin_front
-                    return
-                }
-                val cinBack = cinBackBmp ?: run {
-                    submitError = R.string.driver_setup_error_cin_back
-                    return
-                }
-                val licFront = licenseFrontBmp ?: run {
-                    submitError = R.string.driver_setup_error_license_front
-                    return
-                }
-                val licBack = licenseBackBmp ?: run {
-                    submitError = R.string.driver_setup_error_license_back
-                    return
-                }
-                val vFront = vehicleFrontBmp ?: run {
-                    submitError = R.string.driver_setup_error_vehicle_front
-                    return
-                }
-                val vSide = vehicleSideBmp ?: run {
-                    submitError = R.string.driver_setup_error_vehicle_side
-                    return
-                }
-                val vBack = vehicleBackBmp ?: run {
-                    submitError = R.string.driver_setup_error_vehicle_back
-                    return
-                }
+                val cinBack =
+                    cinBackBmp ?: run {
+                        submitError = R.string.driver_setup_error_cin_back
+                        return
+                    }
+                val licFront =
+                    licenseFrontBmp ?: run {
+                        submitError = R.string.driver_setup_error_license_front
+                        return
+                    }
+                val licBack =
+                    licenseBackBmp ?: run {
+                        submitError = R.string.driver_setup_error_license_back
+                        return
+                    }
+                val vFront =
+                    vehicleFrontBmp ?: run {
+                        submitError = R.string.driver_setup_error_vehicle_front
+                        return
+                    }
+                val vSide =
+                    vehicleSideBmp ?: run {
+                        submitError = R.string.driver_setup_error_vehicle_side
+                        return
+                    }
+                val vBack =
+                    vehicleBackBmp ?: run {
+                        submitError = R.string.driver_setup_error_vehicle_back
+                        return
+                    }
                 val seats = requireNotNull(seatsInt) { "seatsInt non-null per vehicleOk" }
                 submitError = null
                 viewModel.submitDriverSetup(
@@ -273,7 +303,7 @@ fun DriverSetupScreen(
                     photoFront = vFront.toBase64(),
                     photoSide = vSide.toBase64(),
                     photoBack = vBack.toBase64(),
-                    onComplete = onComplete
+                    onComplete = onComplete,
                 )
             }
         }
@@ -292,17 +322,19 @@ fun DriverSetupScreen(
 
     androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(OnboardingPageBg)
-                .windowInsetsPadding(WindowInsets.safeDrawing)
-                .imePadding()
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(OnboardingPageBg)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .imePadding(),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = hPad, vertical = vPad),
-                verticalAlignment = Alignment.CenterVertically
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = hPad, vertical = vPad),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Surface(
                     modifier = Modifier.size(40.dp),
@@ -310,14 +342,14 @@ fun DriverSetupScreen(
                     color = Color.White,
                     border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
                     shadowElevation = 2.dp,
-                    onClick = { onHeaderBack() }
+                    onClick = { onHeaderBack() },
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.driver_back),
                             tint = Color.Black,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
                         )
                     }
                 }
@@ -328,7 +360,7 @@ fun DriverSetupScreen(
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                     color = OnboardingTitle,
-                    maxLines = 1
+                    maxLines = 1,
                 )
                 Surface(
                     modifier = Modifier.size(40.dp),
@@ -336,14 +368,14 @@ fun DriverSetupScreen(
                     color = Color.White,
                     border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
                     shadowElevation = 2.dp,
-                    onClick = { onHeaderClose() }
+                    onClick = { onHeaderClose() },
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = stringResource(R.string.driver_close),
                             tint = Color.Black,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
                         )
                     }
                 }
@@ -353,66 +385,70 @@ fun DriverSetupScreen(
             Spacer(Modifier.height(8.dp))
 
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = hPad)
-                    .padding(bottom = 8.dp)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = hPad)
+                        .padding(bottom = 8.dp),
             ) {
                 when (step) {
-                    SetupStep.Personal -> DriverPersonalStep(
-                        cinFrontBmp = cinFrontBmp,
-                        cinBackBmp = cinBackBmp,
-                        cinNumber = cinNumber,
-                        cinDeliveredAt = cinDeliveredAt,
-                        onCinFrontClick = { openPhotoFor(PhotoSlot.CinFront) },
-                        onCinBackClick = { openPhotoFor(PhotoSlot.CinBack) },
-                        onCinNumberChange = { cinNumber = it },
-                        onCinDateChange = { cinDeliveredAt = it },
-                        titleFontSize = titleFontSize,
-                    )
-                    SetupStep.License -> DriverLicenseStep(
-                        licenseFrontBmp = licenseFrontBmp,
-                        licenseBackBmp = licenseBackBmp,
-                        licenseSuffix = licenseSuffix,
-                        licenseIssueInput = licenseIssueInput,
-                        licenseExpiryInput = licenseExpiryInput,
-                        licenseCategories = licenseCategories,
-                        onLicenseFrontClick = { openPhotoFor(PhotoSlot.LicenseFront) },
-                        onLicenseBackClick = { openPhotoFor(PhotoSlot.LicenseBack) },
-                        onSuffixChange = { licenseSuffix = it },
-                        onIssueChange = { licenseIssueInput = it },
-                        onExpiryChange = { licenseExpiryInput = it },
-                        onLicenseCategoryToggle = { toggleLicenseCategory(it) },
-                        titleFontSize = titleFontSize,
-                    )
-                    SetupStep.Vehicle -> DriverVehicleStep(
-                        vehicleFrontBmp = vehicleFrontBmp,
-                        vehicleSideBmp = vehicleSideBmp,
-                        vehicleBackBmp = vehicleBackBmp,
-                        vehicleMake = vehicleMake,
-                        vehicleModel = vehicleModel,
-                        vehicleYear = vehicleYear,
-                        selectedColorSlug = vehicleColorSlug,
-                        customColorText = customColorText,
-                        plateInput = plateInput,
-                        vehiclePreset = vehiclePreset,
-                        customVehicleType = customVehicleType,
-                        seatInput = seatInput,
-                        onVehicleFrontClick = { openPhotoFor(PhotoSlot.VehicleFront) },
-                        onVehicleSideClick = { openPhotoFor(PhotoSlot.VehicleSide) },
-                        onVehicleBackClick = { openPhotoFor(PhotoSlot.VehicleBack) },
-                        onMakeChange = { vehicleMake = it },
-                        onModelChange = { vehicleModel = it },
-                        onYearChange = { vehicleYear = it },
-                        onColorSlugChange = { vehicleColorSlug = it },
-                        onCustomColorChange = { customColorText = it },
-                        onPlateInputChange = { plateInput = it },
-                        onPresetChange = { vehiclePreset = it },
-                        onCustomTypeChange = { customVehicleType = it },
-                        onSeatChange = { seatInput = it },
-                        titleFontSize = titleFontSize,
-                    )
+                    SetupStep.Personal ->
+                        DriverPersonalStep(
+                            cinFrontBmp = cinFrontBmp,
+                            cinBackBmp = cinBackBmp,
+                            cinNumber = cinNumber,
+                            cinDeliveredAt = cinDeliveredAt,
+                            onCinFrontClick = { openPhotoFor(PhotoSlot.CinFront) },
+                            onCinBackClick = { openPhotoFor(PhotoSlot.CinBack) },
+                            onCinNumberChange = { cinNumber = it },
+                            onCinDateChange = { cinDeliveredAt = it },
+                            titleFontSize = titleFontSize,
+                        )
+                    SetupStep.License ->
+                        DriverLicenseStep(
+                            licenseFrontBmp = licenseFrontBmp,
+                            licenseBackBmp = licenseBackBmp,
+                            licenseSuffix = licenseSuffix,
+                            licenseIssueInput = licenseIssueInput,
+                            licenseExpiryInput = licenseExpiryInput,
+                            licenseCategories = licenseCategories,
+                            onLicenseFrontClick = { openPhotoFor(PhotoSlot.LicenseFront) },
+                            onLicenseBackClick = { openPhotoFor(PhotoSlot.LicenseBack) },
+                            onSuffixChange = { licenseSuffix = it },
+                            onIssueChange = { licenseIssueInput = it },
+                            onExpiryChange = { licenseExpiryInput = it },
+                            onLicenseCategoryToggle = { toggleLicenseCategory(it) },
+                            titleFontSize = titleFontSize,
+                        )
+                    SetupStep.Vehicle ->
+                        DriverVehicleStep(
+                            vehicleFrontBmp = vehicleFrontBmp,
+                            vehicleSideBmp = vehicleSideBmp,
+                            vehicleBackBmp = vehicleBackBmp,
+                            vehicleMake = vehicleMake,
+                            vehicleModel = vehicleModel,
+                            vehicleYear = vehicleYear,
+                            selectedColorSlug = vehicleColorSlug,
+                            customColorText = customColorText,
+                            plateInput = plateInput,
+                            vehiclePreset = vehiclePreset,
+                            customVehicleType = customVehicleType,
+                            seatInput = seatInput,
+                            onVehicleFrontClick = { openPhotoFor(PhotoSlot.VehicleFront) },
+                            onVehicleSideClick = { openPhotoFor(PhotoSlot.VehicleSide) },
+                            onVehicleBackClick = { openPhotoFor(PhotoSlot.VehicleBack) },
+                            onMakeChange = { vehicleMake = it },
+                            onModelChange = { vehicleModel = it },
+                            onYearChange = { vehicleYear = it },
+                            onColorSlugChange = { vehicleColorSlug = it },
+                            onCustomColorChange = { customColorText = it },
+                            onPlateInputChange = { plateInput = it },
+                            onPresetChange = { vehiclePreset = it },
+                            onCustomTypeChange = { customVehicleType = it },
+                            onSeatChange = { seatInput = it },
+                            titleFontSize = titleFontSize,
+                        )
                 }
             }
 
@@ -421,28 +457,30 @@ fun DriverSetupScreen(
                 enabled = footerEnabled,
                 loading = loading && step == SetupStep.Vehicle,
                 onClick = { onFooterClick() },
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(horizontal = hPad, vertical = 12.dp)
+                modifier =
+                    Modifier
+                        .navigationBarsPadding()
+                        .padding(horizontal = hPad, vertical = 12.dp),
             )
         }
 
         Column(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .windowInsetsPadding(WindowInsets.safeDrawing)
-                .padding(horizontal = 24.dp, vertical = 12.dp)
+            modifier =
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
         ) {
             DriverErrorSnackbar(
                 message = vmError,
-                onDismiss = { viewModel.dismissError() }
+                onDismiss = { viewModel.dismissError() },
             )
             if (vmError != null && submitError != null) {
                 Spacer(Modifier.height(8.dp))
             }
             DriverErrorSnackbar(
                 message = submitError?.let { stringResource(it) },
-                onDismiss = { submitError = null }
+                onDismiss = { submitError = null },
             )
         }
     }
