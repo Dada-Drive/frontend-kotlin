@@ -398,7 +398,8 @@ BUILD SUCCESSFUL in 11s
 
 ---
 
-### Phase R-0.8 — Mettre en place CI GitHub Actions
+### Phase R-0.8 — Mettre en place CI GitHub Actions ✅ (structurel)
+**Statut** : Workflow `.github/workflows/android-ci.yml` créé le 2026-05-17 — push sur `origin/main`. Structurel complet ; **secrets GitHub + branch protection en attente d'action user** (procédure documentée dans `README.md` section "Continuous Integration").
 **Objectif** : pipeline CI qui exécute build + ktlint + detekt + tests + paparazzi sur chaque push/PR.
 **Sévérité** : Bloquant — **Effort** : 4 h
 **Dépendances** : R-0.1
@@ -420,13 +421,23 @@ BUILD SUCCESSFUL in 11s
 - `frontend-kotlin/README.md` (badge)
 
 **Critères d'acceptation**
-- [ ] PR ouverte ⇒ CI lance les 4 jobs
-- [ ] CI échoue sur violation lint/test
-- [ ] Build debug réussit en <8 min
+- [x] Workflow `.github/workflows/android-ci.yml` créé avec 4 jobs (`lint`, `unit-test`, `snapshot`, `build-debug`)
+- [x] Cache Gradle via `gradle/actions/setup-gradle@v4` + concurrency group
+- [x] Triggers `push` + `pull_request` sur `main`
+- [x] Secrets injectés via génération de `local.properties` à la volée (zéro modif `build.gradle.kts`)
+- [x] Badge CI ajouté en haut de `README.md`
+- [x] Section "Continuous Integration" du README documente les 4 secrets + procédure branch protection
+- [ ] **Secrets GitHub configurés** (action user — Settings → Secrets and variables → Actions, cf. README)
+- [ ] **Première run CI verte** (en attente config secrets — la 1ère run échouera tant que `HERE_*` ne sont pas configurés)
+- [ ] **Branch protection activée** sur `main` avec les 4 jobs en required status checks (action user — Settings → Branches)
+- [ ] PR test : violation lint ⇒ CI rouge ; build debug < 8 min
 
 **Vérification** : créer une PR test avec une violation → CI rouge.
 
-**Risques** : secrets HERE/Mapbox absents côté GitHub ⇒ jobs build échouent. Mitigation : fournir secrets via repo settings avant activation branch protection.
+**Risques** : secrets HERE absents côté GitHub ⇒ jobs build échouent. Mitigation : fournir secrets via repo settings avant activation branch protection. Pas de Mapbox dans le projet réel (template legacy uniquement).
+
+**Note d'action user** :
+> Les étapes restantes (configurer secrets + activer branch protection) ne peuvent **pas** être automatisées via Claude Code (UI GitHub uniquement, pas d'API call possible sans token spécial). Procédure exacte documentée dans `README.md` section "Continuous Integration" → sous-sections "Secrets à configurer" et "Activer la branch protection sur main".
 
 ---
 
