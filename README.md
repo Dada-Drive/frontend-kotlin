@@ -247,19 +247,42 @@ Le dépôt est déjà initialisé sur GitHub (`origin = https://github.com/Dada-
 git clone https://github.com/Dada-Drive/frontend-kotlin.git
 cd frontend-kotlin
 
-# 2. Créer une branche feature
+# 2. Installer les hooks Git (étape obligatoire — voir ci-dessous)
+bash scripts/install-hooks.sh
+
+# 3. Créer une branche feature
 git checkout -b feature/<short-slug>
 
-# 3. Coder · committer en Conventional Commits
+# 4. Coder · committer en Conventional Commits
 git add <fichiers ciblés>
 git commit -m "feat(scope): description courte"
 
-# 4. Pusher la branche puis ouvrir une PR vers main
+# 5. Pusher la branche puis ouvrir une PR vers main
 git push -u origin feature/<short-slug>
 gh pr create --base main
 ```
 
-> Les commits suivent [Conventional Commits](https://www.conventionalcommits.org) (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`, `test`, …). Les hooks pre-commit (ktlint + detekt) doivent passer avant push.
+> Les commits suivent [Conventional Commits](https://www.conventionalcommits.org) (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`, `test`, …).
+
+### Hooks Git (obligatoire pour tout nouveau dev)
+
+Le projet installe un hook `pre-commit` qui exécute `ktlintCheck` + `detekt` sur les fichiers Kotlin **stagés**. Un commit avec violation est refusé avec un message d'aide.
+
+```bash
+# macOS / Linux
+bash scripts/install-hooks.sh
+
+# Windows (PowerShell 7+)
+pwsh scripts/install-hooks.ps1
+```
+
+Comportement :
+
+- **Aucun `.kt` / `.kts` stagé** → le hook saute immédiatement (≈100 ms).
+- **Au moins un `.kt` / `.kts` stagé** → `./gradlew ktlintCheck detekt` est lancé (typique 3–8 s grâce au daemon Gradle ; cas pessimiste ~11 s en first-run).
+- **Échec** → message explicite avec rappel d'`./gradlew ktlintFormat` pour auto-fix.
+
+Bypass exceptionnel : `git commit --no-verify` (à utiliser avec parcimonie — la CI continuera à gater).
 
 ---
 
