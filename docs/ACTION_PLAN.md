@@ -744,10 +744,26 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 
 ---
 
-### Phase R-2.1 — Définir `sealed interface ScreenState<T>`
+### Phase R-2.1 — Définir `sealed interface ScreenState<T>` ✅
+**Statut** : Terminée le 2026-05-17 — 4 commits.
+- `275dec3` feat(presentation) — sealed ScreenState<T> with Idle/Loading/Loaded/Error
+- `0a526be` test(presentation) — ScreenStateTest with 5 cases (variance + exhaustiveness)
+- `f9a7556` feat(presentation) — ScreenState extensions (dataOrNull, toScreenState, asScreenStateFlow)
+- `b8dae1b` test(presentation) — ScreenStateExtensionsTest with 6 cases (helpers + Flow)
+- (ce commit) docs(architecture) — ARCHITECTURE.md + tick R-2.1
+
+**Métriques finales**
+- Sealed `ScreenState<out T>` avec 4 sous-types (Idle / Loading / Loaded<T> / Error)
+- Variance `out T` validée par tests (Idle/Loading/Error assignables à `ScreenState<X>` quelconque)
+- 6 helpers d'extension : `dataOrNull`, `errorOrNull`, `isIdle/Loading/Loaded/Error`, `toScreenState(mapper)`, `asScreenStateFlow(mapper)`
+- 11 tests verts (5 sealed + 6 extensions) — MockK pour le mapper, runBlocking pour le Flow
+- `docs/ARCHITECTURE.md` créé avec snippets ViewModel + Compose + migration legacy
+- **Aucun ViewModel modifié** (R-2.2 séparé) — preuve par `git diff --name-only`
+- 10 VMs actuels (vs 14 plan initial) — R-2.2 sera proportionnellement plus court
+
 **Objectif** : pattern d'état unique, exhaustif, exigé par rules.md §3.2.
-**Sévérité** : Critique — **Effort** : 4–6 h
-**Dépendances** : R-1.2 (PresentableError disponible)
+**Sévérité** : Critique — **Effort estimé** : 4–6 h — **Effort réel** : ~1h30
+**Dépendances** : R-1.2 (PresentableError disponible) + quick win Action 2 (messageResId)
 **Catégorie** : Architecture drift
 
 **Tâches**
@@ -769,9 +785,12 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 - Nouveaux : `presentation/common/ScreenState.kt`, `presentation/common/ScreenStateExtensions.kt`, `docs/ARCHITECTURE.md`, tests
 
 **Critères d'acceptation**
-- [ ] Sealed interface compile et exhaustif
-- [ ] 3 tests passent
-- [ ] Doc avec snippet
+- [x] Sealed interface compile et exhaustif (test "when expression is exhaustive without else")
+- [x] ≥ 3 tests passent (11 tests verts : 5 sealed + 6 extensions)
+- [x] Doc avec snippet (`docs/ARCHITECTURE.md` créé avec snippets VM + Compose + migration legacy)
+- [x] Variance `out T` correctement appliquée
+- [x] `Error` porte un `PresentableError` complet (avec `messageResId` R-1.2)
+- [x] **Aucun ViewModel touché** (R-2.2 séparé)
 
 **Vérification** : `when (state) { … }` sans `else` ⇒ exhaustif.
 
