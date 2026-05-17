@@ -5,6 +5,12 @@ data class PresentableError(
     val category: ErrorCategory,
     val isRetryable: Boolean,
     val retryAfterSeconds: Int? = null,
+    /**
+     * Typed backend code (R-1.2). `null` when the error did not originate from a
+     * backend envelope (e.g. IOException, generic HttpException without code).
+     * ViewModels can branch on this without parsing [message].
+     */
+    val code: BackendErrorCode? = null,
 )
 
 sealed interface ErrorCategory {

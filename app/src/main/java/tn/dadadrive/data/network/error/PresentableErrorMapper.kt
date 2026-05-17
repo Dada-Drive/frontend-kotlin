@@ -8,6 +8,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.HttpException
 import tn.dadadrive.data.network.ApiBusinessException
 import tn.dadadrive.data.network.ApiEnvelopeException
+import tn.dadadrive.data.network.envelope.BackendException
+import tn.dadadrive.domain.models.BackendErrorCode
 import tn.dadadrive.domain.models.ErrorCategory
 import tn.dadadrive.domain.models.PresentableError
 import java.io.IOException
@@ -24,6 +26,12 @@ class PresentableErrorMapper
         fun fromThrowable(throwable: Throwable): PresentableError =
             when (throwable) {
                 is HttpException -> fromHttpException(throwable)
+                is BackendException ->
+                    fromBackend(
+                        httpCode = throwable.httpCode ?: 0,
+                        code = throwable.apiError.code,
+                        retryAfterHeader = null,
+                    ) ?: fromHttp(throwable.httpCode ?: 0, throwable.apiError.code, null)
                 is ApiBusinessException ->
                     fromBackend(throwable.httpCode, throwable.errorCode, null)
                         ?: fromHttp(throwable.httpCode, null, null)
@@ -107,57 +115,71 @@ class PresentableErrorMapper
             retryAfterHeader: String?,
         ): PresentableError? {
             if (code.isNullOrBlank()) return null
+            // TOKEN_EXPIRED / TOKEN_INVALID intentionally skipped --
+            // delegated to TokenAuthenticator (refresh-and-retry flow).
             if (code == "TOKEN_EXPIRED" || code == "TOKEN_INVALID") return null
+            val enumCode = BackendErrorCode.fromString(code)
+            val resId = stringResForBackendCode(enumCode) ?: return null
             val retryAfter = retryAfterHeader?.toIntOrNull()
-            val category = categoryFor(httpCode)
-            val isRetryable = httpCode == 429 || httpCode in 500..599
-            val resId = stringResForBackendCode(code) ?: return null
             return PresentableError(
                 message = context.getString(resId),
-                category = category,
-                isRetryable = isRetryable,
+                category = categoryFor(httpCode),
+                isRetryable = httpCode == 429 || httpCode in 500..599,
                 retryAfterSeconds = if (httpCode == 429) retryAfter else null,
+                code = enumCode,
             )
         }
 
+        /**
+         * Exhaustive enum mapping. Adding a new value to [BackendErrorCode] forces
+         * an update here (compile-time `when` exhaustiveness).
+         *
+         * [BackendErrorCode.UNKNOWN] returns null so [fromBackend] falls back to
+         * the generic HTTP-based message in [fromHttp].
+         *
+         * Suppress(CyclomaticComplexMethod) : intentional 1:1 lookup table -- splitting
+         * by category would fragment a single source of truth and break the compile-time
+         * exhaustiveness guarantee that justifies the enum approach.
+         */
         @StringRes
-        private fun stringResForBackendCode(code: String): Int? =
+        @Suppress("CyclomaticComplexMethod")
+        private fun stringResForBackendCode(code: BackendErrorCode): Int? =
             when (code) {
-                "UNAUTHORIZED" -> R.string.error_unauthorized
-                "INVALID_CREDENTIALS" -> R.string.error_invalid_credentials
-                "ACCOUNT_SUSPENDED" -> R.string.error_account_suspended
-                "ACCOUNT_NOT_FOUND" -> R.string.error_account_not_found
-                "FORBIDDEN" -> R.string.error_forbidden
-                "OTP_EXPIRED" -> R.string.error_otp_expired
-                "OTP_MAX_ATTEMPTS" -> R.string.error_otp_max_attempts
-                "OTP_INVALID" -> R.string.error_otp_invalid
-                "OTP_RATE_LIMITED" -> R.string.error_otp_rate_limited
-                "RIDE_NOT_FOUND" -> R.string.error_ride_not_found
-                "RIDE_INVALID_STATUS" -> R.string.error_ride_invalid_status
-                "RIDE_ALREADY_ACCEPTED" -> R.string.error_ride_already_accepted
-                "RIDE_EXPIRED" -> R.string.error_ride_expired
-                "RIDE_OUTSIDE_BOUNDS" -> R.string.error_ride_outside_bounds
-                "OFFER_NOT_FOUND" -> R.string.error_offer_not_found
-                "RIDE_STOP_NOT_FOUND" -> R.string.error_ride_stop_not_found
-                "INSUFFICIENT_BALANCE" -> R.string.error_insufficient_balance
-                "WALLET_SUSPENDED" -> R.string.error_wallet_suspended
-                "DUPLICATE_TRANSACTION" -> R.string.error_duplicate_transaction
-                "INVALID_AMOUNT" -> R.string.error_invalid_amount
-                "DRIVER_NOT_FOUND" -> R.string.error_driver_not_found
-                "DRIVER_NOT_APPROVED" -> R.string.error_driver_not_approved
-                "DRIVER_OFFLINE" -> R.string.error_driver_offline
-                "VEHICLE_NOT_FOUND" -> R.string.error_vehicle_not_found
-                "RATING_NOT_FOUND" -> R.string.error_rating_not_found
-                "RATING_ALREADY_EXISTS" -> R.string.error_rating_already_exists
-                "UPLOAD_INVALID_TYPE" -> R.string.error_upload_invalid_type
-                "UPLOAD_TOO_LARGE" -> R.string.error_upload_too_large
-                "UPLOAD_RATE_LIMITED" -> R.string.error_upload_rate_limited
-                "NOTIFICATION_NOT_FOUND" -> R.string.error_notification_not_found
-                "VALIDATION_ERROR" -> R.string.error_validation
-                "NOT_FOUND" -> R.string.error_not_found
-                "RATE_LIMITED" -> R.string.error_rate_limited
-                "INTERNAL_ERROR" -> R.string.error_server_error
-                else -> null
+                BackendErrorCode.UNAUTHORIZED -> R.string.error_unauthorized
+                BackendErrorCode.INVALID_CREDENTIALS -> R.string.error_invalid_credentials
+                BackendErrorCode.ACCOUNT_SUSPENDED -> R.string.error_account_suspended
+                BackendErrorCode.ACCOUNT_NOT_FOUND -> R.string.error_account_not_found
+                BackendErrorCode.FORBIDDEN -> R.string.error_forbidden
+                BackendErrorCode.OTP_EXPIRED -> R.string.error_otp_expired
+                BackendErrorCode.OTP_MAX_ATTEMPTS -> R.string.error_otp_max_attempts
+                BackendErrorCode.OTP_INVALID -> R.string.error_otp_invalid
+                BackendErrorCode.OTP_RATE_LIMITED -> R.string.error_otp_rate_limited
+                BackendErrorCode.RIDE_NOT_FOUND -> R.string.error_ride_not_found
+                BackendErrorCode.RIDE_INVALID_STATUS -> R.string.error_ride_invalid_status
+                BackendErrorCode.RIDE_ALREADY_ACCEPTED -> R.string.error_ride_already_accepted
+                BackendErrorCode.RIDE_EXPIRED -> R.string.error_ride_expired
+                BackendErrorCode.RIDE_OUTSIDE_BOUNDS -> R.string.error_ride_outside_bounds
+                BackendErrorCode.OFFER_NOT_FOUND -> R.string.error_offer_not_found
+                BackendErrorCode.RIDE_STOP_NOT_FOUND -> R.string.error_ride_stop_not_found
+                BackendErrorCode.INSUFFICIENT_BALANCE -> R.string.error_insufficient_balance
+                BackendErrorCode.WALLET_SUSPENDED -> R.string.error_wallet_suspended
+                BackendErrorCode.DUPLICATE_TRANSACTION -> R.string.error_duplicate_transaction
+                BackendErrorCode.INVALID_AMOUNT -> R.string.error_invalid_amount
+                BackendErrorCode.DRIVER_NOT_FOUND -> R.string.error_driver_not_found
+                BackendErrorCode.DRIVER_NOT_APPROVED -> R.string.error_driver_not_approved
+                BackendErrorCode.DRIVER_OFFLINE -> R.string.error_driver_offline
+                BackendErrorCode.VEHICLE_NOT_FOUND -> R.string.error_vehicle_not_found
+                BackendErrorCode.RATING_NOT_FOUND -> R.string.error_rating_not_found
+                BackendErrorCode.RATING_ALREADY_EXISTS -> R.string.error_rating_already_exists
+                BackendErrorCode.UPLOAD_INVALID_TYPE -> R.string.error_upload_invalid_type
+                BackendErrorCode.UPLOAD_TOO_LARGE -> R.string.error_upload_too_large
+                BackendErrorCode.UPLOAD_RATE_LIMITED -> R.string.error_upload_rate_limited
+                BackendErrorCode.NOTIFICATION_NOT_FOUND -> R.string.error_notification_not_found
+                BackendErrorCode.VALIDATION_ERROR -> R.string.error_validation
+                BackendErrorCode.NOT_FOUND -> R.string.error_not_found
+                BackendErrorCode.RATE_LIMITED -> R.string.error_rate_limited
+                BackendErrorCode.INTERNAL_ERROR -> R.string.error_server_error
+                BackendErrorCode.UNKNOWN -> null
             }
 
         private fun categoryFor(httpCode: Int): ErrorCategory =
