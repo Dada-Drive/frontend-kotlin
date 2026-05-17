@@ -9,18 +9,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import tn.dadadrive.core.theme.LocalAppColors
 
-private val TurboAccentGreen = Color(0xFF22C55E)
+private val TurboAccentGreen: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAppColors.current.successGreen
 
 /**
  * Logo carré noir, « T » blanc et accent vert (identité maquette TurboDrive).
@@ -32,11 +36,13 @@ fun TurboBrandMark(
     cornerFraction: Float = 0.22f,
 ) {
     val corner = size * cornerFraction
+    val accentGreen = TurboAccentGreen
     Box(
-        modifier = modifier
-            .size(size)
-            .clip(RoundedCornerShape(corner))
-            .background(Color.Black),
+        modifier =
+            modifier
+                .size(size)
+                .clip(RoundedCornerShape(corner))
+                .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -54,13 +60,14 @@ fun TurboBrandMark(
         ) {
             val w = this.size.width
             val h = this.size.height
-            val path = Path().apply {
-                moveTo(w * 0.1f, h * 0.55f)
-                lineTo(w * 0.95f, h * 0.15f)
-                lineTo(w * 0.85f, h * 0.95f)
-                close()
-            }
-            drawPath(path, TurboAccentGreen)
+            val path =
+                Path().apply {
+                    moveTo(w * 0.1f, h * 0.55f)
+                    lineTo(w * 0.95f, h * 0.15f)
+                    lineTo(w * 0.85f, h * 0.95f)
+                    close()
+                }
+            drawPath(path, accentGreen)
         }
     }
 }
@@ -70,10 +77,11 @@ fun TurboSplashSpinner(
     modifier: Modifier = Modifier,
     size: Dp = 28.dp,
 ) {
+    val c = LocalAppColors.current
     CircularProgressIndicator(
         modifier = modifier.size(size),
-        color = Color(0xFF2A2A2A),
-        trackColor = Color(0xFFE3E3E3),
+        color = c.textPrimary,
+        trackColor = c.border,
         strokeWidth = 2.5.dp,
     )
 }

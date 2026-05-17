@@ -60,13 +60,17 @@
     <ID>MagicNumber:ColorSchemes.kt$0xFF757575</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFF888888</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFF90CAF9</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF9B9B9B</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFF9E9E9E</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFAAAAAA</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFB00020</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFB89530</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFBBBBBB</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFBBDEFB</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFBDBDBD</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFC0C0C0</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFCCCCCC</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFD4AF37</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFDCFCE7</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFE0E0E0</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFE53935</ID>
@@ -75,6 +79,7 @@
     <ID>MagicNumber:ColorSchemes.kt$0xFFF5F5F5</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFFB8C00</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFFF9800</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFFFC107</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFFFEDED</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFFFFFFF</ID>
     <ID>MagicNumber:ColorWheelSettingsScreen.kt$0xFF</ID>
@@ -159,9 +164,13 @@
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF5C5C5C</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF6E6E68</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF8A8A85</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF9B9B9B</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFA8A8A2</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFB5B3AC</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFB89530</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFC0C0C0</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFCFCABE</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFD4AF37</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFD97706</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFDBEAFE</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFDC2626</ID>
@@ -175,6 +184,7 @@
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFF59E0B</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFF6F5F1</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFFEE2E2</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFFFC107</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFFFFFFF</ID>
     <ID>MagicNumber:UserLocationMarkerBitmap.kt$0.05f</ID>
     <ID>MagicNumber:UserLocationMarkerBitmap.kt$0.10f</ID>
@@ -192,12 +202,6 @@
     <ID>MatchingDeclarationName:PhoneScreen.kt$Country</ID>
     <ID>MatchingDeclarationName:PrimaryButton.kt$PrimaryButtonState</ID>
     <ID>MatchingDeclarationName:TeardropPickupPinBitmap.kt$TeardropPinLayout</ID>
-    <ID>MaxLineLength:DriverAccessSetupScreen.kt$Text(text = stringResource(R.string.driver_permission_close), fontSize = 18.sp, modifier = Modifier.clickable(onClick = onClose))</ID>
-    <ID>MaxLineLength:DriverLicenseStep.kt$Text(stringResource(R.string.driver_license_category_label), color = OnboardingTitle, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)</ID>
-    <ID>MaxLineLength:DriverVehicleStep.kt$UploadPlaceholderCard(stringResource(R.string.driver_vehicle_back_label), vehicleBackBmp, onVehicleBackClick, Modifier.weight(1f))</ID>
-    <ID>MaxLineLength:DriverVehicleStep.kt$UploadPlaceholderCard(stringResource(R.string.driver_vehicle_picture_label), vehicleFrontBmp, onVehicleFrontClick, Modifier.weight(1f))</ID>
-    <ID>MaxLineLength:DriverVehicleStep.kt$UploadPlaceholderCard(stringResource(R.string.driver_vehicle_side_label), vehicleSideBmp, onVehicleSideClick, Modifier.weight(1f))</ID>
-    <ID>MaxLineLength:WalletScreen.kt$text = if (isActive) stringResource(R.string.wallet_status_active) else stringResource(R.string.wallet_status_suspended)</ID>
     <ID>NestedBlockDepth:RouteHeadingSnapper.kt$RouteHeadingSnapper$fun match( position: GeoCoordinates, polylines: List&lt;GeoPolyline&gt;, referenceHeadingDeg: Float? = null, maxSnapMeters: Double = 30.0, maxReferenceDivergenceDeg: Float = 90f, ): Match?</ID>
     <ID>ReturnCount:MapRideOperations.kt$MapRideOperations$fun requestRide()</ID>
     <ID>ReturnCount:SessionViewModel.kt$SessionViewModel$private suspend fun nextStateAfterMe( phone: String?, fullName: String?, roleRaw: String, user: User, ): SessionState</ID>

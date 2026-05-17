@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,16 +30,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import com.dadadrive.R
+import kotlinx.coroutines.delay
 import tn.dadadrive.core.diagnostics.BootDiagnostics
 import tn.dadadrive.core.theme.AppTypography
 import tn.dadadrive.core.theme.LocalAppColors
 import tn.dadadrive.presentation.branding.TurboBrandMark
 import tn.dadadrive.presentation.branding.TurboSplashSpinner
-import kotlinx.coroutines.delay
 import kotlin.math.max
 
-private val SplashCream = Color(0xFFF9F8F5)
-private val SplashTaglineGray = Color(0xFF757575)
+private val SplashCream: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAppColors.current.background
+
+private val SplashTaglineGray: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAppColors.current.textSecondary
 
 @Composable
 fun SplashScreen(onSplashFinished: () -> Unit) {
@@ -67,16 +75,18 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
 @Composable
 internal fun SplashScreenLayout(alpha: Float) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SplashCream),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(SplashCream),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .alpha(alpha)
-                .padding(bottom = 56.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.Center)
+                    .alpha(alpha)
+                    .padding(bottom = 56.dp),
         ) {
             TurboBrandMark(size = 88.dp)
 
@@ -103,11 +113,12 @@ internal fun SplashScreenLayout(alpha: Float) {
         }
 
         TurboSplashSpinner(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(bottom = 40.dp)
-                .alpha(alpha),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(bottom = 40.dp)
+                    .alpha(alpha),
         )
     }
 }

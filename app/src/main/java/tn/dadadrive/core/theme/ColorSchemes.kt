@@ -65,6 +65,9 @@ private fun buildDarkScheme(
         textCaption = Color(0xFF666666),
         dragHandle = Color(0xFF444444),
         outlineLight = Color(0xFFBBBBBB),
+        ratingYellow = Color(0xFFFFC107),
+        coinSilver = Color(0xFF9B9B9B),
+        coinGold = Color(0xFFB89530),
     )
 }
 
@@ -126,6 +129,9 @@ private fun buildLightScheme(
         textCaption = Color(0xFF616161),
         dragHandle = Color(0xFFBDBDBD),
         outlineLight = Color(0xFFBBBBBB),
+        ratingYellow = Color(0xFFFFC107),
+        coinSilver = Color(0xFFC0C0C0),
+        coinGold = Color(0xFFD4AF37),
     )
 }
 
@@ -228,6 +234,7 @@ fun AppColorScheme.allColorEntries(): List<Pair<String, Color>> =
         "dividerGrey" to dividerGrey,
         "errorContainer" to errorContainer,
         "onErrorContainer" to onErrorContainer,
+        "successContainer" to successContainer,
         "surfaceElevated" to surfaceElevated,
         "surfaceMuted" to surfaceMuted,
         "surfaceOverlaySemi" to surfaceOverlaySemi,
@@ -236,4 +243,7 @@ fun AppColorScheme.allColorEntries(): List<Pair<String, Color>> =
         "textCaption" to textCaption,
         "dragHandle" to dragHandle,
         "outlineLight" to outlineLight,
+        "ratingYellow" to ratingYellow,
+        "coinSilver" to coinSilver,
+        "coinGold" to coinGold,
     )

@@ -60,6 +60,9 @@ data class AppColorScheme(
     val textCaption: Color,
     val dragHandle: Color,
     val outlineLight: Color,
+    val ratingYellow: Color,
+    val coinSilver: Color,
+    val coinGold: Color,
 )
 
 val LocalAppColors = staticCompositionLocalOf<AppColorScheme> { TurboDriveSchemeLight }

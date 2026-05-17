@@ -22,9 +22,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,16 +41,19 @@ import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -66,6 +69,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -76,11 +81,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import com.dadadrive.R
 import tn.dadadrive.core.constants.Constants
 import tn.dadadrive.core.designsystem.spacing.AppSpacing
@@ -108,37 +108,41 @@ data class Country(
     val placeholder: String = "XXX XXX XXX",
 )
 
-val commonCountries = listOf(
-    Country("TN", "Tunisie", "🇹🇳", "+216", 8, "## ### ###", "20 123 456"),
-    Country("DZ", "Algérie", "🇩🇿", "+213", 9, "### ### ###", "551 234 567"),
-    Country("MA", "Maroc", "🇲🇦", "+212", 9, "### ### ###", "612 345 678"),
-    Country("FR", "France", "🇫🇷", "+33", 9, "# ## ## ## ##", "6 12 34 56 78"),
-    Country("IT", "Italie", "🇮🇹", "+39", 10, "### ### ####", "312 345 6789"),
-    Country("EG", "Égypte", "🇪🇬", "+20", 10, "### ### ####", "100 123 4567"),
-    Country("LY", "Libye", "🇱🇾", "+218", 9, "## ### ####", "91 234 5678"),
-    Country("BE", "Belgique", "🇧🇪", "+32", 9, "### ## ## ##", "470 12 34 56"),
-    Country("CH", "Suisse", "🇨🇭", "+41", 9, "## ### ## ##", "76 123 45 67"),
-    Country("CA", "Canada", "🇨🇦", "+1", 10, "### ### ####", "514 123 4567"),
-    Country("SN", "Sénégal", "🇸🇳", "+221", 9, "## ### ## ##", "70 123 45 67"),
-    Country("ML", "Mali", "🇲🇱", "+223", 8, "## ## ## ##", "70 12 34 56"),
-    Country("GN", "Guinée", "🇬🇳", "+224", 9, "### ## ## ##", "620 12 34 56"),
-    Country("CI", "Côte d'Ivoire", "🇨🇮", "+225", 10, "## ## ## ## ##", "07 12 34 56 78"),
-    Country("CM", "Cameroun", "🇨🇲", "+237", 9, "### ### ###", "676 123 456"),
-    Country("MG", "Madagascar", "🇲🇬", "+261", 9, "## ## ### ##", "32 12 345 67"),
-    Country("CD", "Congo (RDC)", "🇨🇩", "+243", 9, "### ### ###", "812 345 678"),
-    Country("US", "États-Unis", "🇺🇸", "+1", 10, "### ### ####", "212 555 1234"),
-    Country("GB", "Royaume-Uni", "🇬🇧", "+44", 10, "#### ### ####", "7911 123 456"),
-    Country("DE", "Allemagne", "🇩🇪", "+49", 11, "#### ## ## ###", "1511 12 34 567"),
-    Country("ES", "Espagne", "🇪🇸", "+34", 9, "### ### ###", "612 345 678"),
-    Country("PT", "Portugal", "🇵🇹", "+351", 9, "### ### ###", "912 345 678"),
-    Country("NL", "Pays-Bas", "🇳🇱", "+31", 9, "# #### ####", "6 1234 5678"),
-    Country("BR", "Brésil", "🇧🇷", "+55", 11, "## ##### ####", "11 91234 5678"),
-    Country("NG", "Nigeria", "🇳🇬", "+234", 10, "### ### ####", "802 123 4567"),
-    Country("GH", "Ghana", "🇬🇭", "+233", 9, "## ### ####", "20 123 4567"),
-)
+val commonCountries =
+    listOf(
+        Country("TN", "Tunisie", "🇹🇳", "+216", 8, "## ### ###", "20 123 456"),
+        Country("DZ", "Algérie", "🇩🇿", "+213", 9, "### ### ###", "551 234 567"),
+        Country("MA", "Maroc", "🇲🇦", "+212", 9, "### ### ###", "612 345 678"),
+        Country("FR", "France", "🇫🇷", "+33", 9, "# ## ## ## ##", "6 12 34 56 78"),
+        Country("IT", "Italie", "🇮🇹", "+39", 10, "### ### ####", "312 345 6789"),
+        Country("EG", "Égypte", "🇪🇬", "+20", 10, "### ### ####", "100 123 4567"),
+        Country("LY", "Libye", "🇱🇾", "+218", 9, "## ### ####", "91 234 5678"),
+        Country("BE", "Belgique", "🇧🇪", "+32", 9, "### ## ## ##", "470 12 34 56"),
+        Country("CH", "Suisse", "🇨🇭", "+41", 9, "## ### ## ##", "76 123 45 67"),
+        Country("CA", "Canada", "🇨🇦", "+1", 10, "### ### ####", "514 123 4567"),
+        Country("SN", "Sénégal", "🇸🇳", "+221", 9, "## ### ## ##", "70 123 45 67"),
+        Country("ML", "Mali", "🇲🇱", "+223", 8, "## ## ## ##", "70 12 34 56"),
+        Country("GN", "Guinée", "🇬🇳", "+224", 9, "### ## ## ##", "620 12 34 56"),
+        Country("CI", "Côte d'Ivoire", "🇨🇮", "+225", 10, "## ## ## ## ##", "07 12 34 56 78"),
+        Country("CM", "Cameroun", "🇨🇲", "+237", 9, "### ### ###", "676 123 456"),
+        Country("MG", "Madagascar", "🇲🇬", "+261", 9, "## ## ### ##", "32 12 345 67"),
+        Country("CD", "Congo (RDC)", "🇨🇩", "+243", 9, "### ### ###", "812 345 678"),
+        Country("US", "États-Unis", "🇺🇸", "+1", 10, "### ### ####", "212 555 1234"),
+        Country("GB", "Royaume-Uni", "🇬🇧", "+44", 10, "#### ### ####", "7911 123 456"),
+        Country("DE", "Allemagne", "🇩🇪", "+49", 11, "#### ## ## ###", "1511 12 34 567"),
+        Country("ES", "Espagne", "🇪🇸", "+34", 9, "### ### ###", "612 345 678"),
+        Country("PT", "Portugal", "🇵🇹", "+351", 9, "### ### ###", "912 345 678"),
+        Country("NL", "Pays-Bas", "🇳🇱", "+31", 9, "# #### ####", "6 1234 5678"),
+        Country("BR", "Brésil", "🇧🇷", "+55", 11, "## ##### ####", "11 91234 5678"),
+        Country("NG", "Nigeria", "🇳🇬", "+234", 10, "### ### ####", "802 123 4567"),
+        Country("GH", "Ghana", "🇬🇭", "+233", 9, "## ### ####", "20 123 4567"),
+    )
 
 /** Applique le masque de formatage sur les chiffres bruts */
-fun applyMask(rawDigits: String, mask: String): String {
+fun applyMask(
+    rawDigits: String,
+    mask: String,
+): String {
     val result = StringBuilder()
     var digitIndex = 0
     for (ch in mask) {
@@ -157,26 +161,26 @@ private class PhoneMaskVisualTransformation(private val mask: String) : VisualTr
     override fun filter(text: AnnotatedString): TransformedText {
         val raw = text.text
         val formatted = applyMask(raw, mask)
-        val mapping = object : OffsetMapping {
-            override fun originalToTransformed(offset: Int): Int {
-                if (offset <= 0) return 0
-                val o = offset.coerceIn(0, raw.length)
-                return applyMask(raw.take(o), mask).length
-            }
+        val mapping =
+            object : OffsetMapping {
+                override fun originalToTransformed(offset: Int): Int {
+                    if (offset <= 0) return 0
+                    val o = offset.coerceIn(0, raw.length)
+                    return applyMask(raw.take(o), mask).length
+                }
 
-            override fun transformedToOriginal(offset: Int): Int {
-                if (raw.isEmpty()) return 0
-                val visual = applyMask(raw, mask)
-                val coerced = offset.coerceIn(0, visual.length)
-                return visual.take(coerced).count { it.isDigit() }
+                override fun transformedToOriginal(offset: Int): Int {
+                    if (raw.isEmpty()) return 0
+                    val visual = applyMask(raw, mask)
+                    val coerced = offset.coerceIn(0, visual.length)
+                    return visual.take(coerced).count { it.isDigit() }
+                }
             }
-        }
         return TransformedText(AnnotatedString(formatted), mapping)
     }
 }
 
-private fun defaultPhoneCountry(): Country =
-    commonCountries.find { it.dialCode == "+216" } ?: commonCountries.first()
+private fun defaultPhoneCountry(): Country = commonCountries.find { it.dialCode == "+216" } ?: commonCountries.first()
 
 // ─────────────────────────────────────────────────────────
 // PHONE SCREEN
@@ -197,20 +201,21 @@ fun PhoneScreen(
     var otpFlowPhone by remember { mutableStateOf<String?>(null) }
     var prevOtpLen by remember { mutableIntStateOf(0) }
 
-    val phoneVisualTransformation = remember(selectedCountry.formatMask) {
-        PhoneMaskVisualTransformation(selectedCountry.formatMask)
-    }
+    val phoneVisualTransformation =
+        remember(selectedCountry.formatMask) {
+            PhoneMaskVisualTransformation(selectedCountry.formatMask)
+        }
 
     val appColors = LocalAppColors.current
-    val creamBg = Color(0xFFF9F8F5)
+    val creamBg = appColors.background
     val ink = Color.Black
-    val muted = Color(0xFF757575)
+    val muted = appColors.textSecondary
     val bg = creamBg
     val fg = ink
     val isDarkUi = false
     var showLocalPhoneError by remember { mutableStateOf(false) }
 
-    val fullPhone = "${selectedCountry.dialCode}${rawDigits}"
+    val fullPhone = "${selectedCountry.dialCode}$rawDigits"
     val sendingOtp = otpState is OtpUiState.SendingOtp
     val verifyingOtp = otpState is OtpUiState.VerifyingOtp
     val phase1Error = (otpState as? OtpUiState.Error)?.takeIf { otpFlowPhone == null }?.message
@@ -309,36 +314,42 @@ fun PhoneScreen(
         AnimatedContent(
             targetState = showOtpPhase,
             transitionSpec = {
-                (slideInVertically(
-                    animationSpec = tween(320),
-                    initialOffsetY = { it },
-                ) + fadeIn(tween(280))) togetherWith
-                    (slideOutVertically(
-                        animationSpec = tween(280),
-                        targetOffsetY = { -it / 2 },
-                    ) + fadeOut(tween(200)))
+                (
+                    slideInVertically(
+                        animationSpec = tween(320),
+                        initialOffsetY = { it },
+                    ) + fadeIn(tween(280))
+                ) togetherWith
+                    (
+                        slideOutVertically(
+                            animationSpec = tween(280),
+                            targetOffsetY = { -it / 2 },
+                        ) + fadeOut(tween(200))
+                    )
             },
             label = "phone_otp_phase",
         ) { otpPhase ->
             if (!otpPhase) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                        .padding(bottom = 8.dp)
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 20.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .statusBarsPadding()
+                            .padding(bottom = 8.dp)
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 20.dp),
                 ) {
                     Spacer(Modifier.height(4.dp))
                     Box(Modifier.fillMaxWidth()) {
                         Box(
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                                .border(1.dp, Color(0xFFE0E0E0), CircleShape)
-                                .clickable { onBack() },
+                            modifier =
+                                Modifier
+                                    .align(Alignment.CenterStart)
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White)
+                                    .border(1.dp, appColors.border, CircleShape)
+                                    .clickable { onBack() },
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
@@ -379,24 +390,27 @@ fun PhoneScreen(
                         fontWeight = FontWeight.Bold,
                     )
                     Spacer(Modifier.height(8.dp))
-                    val phoneBorderColor = when {
-                        phase1Error != null || showLocalPhoneError -> Color(0xFFD32F2F)
-                        else -> Color(0xFFE0E0E0)
-                    }
+                    val phoneBorderColor =
+                        when {
+                            phase1Error != null || showLocalPhoneError -> appColors.errorRed
+                            else -> appColors.border
+                        }
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White)
-                            .border(1.5.dp, phoneBorderColor, RoundedCornerShape(14.dp))
-                            .padding(horizontal = 14.dp, vertical = 14.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color.White)
+                                .border(1.5.dp, phoneBorderColor, RoundedCornerShape(14.dp))
+                                .padding(horizontal = 14.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Row(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable { showCountryPicker = true }
-                                .padding(vertical = 2.dp, horizontal = 4.dp),
+                            modifier =
+                                Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { showCountryPicker = true }
+                                    .padding(vertical = 2.dp, horizontal = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
@@ -414,11 +428,12 @@ fun PhoneScreen(
                             )
                         }
                         Box(
-                            modifier = Modifier
-                                .padding(horizontal = 10.dp)
-                                .width(1.dp)
-                                .height(26.dp)
-                                .background(Color(0xFFE0E0E0)),
+                            modifier =
+                                Modifier
+                                    .padding(horizontal = 10.dp)
+                                    .width(1.dp)
+                                    .height(26.dp)
+                                    .background(appColors.border),
                         )
                         BasicTextField(
                             value = rawDigits,
@@ -430,11 +445,12 @@ fun PhoneScreen(
                             },
                             visualTransformation = phoneVisualTransformation,
                             singleLine = true,
-                            textStyle = TextStyle(
-                                color = if (showLocalPhoneError) Color(0xFFD32F2F) else fg,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                            ),
+                            textStyle =
+                                TextStyle(
+                                    color = if (showLocalPhoneError) appColors.errorRed else fg,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                ),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                             cursorBrush = SolidColor(Color.Black),
                             modifier = Modifier.weight(1f),
@@ -442,7 +458,7 @@ fun PhoneScreen(
                                 if (rawDigits.isEmpty()) {
                                     Text(
                                         selectedCountry.placeholder,
-                                        color = Color(0xFFBDBDBD),
+                                        color = appColors.outlineLight,
                                         fontSize = 16.sp,
                                     )
                                 }
@@ -453,11 +469,12 @@ fun PhoneScreen(
                     if (showLocalPhoneError) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            text = stringResource(
-                                R.string.phone_invalid_digits,
-                                selectedCountry.maxDigits,
-                            ),
-                            color = Color(0xFFD32F2F),
+                            text =
+                                stringResource(
+                                    R.string.phone_invalid_digits,
+                                    selectedCountry.maxDigits,
+                                ),
+                            color = appColors.errorRed,
                             fontSize = 13.sp,
                         )
                     }
@@ -465,29 +482,30 @@ fun PhoneScreen(
                         Spacer(Modifier.height(8.dp))
                         Text(
                             text = phase1Error,
-                            color = Color(0xFFD32F2F),
+                            color = appColors.errorRed,
                             fontSize = 13.sp,
                         )
                     }
                     Spacer(Modifier.height(20.dp))
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFFE8F5E9))
-                            .padding(14.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(appColors.successContainer)
+                                .padding(14.dp),
                         verticalAlignment = Alignment.Top,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Lock,
                             contentDescription = null,
-                            tint = Color(0xFF2E7D32),
+                            tint = appColors.successGreen,
                             modifier = Modifier.size(20.dp).padding(top = 2.dp),
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
                             text = stringResource(R.string.phone_privacy_note),
-                            color = Color(0xFF1B5E20),
+                            color = appColors.successGreen,
                             fontSize = 13.sp,
                             lineHeight = 19.sp,
                         )
@@ -498,24 +516,26 @@ fun PhoneScreen(
                 val otpPhoneDisplay = otpFlowPhone.orEmpty()
                 val otpErr = phase2Error != null
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                        .padding(horizontal = 20.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .statusBarsPadding()
+                            .padding(horizontal = 20.dp),
                 ) {
                     Spacer(Modifier.height(4.dp))
                     Box(Modifier.fillMaxWidth()) {
                         Box(
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                                .border(1.dp, Color(0xFFE0E0E0), CircleShape)
-                                .clickable {
-                                    otpCode = ""
-                                    authViewModel.resetOtpState()
-                                },
+                            modifier =
+                                Modifier
+                                    .align(Alignment.CenterStart)
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White)
+                                    .border(1.dp, appColors.border, CircleShape)
+                                    .clickable {
+                                        otpCode = ""
+                                        authViewModel.resetOtpState()
+                                    },
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
@@ -555,10 +575,11 @@ fun PhoneScreen(
                     )
                     Spacer(Modifier.height(12.dp))
                     Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(999.dp))
-                            .background(Color(0xFFE8F5E9))
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        modifier =
+                            Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(appColors.successContainer)
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Image(
@@ -569,7 +590,7 @@ fun PhoneScreen(
                         Spacer(Modifier.width(6.dp))
                         Text(
                             stringResource(R.string.otp_sent_via_whatsapp),
-                            color = Color(0xFF2E7D32),
+                            color = appColors.successGreen,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                         )
@@ -579,9 +600,10 @@ fun PhoneScreen(
                     val otpBoxHeight = 60.dp
                     val otpGap = 10.dp
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(otpBoxHeight),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(otpBoxHeight),
                     ) {
                         BasicTextField(
                             value = otpCode,
@@ -595,38 +617,42 @@ fun PhoneScreen(
                             cursorBrush = SolidColor(Color.Transparent),
                             textStyle = TextStyle(color = Color.Transparent, fontSize = 1.sp),
                             singleLine = true,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .alpha(0f),
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .alpha(0f),
                         )
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.Center),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.Center),
                             horizontalArrangement = Arrangement.spacedBy(otpGap, Alignment.CenterHorizontally),
                         ) {
                             repeat(Constants.PHONE_CODE_LENGTH) { index ->
                                 val digit = otpCode.getOrNull(index)?.toString().orEmpty()
                                 val isFocused = index == otpCode.length
                                 val isFilled = digit.isNotEmpty()
-                                val borderColor = when {
-                                    otpErr -> Color(0xFFD32F2F)
-                                    isFilled || isFocused -> Color.Black
-                                    else -> Color(0xFFE0E0E0)
-                                }
+                                val borderColor =
+                                    when {
+                                        otpErr -> appColors.errorRed
+                                        isFilled || isFocused -> Color.Black
+                                        else -> appColors.border
+                                    }
                                 Box(
-                                    modifier = Modifier
-                                        .width(otpBoxWidth)
-                                        .height(otpBoxHeight)
-                                        .clip(RoundedCornerShape(14.dp))
-                                        .background(Color.White)
-                                        .border(1.5.dp, borderColor, RoundedCornerShape(14.dp)),
+                                    modifier =
+                                        Modifier
+                                            .width(otpBoxWidth)
+                                            .height(otpBoxHeight)
+                                            .clip(RoundedCornerShape(14.dp))
+                                            .background(Color.White)
+                                            .border(1.5.dp, borderColor, RoundedCornerShape(14.dp)),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     if (isFilled) {
                                         Text(
                                             text = digit,
-                                            color = if (otpErr) Color(0xFFD32F2F) else fg,
+                                            color = if (otpErr) appColors.errorRed else fg,
                                             style = AppTypography.monoM,
                                             textAlign = TextAlign.Center,
                                         )
@@ -645,19 +671,20 @@ fun PhoneScreen(
                     Spacer(Modifier.height(16.dp))
                     AnimatedVisibility(visible = otpErr, enter = fadeIn(), exit = fadeOut()) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFFFEBEE))
-                                .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
-                                .padding(12.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(appColors.errorContainer)
+                                    .border(1.dp, appColors.errorContainer, RoundedCornerShape(12.dp))
+                                    .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text("!", color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
+                            Text("!", color = appColors.errorRed, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.width(10.dp))
                             Text(
                                 text = phase2Error.orEmpty(),
-                                color = Color(0xFFD32F2F),
+                                color = appColors.errorRed,
                                 fontSize = 13.sp,
                                 modifier = Modifier.weight(1f),
                             )
@@ -685,7 +712,7 @@ fun PhoneScreen(
                         ) {
                             Text(
                                 stringResource(R.string.otp_resend),
-                                color = Color(0xFF16A34A),
+                                color = appColors.successGreen,
                                 fontWeight = FontWeight.SemiBold,
                             )
                         }
@@ -707,19 +734,20 @@ fun PhoneScreen(
         }
 
         Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(bg.copy(alpha = 0f), bg, bg),
-                        startY = 0f,
-                        endY = 80f,
-                    ),
-                )
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 20.dp, top = 12.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(bg.copy(alpha = 0f), bg, bg),
+                            startY = 0f,
+                            endY = 80f,
+                        ),
+                    )
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 20.dp, top = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             if (!showOtpPhase) {
@@ -733,16 +761,18 @@ fun PhoneScreen(
                         }
                     },
                     enabled = !sendingOtp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(54.dp),
                     shape = RoundedCornerShape(999.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black,
-                        contentColor = Color.White,
-                        disabledContainerColor = Color(0xFFBDBDBD),
-                        disabledContentColor = Color.White,
-                    ),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = Color.Black,
+                            contentColor = Color.White,
+                            disabledContainerColor = appColors.outlineLight,
+                            disabledContentColor = Color.White,
+                        ),
                 ) {
                     if (sendingOtp) {
                         CircularProgressIndicator(
@@ -788,16 +818,18 @@ fun PhoneScreen(
                         }
                     },
                     enabled = otpCode.length == Constants.PHONE_CODE_LENGTH && !verifyingOtp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(54.dp),
                     shape = RoundedCornerShape(999.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black,
-                        contentColor = Color.White,
-                        disabledContainerColor = Color(0xFFE0E0E0),
-                        disabledContentColor = Color(0xFF9E9E9E),
-                    ),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = Color.Black,
+                            contentColor = Color.White,
+                            disabledContainerColor = appColors.border,
+                            disabledContentColor = appColors.textHint,
+                        ),
                 ) {
                     if (verifyingOtp) {
                         CircularProgressIndicator(
@@ -823,12 +855,13 @@ private fun OtpNumericKeypad(
     onDigit: (Int) -> Unit,
     onBackspace: () -> Unit,
 ) {
-    val rows: List<List<Any?>> = listOf(
-        listOf(1, 2, 3),
-        listOf(4, 5, 6),
-        listOf(7, 8, 9),
-        listOf(null, 0, "del"),
-    )
+    val rows: List<List<Any?>> =
+        listOf(
+            listOf(1, 2, 3),
+            listOf(4, 5, 6),
+            listOf(7, 8, 9),
+            listOf(null, 0, "del"),
+        )
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -841,22 +874,24 @@ private fun OtpNumericKeypad(
                 row.forEach { cell ->
                     when {
                         cell == null -> Spacer(Modifier.width(76.dp).height(48.dp))
-                        cell == "del" -> OtpKeypadKey(onClick = onBackspace) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.Backspace,
-                                contentDescription = stringResource(R.string.cd_backspace),
-                                tint = Color.Black,
-                                modifier = Modifier.size(22.dp),
-                            )
-                        }
-                        cell is Int -> OtpKeypadKey(onClick = { onDigit(cell) }) {
-                            Text(
-                                text = cell.toString(),
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.Black,
-                            )
-                        }
+                        cell == "del" ->
+                            OtpKeypadKey(onClick = onBackspace) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.Backspace,
+                                    contentDescription = stringResource(R.string.cd_backspace),
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(22.dp),
+                                )
+                            }
+                        cell is Int ->
+                            OtpKeypadKey(onClick = { onDigit(cell) }) {
+                                Text(
+                                    text = cell.toString(),
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color.Black,
+                                )
+                            }
                     }
                 }
             }
@@ -865,14 +900,19 @@ private fun OtpNumericKeypad(
 }
 
 @Composable
-private fun OtpKeypadKey(onClick: () -> Unit, content: @Composable () -> Unit) {
+private fun OtpKeypadKey(
+    onClick: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    val appColors = LocalAppColors.current
     Box(
-        modifier = Modifier
-            .size(width = 76.dp, height = 48.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
+        modifier =
+            Modifier
+                .size(width = 76.dp, height = 48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .border(1.dp, appColors.border, RoundedCornerShape(12.dp))
+                .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         content()
@@ -891,26 +931,29 @@ private fun CountryPickerSheetContent(
     onSelect: (Country) -> Unit,
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val filtered = remember(searchQuery, countries) {
-        if (searchQuery.isBlank()) countries
-        else {
-            countries.filter {
-                it.name.contains(searchQuery, ignoreCase = true) ||
-                    it.isoCode.contains(searchQuery, ignoreCase = true) ||
-                    it.dialCode.contains(searchQuery, ignoreCase = true)
+    val filtered =
+        remember(searchQuery, countries) {
+            if (searchQuery.isBlank()) {
+                countries
+            } else {
+                countries.filter {
+                    it.name.contains(searchQuery, ignoreCase = true) ||
+                        it.isoCode.contains(searchQuery, ignoreCase = true) ||
+                        it.dialCode.contains(searchQuery, ignoreCase = true)
+                }
             }
         }
-    }
 
     val c = LocalAppColors.current
     val fg = c.textPrimary
     val fgMuted = c.textSecondary
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(horizontal = AppSpacing.l, vertical = AppSpacing.s),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = AppSpacing.l, vertical = AppSpacing.s),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -935,11 +978,12 @@ private fun CountryPickerSheetContent(
         Spacer(Modifier.height(AppSpacing.m))
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(AppSpacing.inputRadius))
-                .background(c.surfaceMuted)
-                .padding(horizontal = AppSpacing.m, vertical = AppSpacing.s),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(AppSpacing.inputRadius))
+                    .background(c.surfaceMuted)
+                    .padding(horizontal = AppSpacing.m, vertical = AppSpacing.s),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -974,12 +1018,13 @@ private fun CountryPickerSheetContent(
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(filtered) { country ->
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onSelect(country)
-                        }
-                        .padding(vertical = AppSpacing.m, horizontal = AppSpacing.xs),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onSelect(country)
+                            }
+                            .padding(vertical = AppSpacing.m, horizontal = AppSpacing.xs),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
@@ -1005,7 +1050,7 @@ private fun CountryPickerSheetContent(
                         Icon(
                             Icons.Default.Check,
                             contentDescription = stringResource(R.string.cd_selected),
-                            tint = Color(0xFF16A34A),
+                            tint = c.successGreen,
                             modifier = Modifier.size(22.dp),
                         )
                     }

@@ -32,6 +32,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,8 +53,15 @@ import com.dadadrive.R
 import tn.dadadrive.core.theme.LocalAppColors
 import tn.dadadrive.presentation.common.ScreenState
 
-private val ScreenBg = Color(0xFFF9F8F5)
-private val Muted = Color(0xFF757575)
+private val ScreenBg: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAppColors.current.background
+
+private val Muted: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAppColors.current.textSecondary
 
 @Composable
 fun NameEntryScreen(
@@ -97,7 +105,7 @@ fun NameEntryScreen(
                         .size(40.dp)
                         .clip(CircleShape)
                         .background(Color.White)
-                        .border(1.dp, Color(0xFFE0E0E0), CircleShape)
+                        .border(1.dp, c.border, CircleShape)
                         .clickable(onClick = onBack),
                 contentAlignment = Alignment.Center,
             ) {
@@ -159,7 +167,7 @@ fun NameEntryScreen(
                 colors =
                     OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Black,
-                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        unfocusedBorderColor = c.border,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
                         focusedContainerColor = Color.White,
@@ -180,7 +188,7 @@ fun NameEntryScreen(
                 onValueChange = { email = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text(stringResource(R.string.name_email_placeholder), color = Color(0xFFBDBDBD)) },
+                placeholder = { Text(stringResource(R.string.name_email_placeholder), color = c.outlineLight) },
                 leadingIcon = {
                     Icon(Icons.Outlined.Email, null, tint = Muted)
                 },
@@ -188,8 +196,8 @@ fun NameEntryScreen(
                 shape = RoundedCornerShape(14.dp),
                 colors =
                     OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFE0E0E0),
-                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedBorderColor = c.border,
+                        unfocusedBorderColor = c.border,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
                         focusedContainerColor = Color.White,
@@ -222,8 +230,8 @@ fun NameEntryScreen(
                 ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
                     contentColor = Color.White,
-                    disabledContainerColor = Color(0xFFE0E0E0),
-                    disabledContentColor = Color(0xFF9E9E9E),
+                    disabledContainerColor = c.border,
+                    disabledContentColor = c.textHint,
                 ),
         ) {
             if (loading) {

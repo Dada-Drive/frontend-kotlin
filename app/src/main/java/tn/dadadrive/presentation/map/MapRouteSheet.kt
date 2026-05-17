@@ -1,16 +1,11 @@
 package tn.dadadrive.presentation.map
 
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,37 +13,31 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.NearMe
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -60,42 +49,33 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.R
-import tn.dadadrive.presentation.components.BlackCloseIconButton
-import tn.dadadrive.core.theme.LocalAppColors
 import kotlinx.coroutines.delay
-import java.util.Calendar
+import tn.dadadrive.core.theme.LocalAppColors
+import tn.dadadrive.core.theme.MapColorTokens
+import tn.dadadrive.presentation.components.BlackCloseIconButton
 
 internal sealed class ActiveRouteField {
     data object Origin : ActiveRouteField()
+
     data class Intermediate(val index: Int) : ActiveRouteField()
+
     data object FinalDestination : ActiveRouteField()
 }
+
 private const val SCHEDULE_PICKUP_MIN_LEAD_MS = 30L * 60L * 1000L
 private const val ROUTE_SHEET_MAX_SUGGESTIONS = 6
 private val TimelineLineWidth = 2.dp
@@ -114,19 +94,20 @@ internal enum class RouteTimelineKind { Start, Stop, End }
 @Composable
 internal fun RouteItineraryBottomSheet(
     onDismiss: () -> Unit,
-    content: @Composable (sheetState: SheetState) -> Unit
+    content: @Composable (sheetState: SheetState) -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false,
-        confirmValueChange = { true }
-    )
+    val sheetState =
+        rememberModalBottomSheetState(
+            skipPartiallyExpanded = false,
+            confirmValueChange = { true },
+        )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
         containerColor = LocalAppColors.current.surface,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
     ) {
         content(sheetState)
     }
@@ -174,36 +155,39 @@ internal fun RouteItinerarySheetContent(
     val maxIntermediateStops = 4
 
     val mutedText = MaterialTheme.colorScheme.onSurfaceVariant
-    val fieldColors = TextFieldDefaults.colors(
-        focusedContainerColor = Color.Transparent,
-        unfocusedContainerColor = Color.Transparent,
-        disabledContainerColor = Color.Transparent,
-        focusedIndicatorColor = Color.Transparent,
-        unfocusedIndicatorColor = Color.Transparent,
-        disabledIndicatorColor = Color.Transparent,
-        focusedTextColor = c.textPrimary,
-        unfocusedTextColor = c.textPrimary,
-        cursorColor = c.primary,
-        focusedPlaceholderColor = c.textHint,
-        unfocusedPlaceholderColor = c.textHint
-    )
-    val intermediateFieldColors = TextFieldDefaults.colors(
-        focusedContainerColor = Color.Transparent,
-        unfocusedContainerColor = Color.Transparent,
-        disabledContainerColor = Color.Transparent,
-        focusedIndicatorColor = Color.Transparent,
-        unfocusedIndicatorColor = Color.Transparent,
-        disabledIndicatorColor = Color.Transparent,
-        focusedTextColor = mutedText,
-        unfocusedTextColor = mutedText,
-        cursorColor = c.primary,
-        focusedPlaceholderColor = mutedText.copy(alpha = 0.75f),
-        unfocusedPlaceholderColor = mutedText.copy(alpha = 0.75f)
-    )
+    val fieldColors =
+        TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            focusedTextColor = c.textPrimary,
+            unfocusedTextColor = c.textPrimary,
+            cursorColor = c.primary,
+            focusedPlaceholderColor = c.textHint,
+            unfocusedPlaceholderColor = c.textHint,
+        )
+    val intermediateFieldColors =
+        TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            focusedTextColor = mutedText,
+            unfocusedTextColor = mutedText,
+            cursorColor = c.primary,
+            focusedPlaceholderColor = mutedText.copy(alpha = 0.75f),
+            unfocusedPlaceholderColor = mutedText.copy(alpha = 0.75f),
+        )
     val originInteraction = remember { MutableInteractionSource() }
-    val intermediateInteractions = remember(intermediateStops.size) {
-        List(intermediateStops.size) { MutableInteractionSource() }
-    }
+    val intermediateInteractions =
+        remember(intermediateStops.size) {
+            List(intermediateStops.size) { MutableInteractionSource() }
+        }
     val finalDestinationInteraction = remember { MutableInteractionSource() }
     val originFocused by originInteraction.collectIsFocusedAsState()
     val finalDestinationFocused by finalDestinationInteraction.collectIsFocusedAsState()
@@ -219,9 +203,10 @@ internal fun RouteItinerarySheetContent(
         }
     }
     val intermediateFocusedStates = intermediateInteractions.map { it.collectIsFocusedAsState().value }
-    val focusedIntermediateIndex = remember(intermediateFocusedStates) {
-        intermediateFocusedStates.indexOfFirst { it }
-    }
+    val focusedIntermediateIndex =
+        remember(intermediateFocusedStates) {
+            intermediateFocusedStates.indexOfFirst { it }
+        }
     val anyIntermediateFocused = focusedIntermediateIndex >= 0
     var pendingNewIntermediateFocus by remember { mutableStateOf(false) }
     var activeField by remember { mutableStateOf<ActiveRouteField>(ActiveRouteField.Origin) }
@@ -250,15 +235,16 @@ internal fun RouteItinerarySheetContent(
     val focusManager = LocalFocusManager.current
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 4.dp)
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 16.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp)
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.End,
         ) {
             BlackCloseIconButton(onClick = onClose, buttonSize = 28.dp, iconSize = 15.dp)
         }
@@ -268,7 +254,7 @@ internal fun RouteItinerarySheetContent(
         // ── For me / For other toggle ──────────────────────────────────────
         ForMeForOtherSegmented(
             forMe = forMe,
-            onForMeChange = { newForMe -> if (newForMe != forMe) onForMeToggle() }
+            onForMeChange = { newForMe -> if (newForMe != forMe) onForMeToggle() },
         )
 
         if (!forMe) {
@@ -278,7 +264,7 @@ internal fun RouteItinerarySheetContent(
                 onNameChange = onPassengerNameChange,
                 phone = passengerPhone,
                 onPhoneChange = onPassengerPhoneChange,
-                fieldColors = fieldColors
+                fieldColors = fieldColors,
             )
         }
 
@@ -288,7 +274,7 @@ internal fun RouteItinerarySheetContent(
         RouteTimelineLegRow(
             kind = RouteTimelineKind.Start,
             connectorUp = false,
-            connectorDown = true
+            connectorDown = true,
         ) {
             if (originFocused) {
                 RouteSheetFieldBackBar(onBack = { focusManager.clearFocus() })
@@ -316,7 +302,7 @@ internal fun RouteItinerarySheetContent(
                     activeField = ActiveRouteField.Origin
                     originFocusRequester.requestFocus()
                 },
-                showLeadingDot = false
+                showLeadingDot = false,
             )
             if (originFocused) {
                 Spacer(Modifier.height(6.dp))
@@ -324,7 +310,7 @@ internal fun RouteItinerarySheetContent(
                     results = pickupSearchResults.take(ROUTE_SHEET_MAX_SUGGESTIONS),
                     loading = pickupSearchLoading,
                     queryLengthOk = originValue.trim().length >= 3,
-                    onHit = onPickupSuggestionPick
+                    onHit = onPickupSuggestionPick,
                 )
             }
         }
@@ -333,7 +319,7 @@ internal fun RouteItinerarySheetContent(
             RouteTimelineLegRow(
                 kind = RouteTimelineKind.Stop,
                 connectorUp = true,
-                connectorDown = true
+                connectorDown = true,
             ) {
                 SwiftStyleRouteField(
                     dotColor = Color(STOP_PIN_YELLOW_ARGB),
@@ -357,7 +343,7 @@ internal fun RouteItinerarySheetContent(
                         activeField = ActiveRouteField.Intermediate(index)
                         intermediateFocusRequesters.getOrNull(index)?.requestFocus()
                     },
-                    showLeadingDot = false
+                    showLeadingDot = false,
                 )
                 if (intermediateFocusedStates.getOrNull(index) == true) {
                     Spacer(Modifier.height(6.dp))
@@ -365,20 +351,20 @@ internal fun RouteItinerarySheetContent(
                         results = addressSearchResults.take(ROUTE_SHEET_MAX_SUGGESTIONS),
                         loading = addressSearchLoading,
                         queryLengthOk = draft.label.trim().length >= 3,
-                        onHit = { onIntermediateSuggestionPick(index, it) }
+                        onHit = { onIntermediateSuggestionPick(index, it) },
                     )
                 }
                 if (draft.validity == IntermediateStopValidity.OffRoute) {
                     Spacer(Modifier.height(4.dp))
                     StopValidityHint(
                         text = stringResource(R.string.map_stop_off_route_warning),
-                        color = c.errorRed
+                        color = c.errorRed,
                     )
                 } else if (draft.validity == IntermediateStopValidity.OnRoute) {
                     Spacer(Modifier.height(4.dp))
                     StopValidityHint(
                         text = stringResource(R.string.map_stop_on_route_ok),
-                        color = Color(0xFF2E7D32)
+                        color = c.successGreen,
                     )
                 }
             }
@@ -387,7 +373,7 @@ internal fun RouteItinerarySheetContent(
         RouteTimelineLegRow(
             kind = RouteTimelineKind.End,
             connectorUp = true,
-            connectorDown = false
+            connectorDown = false,
         ) {
             if (finalDestinationFocused) {
                 RouteSheetFieldBackBar(onBack = { focusManager.clearFocus() })
@@ -415,7 +401,7 @@ internal fun RouteItinerarySheetContent(
                     activeField = ActiveRouteField.FinalDestination
                     finalDestinationFocusRequester.requestFocus()
                 },
-                showLeadingDot = false
+                showLeadingDot = false,
             )
             if (finalDestinationFocused) {
                 Spacer(Modifier.height(6.dp))
@@ -423,7 +409,7 @@ internal fun RouteItinerarySheetContent(
                     results = addressSearchResults.take(ROUTE_SHEET_MAX_SUGGESTIONS),
                     loading = addressSearchLoading,
                     queryLengthOk = finalDestination.trim().length >= 3,
-                    onHit = onDestinationSuggestionPick
+                    onHit = onDestinationSuggestionPick,
                 )
             }
         }
@@ -446,7 +432,7 @@ internal fun RouteItinerarySheetContent(
         // ── Schedule for later button ──────────────────────────────────────
         ScheduleForLaterButton(
             scheduledAtEpochMs = scheduledAtEpochMs,
-            onClick = { showScheduleSheet = true }
+            onClick = { showScheduleSheet = true },
         )
 
         Spacer(Modifier.height(6.dp))
@@ -459,7 +445,7 @@ internal fun RouteItinerarySheetContent(
             onConfirm = { epoch ->
                 onScheduledAtChosen(epoch)
                 showScheduleSheet = false
-            }
+            },
         )
     }
 }
@@ -472,33 +458,37 @@ internal fun RouteItinerarySheetContent(
 private fun ForMeForOtherSegmented(
     forMe: Boolean,
     onForMeChange: (Boolean) -> Unit,
-    darkItinerary: Boolean = false
+    darkItinerary: Boolean = false,
 ) {
     val c = LocalAppColors.current
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(
-                if (darkItinerary) Color.White.copy(alpha = 0.08f)
-                else c.surfaceMuted.copy(alpha = 0.55f)
-            )
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(
+                    if (darkItinerary) {
+                        Color.White.copy(alpha = 0.08f)
+                    } else {
+                        c.surfaceMuted.copy(alpha = 0.55f)
+                    },
+                )
+                .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         SegmentItem(
             label = stringResource(R.string.map_for_me),
             selected = forMe,
             onClick = { onForMeChange(true) },
             modifier = Modifier.weight(1f),
-            darkItinerary = darkItinerary
+            darkItinerary = darkItinerary,
         )
         SegmentItem(
             label = stringResource(R.string.map_for_other),
             selected = !forMe,
             onClick = { onForMeChange(false) },
             modifier = Modifier.weight(1f),
-            darkItinerary = darkItinerary
+            darkItinerary = darkItinerary,
         )
     }
 }
@@ -509,51 +499,58 @@ private fun SegmentItem(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    darkItinerary: Boolean = false
+    darkItinerary: Boolean = false,
 ) {
     val c = LocalAppColors.current
-    val bgColor = when {
-        darkItinerary && selected -> Color.White
-        darkItinerary -> Color.Transparent
-        selected -> Color.Black
-        else -> Color.Transparent
-    }
-    val textColor = when {
-        darkItinerary && selected -> Color.Black
-        darkItinerary -> Color.White.copy(alpha = 0.72f)
-        selected -> Color.White
-        else -> c.textSecondary
-    }
+    val bgColor =
+        when {
+            darkItinerary && selected -> Color.White
+            darkItinerary -> Color.Transparent
+            selected -> Color.Black
+            else -> Color.Transparent
+        }
+    val textColor =
+        when {
+            darkItinerary && selected -> Color.Black
+            darkItinerary -> Color.White.copy(alpha = 0.72f)
+            selected -> Color.White
+            else -> c.textSecondary
+        }
     Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(bgColor)
-            .clickable(onClick = onClick)
-            .padding(vertical = 11.dp),
-        contentAlignment = Alignment.Center
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(bgColor)
+                .clickable(onClick = onClick)
+                .padding(vertical = 11.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
             color = textColor,
             fontSize = 15.sp,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
         )
     }
 }
 
 @Composable
-private fun StopValidityHint(text: String, color: Color) {
+private fun StopValidityHint(
+    text: String,
+    color: Color,
+) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 40.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(start = 40.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = text,
             color = color,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
     }
 }
@@ -566,7 +563,7 @@ private fun PassengerInfoFields(
     phone: String,
     onPhoneChange: (String) -> Unit,
     fieldColors: androidx.compose.material3.TextFieldColors,
-    darkItinerary: Boolean = false
+    darkItinerary: Boolean = false,
 ) {
     val c = LocalAppColors.current
     val nameInteraction = remember { MutableInteractionSource() }
@@ -582,7 +579,7 @@ private fun PassengerInfoFields(
     val phoneBorderColor = if (phoneFocused) activeBorder else inactiveBorder
     val phoneBorderWidth = if (phoneFocused) 1.6.dp else 1.dp
 
-    val rowBg = if (darkItinerary) Color(0xFF2C2C2C) else c.surface
+    val rowBg = if (darkItinerary) MapColorTokens.darkPanelSurface else c.surface
     val iconTint = if (darkItinerary) Color.White.copy(alpha = 0.72f) else c.textSecondary
 
     val corner = 16.dp
@@ -592,20 +589,21 @@ private fun PassengerInfoFields(
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(corner))
-                .background(rowBg)
-                .border(nameBorderWidth, nameBorderColor, RoundedCornerShape(corner))
-                .padding(horizontal = innerH, vertical = innerV),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(corner))
+                    .background(rowBg)
+                    .border(nameBorderWidth, nameBorderColor, RoundedCornerShape(corner))
+                    .padding(horizontal = innerH, vertical = innerV),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Icon(
                 imageVector = Icons.Filled.Person,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(iconSize)
+                modifier = Modifier.size(iconSize),
             )
             TextField(
                 value = name,
@@ -617,24 +615,25 @@ private fun PassengerInfoFields(
                     Text(stringResource(R.string.map_passenger_name_placeholder_for_other), fontSize = 15.sp)
                 },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                colors = fieldColors
+                colors = fieldColors,
             )
         }
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(corner))
-                .background(rowBg)
-                .border(phoneBorderWidth, phoneBorderColor, RoundedCornerShape(corner))
-                .padding(horizontal = innerH, vertical = innerV),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(corner))
+                    .background(rowBg)
+                    .border(phoneBorderWidth, phoneBorderColor, RoundedCornerShape(corner))
+                    .padding(horizontal = innerH, vertical = innerV),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Icon(
                 imageVector = Icons.Filled.Phone,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(iconSize)
+                modifier = Modifier.size(iconSize),
             )
             TextField(
                 value = phone,
@@ -645,11 +644,12 @@ private fun PassengerInfoFields(
                 placeholder = {
                     Text(stringResource(R.string.map_passenger_phone_placeholder_for_other), fontSize = 15.sp)
                 },
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next,
-                    keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
-                ),
-                colors = fieldColors
+                keyboardOptions =
+                    KeyboardOptions(
+                        imeAction = ImeAction.Next,
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone,
+                    ),
+                colors = fieldColors,
             )
         }
     }
@@ -660,47 +660,50 @@ internal fun RouteTimelineLegRow(
     kind: RouteTimelineKind,
     connectorUp: Boolean,
     connectorDown: Boolean,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val c = LocalAppColors.current
     val lineColor = c.dividerGrey.copy(alpha = 0.55f)
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.width(26.dp)
+            modifier = Modifier.width(26.dp),
         ) {
             if (connectorUp) {
                 Box(
                     Modifier
                         .width(TimelineLineWidth)
                         .height(TimelineConnectorShort)
-                        .background(lineColor)
+                        .background(lineColor),
                 )
             }
-            val diameter = when (kind) {
-                RouteTimelineKind.Start, RouteTimelineKind.End -> TimelineStartEndCircle
-                RouteTimelineKind.Stop -> TimelineStopCircle
-            }
-            val dotColor = when (kind) {
-                RouteTimelineKind.Start -> Color.Black
-                RouteTimelineKind.Stop -> Color(STOP_PIN_YELLOW_ARGB)
-                RouteTimelineKind.End -> c.errorRed
-            }
+            val diameter =
+                when (kind) {
+                    RouteTimelineKind.Start, RouteTimelineKind.End -> TimelineStartEndCircle
+                    RouteTimelineKind.Stop -> TimelineStopCircle
+                }
+            val dotColor =
+                when (kind) {
+                    RouteTimelineKind.Start -> Color.Black
+                    RouteTimelineKind.Stop -> Color(STOP_PIN_YELLOW_ARGB)
+                    RouteTimelineKind.End -> c.errorRed
+                }
             Box(
-                modifier = Modifier
-                    .size(diameter)
-                    .background(dotColor, CircleShape)
+                modifier =
+                    Modifier
+                        .size(diameter)
+                        .background(dotColor, CircleShape),
             )
             if (connectorDown) {
                 Box(
                     Modifier
                         .width(TimelineLineWidth)
                         .height(TimelineConnectorMid)
-                        .background(lineColor)
+                        .background(lineColor),
                 )
             }
         }
@@ -711,7 +714,10 @@ internal fun RouteTimelineLegRow(
 }
 
 @Composable
-private fun RouteSmallLabel(text: String, darkItinerary: Boolean = false) {
+private fun RouteSmallLabel(
+    text: String,
+    darkItinerary: Boolean = false,
+) {
     val c = LocalAppColors.current
     val labelColor = if (darkItinerary) Color.White.copy(alpha = 0.68f) else c.textSecondary
     val lineColor =
@@ -721,14 +727,15 @@ private fun RouteSmallLabel(text: String, darkItinerary: Boolean = false) {
             text = text,
             color = labelColor,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
         Spacer(Modifier.width(6.dp))
         Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(1.dp)
-                .background(lineColor)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .height(1.dp)
+                    .background(lineColor),
         )
     }
 }
@@ -755,53 +762,58 @@ private fun SwiftStyleRouteField(
     onRemoveClick: (() -> Unit)? = null,
     onClick: () -> Unit,
     showLeadingDot: Boolean = true,
-    darkItineraryStyle: Boolean = false
+    darkItineraryStyle: Boolean = false,
 ) {
     val c = LocalAppColors.current
     val focusManager = LocalFocusManager.current
-    val borderColor = when {
-        darkItineraryStyle && isActive -> Color.White
-        darkItineraryStyle -> Color.White.copy(alpha = 0.22f)
-        isActive -> Color.Black
-        else -> c.dividerGrey.copy(alpha = 0.50f)
-    }
+    val borderColor =
+        when {
+            darkItineraryStyle && isActive -> Color.White
+            darkItineraryStyle -> Color.White.copy(alpha = 0.22f)
+            isActive -> Color.Black
+            else -> c.dividerGrey.copy(alpha = 0.50f)
+        }
     val borderWidth = if (isActive) 1.6.dp else 1.dp
-    val pillSurface = if (darkItineraryStyle) Color(0xFF2C2C2C) else c.surface
+    val pillSurface = if (darkItineraryStyle) MapColorTokens.darkPanelSurface else c.surface
     val pillCorner = 16.dp
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(pillCorner))
-            .background(pillSurface)
-            .border(borderWidth, borderColor, RoundedCornerShape(pillCorner))
-            .clickable(onClick = onClick)
-            .padding(start = 15.dp, end = 6.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(pillCorner))
+                .background(pillSurface)
+                .border(borderWidth, borderColor, RoundedCornerShape(pillCorner))
+                .clickable(onClick = onClick)
+                .padding(start = 15.dp, end = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (showLeadingDot) {
             Box(
                 modifier = Modifier.size(15.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 if (dotFilled) {
                     Box(
-                        modifier = Modifier
-                            .size(15.dp)
-                            .background(dotColor.copy(alpha = 0.20f), CircleShape),
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .size(15.dp)
+                                .background(dotColor.copy(alpha = 0.20f), CircleShape),
+                        contentAlignment = Alignment.Center,
                     ) {
                         Box(
-                            modifier = Modifier
-                                .size(9.dp)
-                                .background(dotColor, CircleShape)
+                            modifier =
+                                Modifier
+                                    .size(9.dp)
+                                    .background(dotColor, CircleShape),
                         )
                     }
                 } else {
                     Box(
-                        modifier = Modifier
-                            .size(11.dp)
-                            .border(2.dp, dotColor, CircleShape)
+                        modifier =
+                            Modifier
+                                .size(11.dp)
+                                .border(2.dp, dotColor, CircleShape),
                     )
                 }
             }
@@ -809,26 +821,28 @@ private fun SwiftStyleRouteField(
         TextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier
-                .weight(1f)
-                .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-                .onFocusChanged { if (it.isFocused) onFocused() },
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+                    .onFocusChanged { if (it.isFocused) onFocused() },
             singleLine = true,
             placeholder = { Text(placeholder, fontSize = 14.sp) },
             keyboardOptions = KeyboardOptions(imeAction = imeAction),
-            keyboardActions = KeyboardActions(
-                onSearch = { focusManager.clearFocus() },
-                onDone = { focusManager.clearFocus() },
-                onGo = { focusManager.clearFocus() }
-            ),
+            keyboardActions =
+                KeyboardActions(
+                    onSearch = { focusManager.clearFocus() },
+                    onDone = { focusManager.clearFocus() },
+                    onGo = { focusManager.clearFocus() },
+                ),
             colors = fieldColors,
-            interactionSource = interactionSource
+            interactionSource = interactionSource,
         )
         if (showClear) {
             BlackCloseIconButton(
                 onClick = onClear,
                 buttonSize = 28.dp,
-                iconSize = 14.dp
+                iconSize = 14.dp,
             )
         }
         if (onRemoveClick != null) {
@@ -836,34 +850,38 @@ private fun SwiftStyleRouteField(
                 onClick = onRemoveClick,
                 buttonSize = 28.dp,
                 iconSize = 14.dp,
-                contentDescription = stringResource(R.string.map_route_remove_stop)
+                contentDescription = stringResource(R.string.map_route_remove_stop),
             )
         }
         if (showMapPicker) {
             IconButton(onClick = onMapPickerClick, modifier = Modifier.size(40.dp)) {
                 Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            if (darkItineraryStyle) Color.White.copy(alpha = 0.14f)
-                            else c.primary.copy(alpha = 0.14f)
-                        ),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .size(32.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                if (darkItineraryStyle) {
+                                    Color.White.copy(alpha = 0.14f)
+                                } else {
+                                    c.primary.copy(alpha = 0.14f)
+                                },
+                            ),
+                    contentAlignment = Alignment.Center,
                 ) {
                     if (cachedMiniMap != null) {
                         Image(
                             bitmap = cachedMiniMap,
                             contentDescription = stringResource(R.string.map_pick_on_map),
                             modifier = Modifier.size(22.dp).clip(RoundedCornerShape(5.dp)),
-                            contentScale = ContentScale.Fit
+                            contentScale = ContentScale.Fit,
                         )
                     } else {
                         Image(
                             painter = painterResource(R.drawable.ic_map_picker_route),
                             contentDescription = stringResource(R.string.map_pick_on_map),
                             modifier = Modifier.size(20.dp),
-                            contentScale = ContentScale.Fit
+                            contentScale = ContentScale.Fit,
                         )
                     }
                 }
@@ -877,17 +895,17 @@ private fun RouteSheetFieldBackBar(onBack: () -> Unit) {
     val c = LocalAppColors.current
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(
             onClick = onBack,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(40.dp),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.cd_back),
                 tint = c.textPrimary,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(22.dp),
             )
         }
     }
@@ -898,26 +916,27 @@ private fun AddStopButton(onClick: () -> Unit) {
     val c = LocalAppColors.current
     val bg = Color(STOP_PIN_YELLOW_ARGB)
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(bg)
-            .clickable(onClick = onClick)
-            .padding(vertical = 14.dp, horizontal = 16.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(bg)
+                .clickable(onClick = onClick)
+                .padding(vertical = 14.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = null,
             tint = c.textPrimary,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(18.dp),
         )
         Text(
             text = stringResource(R.string.map_add_stop),
             color = c.textPrimary,
             fontSize = 15.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
         )
     }
 }
@@ -929,26 +948,28 @@ private fun OrDivider(darkItinerary: Boolean = false) {
     val textCol = if (darkItinerary) Color.White.copy(alpha = 0.65f) else c.textSecondary
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(1.dp)
-                .background(line)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .height(1.dp)
+                    .background(line),
         )
         Text(
             text = stringResource(R.string.map_or_divider),
             color = textCol,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 12.dp)
+            modifier = Modifier.padding(horizontal = 12.dp),
         )
         Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(1.dp)
-                .background(line)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .height(1.dp)
+                    .background(line),
         )
     }
 }
@@ -957,10 +978,10 @@ private fun OrDivider(darkItinerary: Boolean = false) {
 private fun ScheduleForLaterButton(
     scheduledAtEpochMs: Long?,
     onClick: () -> Unit,
-    darkItinerary: Boolean = false
+    darkItinerary: Boolean = false,
 ) {
     val c = LocalAppColors.current
-    val bg = if (darkItinerary) Color(0xFF2C2C2C) else c.surface
+    val bg = if (darkItinerary) MapColorTokens.darkPanelSurface else c.surface
     val borderCol = if (darkItinerary) Color.White.copy(alpha = 0.20f) else c.dividerGrey.copy(alpha = 0.45f)
     val titleCol = if (darkItinerary) Color.White else c.textPrimary
     val subtitleCol = if (darkItinerary) Color.White.copy(alpha = 0.68f) else c.textSecondary
@@ -968,27 +989,29 @@ private fun ScheduleForLaterButton(
     val iconTint = if (darkItinerary) Color.White.copy(alpha = 0.72f) else c.textSecondary
     val chevronTint = if (darkItinerary) Color.White.copy(alpha = 0.45f) else c.textHint
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(bg)
-            .border(1.dp, borderCol, RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 14.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(bg)
+                .border(1.dp, borderCol, RoundedCornerShape(14.dp))
+                .clickable(onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Box(
-            modifier = Modifier
-                .size(34.dp)
-                .background(iconCircle, CircleShape),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .size(34.dp)
+                    .background(iconCircle, CircleShape),
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = Icons.Default.Schedule,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(18.dp),
             )
         }
         Column(modifier = Modifier.weight(1f)) {
@@ -996,28 +1019,28 @@ private fun ScheduleForLaterButton(
                 text = stringResource(R.string.map_schedule_for_later_title),
                 color = titleCol,
                 fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.height(2.dp))
-            val subtitle = if (scheduledAtEpochMs != null) {
-                val fmt = java.text.SimpleDateFormat("EEE MMM d, HH:mm", java.util.Locale.getDefault())
-                fmt.format(java.util.Date(scheduledAtEpochMs))
-            } else {
-                stringResource(R.string.map_schedule_for_later_subtitle)
-            }
+            val subtitle =
+                if (scheduledAtEpochMs != null) {
+                    val fmt = java.text.SimpleDateFormat("EEE MMM d, HH:mm", java.util.Locale.getDefault())
+                    fmt.format(java.util.Date(scheduledAtEpochMs))
+                } else {
+                    stringResource(R.string.map_schedule_for_later_subtitle)
+                }
             Text(
                 text = subtitle,
                 color = subtitleCol,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Normal,
             )
         }
         Icon(
             imageVector = Icons.Default.KeyboardArrowRight,
             contentDescription = null,
             tint = chevronTint,
-            modifier = Modifier.size(22.dp)
+            modifier = Modifier.size(22.dp),
         )
     }
 }
-

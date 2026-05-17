@@ -35,6 +35,9 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -42,7 +45,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,9 +61,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,17 +68,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.max
-import kotlin.math.roundToInt
+import androidx.core.content.ContextCompat
+import com.dadadrive.R
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import androidx.core.content.ContextCompat
-import com.dadadrive.R
 import tn.dadadrive.core.designsystem.spacing.AppRadius
 import tn.dadadrive.core.designsystem.spacing.AppSpacing
 import tn.dadadrive.core.theme.AppTypography
 import tn.dadadrive.core.theme.LocalAppColors
+import tn.dadadrive.core.theme.MapColorTokens
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 private val BallRadius = 20.dp
 private val NeedleHeight = 20.dp
@@ -113,11 +113,12 @@ fun PickupPinOverlay(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalAppColors.current
-    val pinColor = when {
-        isOutOfBounds -> colors.errorRed
-        isIntermediateStop -> Color(STOP_PIN_YELLOW_ARGB)
-        else -> Color.Black
-    }
+    val pinColor =
+        when {
+            isOutOfBounds -> colors.errorRed
+            isIntermediateStop -> Color(STOP_PIN_YELLOW_ARGB)
+            else -> Color.Black
+        }
 
     val isEmpty = address.isBlank()
     val isMoving = isDragging
@@ -188,10 +189,11 @@ fun PickupPinOverlay(
         jumpOffset.snapTo(jumpUpPx)
         jumpOffset.animateTo(
             targetValue = 0f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioLowBouncy,
-                stiffness = Spring.StiffnessVeryLow,
-            ),
+            animationSpec =
+                spring(
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessVeryLow,
+                ),
         )
     }
 
@@ -205,10 +207,11 @@ fun PickupPinOverlay(
         val bubbleCenterYOffset = (pinCenterY - centerY) - BallRadius - NeedleHeight - BubbleGap
 
         Box(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .offset(y = bubbleCenterYOffset),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .align(Alignment.Center)
+                    .offset(y = bubbleCenterYOffset),
+            contentAlignment = Alignment.Center,
         ) {
             PickupAddressBubble(
                 address = address,
@@ -228,38 +231,40 @@ fun PickupPinOverlay(
         }
 
         Box(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .offset(y = pinCenterY - centerY),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .align(Alignment.Center)
+                    .offset(y = pinCenterY - centerY),
+            contentAlignment = Alignment.Center,
         ) {
             GroundShadow(isMoving = isMoving)
             val pinShadowRadius by animateDpAsState(
                 targetValue = if (isMoving) 14.dp else 7.dp,
                 animationSpec = spring(dampingRatio = 0.50f, stiffness = Spring.StiffnessMediumLow),
-                label = "pinShadowRadius"
+                label = "pinShadowRadius",
             )
             val pinShadowYOffset by animateDpAsState(
                 targetValue = if (isMoving) 10.dp else 4.dp,
                 animationSpec = spring(dampingRatio = 0.50f, stiffness = Spring.StiffnessMediumLow),
-                label = "pinShadowYOffset"
+                label = "pinShadowYOffset",
             )
             val pinShadowAlpha by animateFloatAsState(
                 targetValue = if (isMoving) 0.20f else 0.38f,
                 animationSpec = spring(dampingRatio = 0.50f, stiffness = Spring.StiffnessMediumLow),
-                label = "pinShadowAlpha"
+                label = "pinShadowAlpha",
             )
             BoltPin(
-                modifier = Modifier
-                    .offset { IntOffset(0, jumpOffset.value.roundToInt()) }
-                    .offset(y = if (isMoving) (-20).dp else 0.dp)
-                    .shadow(
-                        elevation = pinShadowRadius,
-                        shape = RoundedCornerShape(999.dp),
-                        ambientColor = pinColor.copy(alpha = pinShadowAlpha),
-                        spotColor = pinColor.copy(alpha = pinShadowAlpha)
-                    )
-                    .offset(y = pinShadowYOffset - 4.dp),
+                modifier =
+                    Modifier
+                        .offset { IntOffset(0, jumpOffset.value.roundToInt()) }
+                        .offset(y = if (isMoving) (-20).dp else 0.dp)
+                        .shadow(
+                            elevation = pinShadowRadius,
+                            shape = RoundedCornerShape(999.dp),
+                            ambientColor = pinColor.copy(alpha = pinShadowAlpha),
+                            spotColor = pinColor.copy(alpha = pinShadowAlpha),
+                        )
+                        .offset(y = pinShadowYOffset - 4.dp),
                 radius = BallRadius,
                 pointerHeight = NeedleHeight,
                 color = pinColor,
@@ -269,11 +274,12 @@ fun PickupPinOverlay(
         }
 
         Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(horizontal = AppSpacing.screenHorizontal)
-                .padding(bottom = 48.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = AppSpacing.screenHorizontal)
+                    .padding(bottom = 48.dp),
             verticalArrangement = Arrangement.spacedBy(AppSpacing.s),
         ) {
             PickupConfirmButton(
@@ -292,15 +298,16 @@ fun PickupPinOverlay(
 
             if (onCancel != null) {
                 Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(AppRadius.full))
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = onCancel,
-                        ),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(AppRadius.full))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = onCancel,
+                            ),
                     shape = RoundedCornerShape(AppRadius.full),
                     color = colors.surface,
                     shadowElevation = 2.dp,
@@ -308,9 +315,10 @@ fun PickupPinOverlay(
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         Text(
                             text = stringResource(R.string.common_cancel),
-                            style = AppTypography.labelL.copy(
-                                fontWeight = FontWeight.SemiBold,
-                            ),
+                            style =
+                                AppTypography.labelL.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                ),
                             color = colors.textPrimary,
                         )
                     }
@@ -336,38 +344,42 @@ private fun PickupAddressBubble(
     val enabled = !isEmpty && !isLoading && !isMoving
     val bubbleBg = if (isLoading) Color.Black else colors.surface
     val labelTextColor = if (isLoading) Color.White else pinColor
-    val bodyTextColor = when {
-        isOutOfBounds -> colors.errorRed
-        isLoading -> Color.White
-        else -> colors.textPrimary
-    }
+    val bodyTextColor =
+        when {
+            isOutOfBounds -> colors.errorRed
+            isLoading -> Color.White
+            else -> colors.textPrimary
+        }
     val arrowTint = if (isLoading) Color.White else colors.textSecondary
 
-    val labelText = when {
-        isOutOfBounds -> stringResource(R.string.map_outside_tunisia_title)
-        isIntermediateStop -> stringResource(R.string.map_stop_location)
-        isDestination -> stringResource(R.string.map_confirm_destination)
-        else -> stringResource(R.string.map_pickup_location)
-    }
-    val bodyText = when {
-        isOutOfBounds -> stringResource(R.string.map_outside_tunisia_hint)
-        isLoading -> stringResource(R.string.map_getting_address)
-        isEmpty -> stringResource(R.string.map_move_to_set)
-        else -> address
-    }
+    val labelText =
+        when {
+            isOutOfBounds -> stringResource(R.string.map_outside_tunisia_title)
+            isIntermediateStop -> stringResource(R.string.map_stop_location)
+            isDestination -> stringResource(R.string.map_confirm_destination)
+            else -> stringResource(R.string.map_pickup_location)
+        }
+    val bodyText =
+        when {
+            isOutOfBounds -> stringResource(R.string.map_outside_tunisia_hint)
+            isLoading -> stringResource(R.string.map_getting_address)
+            isEmpty -> stringResource(R.string.map_move_to_set)
+            else -> address
+        }
 
     val bubbleShape = RoundedCornerShape(BubbleCorner)
     Surface(
-        modifier = Modifier
-            .wrapContentSize()
-            .shadow(8.dp, bubbleShape, clip = false)
-            .clip(bubbleShape)
-            .clickable(
-                enabled = enabled,
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onConfirm,
-            ),
+        modifier =
+            Modifier
+                .wrapContentSize()
+                .shadow(8.dp, bubbleShape, clip = false)
+                .clip(bubbleShape)
+                .clickable(
+                    enabled = enabled,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onConfirm,
+                ),
         shape = bubbleShape,
         color = bubbleBg,
     ) {
@@ -386,18 +398,20 @@ private fun PickupAddressBubble(
             Column {
                 Text(
                     text = labelText,
-                    style = AppTypography.labelS.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        color = labelTextColor,
-                    ),
+                    style =
+                        AppTypography.labelS.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = labelTextColor,
+                        ),
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = bodyText,
-                    style = AppTypography.bodyM.copy(
-                        fontWeight = FontWeight.Medium,
-                        color = bodyTextColor,
-                    ),
+                    style =
+                        AppTypography.bodyM.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = bodyTextColor,
+                        ),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.widthIn(max = 250.dp),
@@ -414,12 +428,13 @@ private fun PickupAddressBubble(
 
     Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
         Canvas(modifier = Modifier.size(width = 12.dp, height = 6.dp)) {
-            val path = Path().apply {
-                moveTo(size.width / 2f, size.height)
-                lineTo(0f, 0f)
-                lineTo(size.width, 0f)
-                close()
-            }
+            val path =
+                Path().apply {
+                    moveTo(size.width / 2f, size.height)
+                    lineTo(0f, 0f)
+                    lineTo(size.width, 0f)
+                    close()
+                }
             drawPath(path, bubbleBg)
         }
     }
@@ -438,17 +453,19 @@ fun BoltPin(
     val innerTarget = if (isDragging) 4.dp else diameter * 0.286f
     val innerSize by animateDpAsState(
         targetValue = innerTarget,
-        animationSpec = spring(
-            dampingRatio = 0.42f,
-            stiffness = Spring.StiffnessLow,
-        ),
+        animationSpec =
+            spring(
+                dampingRatio = 0.42f,
+                stiffness = Spring.StiffnessLow,
+            ),
         label = "innerDot",
     )
 
     val stemWidth = maxOf(4.dp, diameter * 0.072f)
-    val pulseTargetScale = remember(innerSize, diameter) {
-        if (innerSize.value <= 0f) 1f else diameter.value / innerSize.value
-    }
+    val pulseTargetScale =
+        remember(innerSize, diameter) {
+            if (innerSize.value <= 0f) 1f else diameter.value / innerSize.value
+        }
 
     Box(
         modifier = modifier.wrapContentSize(align = Alignment.TopCenter),
@@ -457,17 +474,19 @@ fun BoltPin(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(
-                modifier = Modifier
-                    .size(diameter)
-                    .clip(CircleShape),
+                modifier =
+                    Modifier
+                        .size(diameter)
+                        .clip(CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Box(Modifier.fillMaxSize().background(color, CircleShape))
                 Box(
-                    modifier = Modifier
-                        .size(innerSize)
-                        .align(Alignment.Center)
-                        .background(Color.White, CircleShape),
+                    modifier =
+                        Modifier
+                            .size(innerSize)
+                            .align(Alignment.Center)
+                            .background(Color.White, CircleShape),
                 )
                 if (!isDragging) {
                     PinPulseRing(
@@ -478,11 +497,12 @@ fun BoltPin(
                 }
             }
             Box(
-                modifier = Modifier
-                    .width(stemWidth)
-                    .height(pointerHeight)
-                    .offset(y = (-1).dp)
-                    .background(color),
+                modifier =
+                    Modifier
+                        .width(stemWidth)
+                        .height(pointerHeight)
+                        .offset(y = (-1).dp)
+                        .background(color),
             )
         }
     }
@@ -521,14 +541,15 @@ internal fun PinPulseRing(
     }
 
     Box(
-        modifier = modifier
-            .size(startDiameter)
-            .graphicsLayer {
-                scaleX = scale.value
-                scaleY = scale.value
-                alpha = opacity.value
-            }
-            .border(2.dp, Color.White, CircleShape),
+        modifier =
+            modifier
+                .size(startDiameter)
+                .graphicsLayer {
+                    scaleX = scale.value
+                    scaleY = scale.value
+                    alpha = opacity.value
+                }
+                .border(2.dp, Color.White, CircleShape),
     )
 }
 
@@ -547,69 +568,77 @@ private fun PickupConfirmButton(
     val disabled = isEmpty || isLoading || isMoving || isOutOfBounds
     val activeGradient = !disabled && !isOutOfBounds && !isEmpty
 
-    val label = when {
-        isOutOfBounds -> stringResource(R.string.map_outside_tunisia)
-        isIntermediateStop -> stringResource(R.string.map_confirm_stop_point)
-        isDestination -> stringResource(R.string.map_confirm_destination)
-        else -> stringResource(R.string.map_confirm_pickup)
-    }
-
-    val bgColor = when {
-        isOutOfBounds -> colors.errorRed.copy(alpha = 0.12f)
-        isEmpty -> pinColor.copy(alpha = 0.4f)
-        else -> pinColor
-    }
-
-    val fgColor = when {
-        isOutOfBounds -> colors.errorRed
-        disabled -> when {
-            isIntermediateStop -> Color(0xFF1A1A1A).copy(alpha = 0.55f)
-            else -> Color.White.copy(alpha = 0.55f)
+    val label =
+        when {
+            isOutOfBounds -> stringResource(R.string.map_outside_tunisia)
+            isIntermediateStop -> stringResource(R.string.map_confirm_stop_point)
+            isDestination -> stringResource(R.string.map_confirm_destination)
+            else -> stringResource(R.string.map_confirm_pickup)
         }
-        isIntermediateStop -> Color(0xFF1A1A1A)
-        else -> Color.White
-    }
+
+    val bgColor =
+        when {
+            isOutOfBounds -> colors.errorRed.copy(alpha = 0.12f)
+            isEmpty -> pinColor.copy(alpha = 0.4f)
+            else -> pinColor
+        }
+
+    val fgColor =
+        when {
+            isOutOfBounds -> colors.errorRed
+            disabled ->
+                when {
+                    isIntermediateStop -> MapColorTokens.pinIntermediate.copy(alpha = 0.55f)
+                    else -> Color.White.copy(alpha = 0.55f)
+                }
+            isIntermediateStop -> MapColorTokens.pinIntermediate
+            else -> Color.White
+        }
 
     val shape = RoundedCornerShape(AppSpacing.buttonRadius)
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(54.dp)
-            .shadow(6.dp, shape, spotColor = pinColor.copy(alpha = 0.25f))
-            .clip(shape)
-            .clickable(
-                enabled = !disabled,
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            )
-            .background(bgColor),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .shadow(6.dp, shape, spotColor = pinColor.copy(alpha = 0.25f))
+                .clip(shape)
+                .clickable(
+                    enabled = !disabled,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick,
+                )
+                .background(bgColor),
     ) {
         if (activeGradient) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.White.copy(alpha = 0.16f),
-                                Color.Transparent,
-                            ),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush =
+                                Brush.verticalGradient(
+                                    colors =
+                                        listOf(
+                                            Color.White.copy(alpha = 0.16f),
+                                            Color.Transparent,
+                                        ),
+                                ),
                         ),
-                    ),
             )
         }
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(AppSpacing.s)
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.s),
             ) {
                 if (isOutOfBounds) {
                     Icon(
                         imageVector = Icons.Filled.Warning,
                         contentDescription = null,
                         tint = fgColor,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(14.dp),
                     )
                 }
                 Text(
@@ -640,18 +669,20 @@ private fun GroundShadow(isMoving: Boolean) {
         label = "groundShadowAlpha",
     )
     Box(
-        modifier = Modifier
-            .offset(y = 2.dp)
-            .size(width = shadowW, height = shadowH)
-            .alpha(shadowAlpha),
+        modifier =
+            Modifier
+                .offset(y = 2.dp)
+                .size(width = shadowW, height = shadowH)
+                .alpha(shadowAlpha),
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawOval(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color.Black.copy(alpha = 0.55f), Color.Transparent),
-                    center = Offset(size.width / 2f, size.height / 2f),
-                    radius = max(size.width, size.height) / 2f,
-                ),
+                brush =
+                    Brush.radialGradient(
+                        colors = listOf(Color.Black.copy(alpha = 0.55f), Color.Transparent),
+                        center = Offset(size.width / 2f, size.height / 2f),
+                        radius = max(size.width, size.height) / 2f,
+                    ),
                 topLeft = Offset.Zero,
                 size = Size(size.width, size.height),
             )

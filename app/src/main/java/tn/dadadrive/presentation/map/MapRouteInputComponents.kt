@@ -47,8 +47,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.R
-import tn.dadadrive.presentation.components.BlackCloseIconButton
 import tn.dadadrive.core.theme.LocalAppColors
+import tn.dadadrive.core.theme.MapColorTokens
+import tn.dadadrive.presentation.components.BlackCloseIconButton
 
 @Composable
 internal fun RouteTextField(
@@ -74,21 +75,24 @@ internal fun RouteTextField(
     staticBorderColor: Color? = null,
     staticBackgroundColor: Color? = null,
     staticTextColor: Color? = null,
-    disableShadow: Boolean = false
+    disableShadow: Boolean = false,
 ) {
     val c = LocalAppColors.current
     val accentColor = accentColorOverride ?: if (isOrigin) c.primary else c.errorRed
     val borderColor by animateColorAsState(
         targetValue = if (isActive) accentColor.copy(alpha = 0.45f) else c.dividerGrey.copy(alpha = 0.55f),
-        animationSpec = tween(220), label = "border_color"
+        animationSpec = tween(220),
+        label = "border_color",
     )
     val shadowElevation by animateDpAsState(
         targetValue = if (isActive) 4.dp else 1.dp,
-        animationSpec = tween(220), label = "shadow_elev"
+        animationSpec = tween(220),
+        label = "shadow_elev",
     )
     val searchIconColor by animateColorAsState(
         targetValue = if (isActive) accentColor else c.textHint.copy(alpha = 0.7f),
-        animationSpec = tween(180), label = "search_icon_color"
+        animationSpec = tween(180),
+        label = "search_icon_color",
     )
 
     val resolvedBorderColor = staticBorderColor ?: borderColor
@@ -96,27 +100,29 @@ internal fun RouteTextField(
     val resolvedShadow = if (disableShadow) 0.dp else shadowElevation
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(resolvedShadow, RoundedCornerShape(12.dp))
-            .clip(RoundedCornerShape(12.dp))
-            .background(resolvedBackgroundColor)
-            .border(1.dp, resolvedBorderColor, RoundedCornerShape(12.dp))
-            .padding(start = 10.dp, end = 0.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .shadow(resolvedShadow, RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(12.dp))
+                .background(resolvedBackgroundColor)
+                .border(1.dp, resolvedBorderColor, RoundedCornerShape(12.dp))
+                .padding(start = 10.dp, end = 0.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         if (intermediateStopNumber != null) {
             Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .background(Color(0xFF8E8E93), CircleShape),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(20.dp)
+                        .background(MapColorTokens.connectorGrey, CircleShape),
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = intermediateStopNumber.toString(),
                     color = Color.White,
                     fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
         } else {
@@ -124,23 +130,24 @@ internal fun RouteTextField(
                 imageVector = Icons.Default.Search,
                 contentDescription = null,
                 tint = searchIconColor,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(16.dp),
             )
         }
         Spacer(Modifier.width(4.dp))
         TextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier
-                .weight(1f)
-                .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-                .onFocusChanged { if (it.isFocused) onFocused() },
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+                    .onFocusChanged { if (it.isFocused) onFocused() },
             readOnly = readOnly,
             singleLine = true,
             placeholder = { Text(placeholder, fontSize = 14.sp) },
             keyboardOptions = KeyboardOptions(imeAction = imeAction),
             colors = fieldColors,
-            interactionSource = interactionSource
+            interactionSource = interactionSource,
         )
         if (showMapPicker) {
             IconButton(onClick = onMapPickerClick, modifier = Modifier.size(40.dp)) {
@@ -149,14 +156,14 @@ internal fun RouteTextField(
                         bitmap = cachedMiniMap,
                         contentDescription = stringResource(R.string.map_pick_on_map),
                         modifier = Modifier.size(24.dp).clip(RoundedCornerShape(5.dp)),
-                        contentScale = ContentScale.Fit
+                        contentScale = ContentScale.Fit,
                     )
                 } else {
                     Image(
                         painter = painterResource(R.drawable.ic_map_picker_route),
                         contentDescription = stringResource(R.string.map_pick_on_map),
                         modifier = Modifier.size(22.dp),
-                        contentScale = ContentScale.Fit
+                        contentScale = ContentScale.Fit,
                     )
                 }
             }
@@ -166,7 +173,7 @@ internal fun RouteTextField(
                 onClick = onRemoveClick,
                 buttonSize = 28.dp,
                 iconSize = 14.dp,
-                contentDescription = stringResource(R.string.map_route_remove_stop)
+                contentDescription = stringResource(R.string.map_route_remove_stop),
             )
         }
     }
@@ -178,10 +185,10 @@ internal fun RouteSheetSuggestionBlock(
     loading: Boolean,
     queryLengthOk: Boolean,
     darkItineraryStyle: Boolean = false,
-    onHit: (AddressSearchHit) -> Unit
+    onHit: (AddressSearchHit) -> Unit,
 ) {
     val c = LocalAppColors.current
-    val panelBg = if (darkItineraryStyle) Color(0xFF2C2C2C) else c.surface
+    val panelBg = if (darkItineraryStyle) MapColorTokens.darkPanelSurface else c.surface
     val panelBorder = if (darkItineraryStyle) Color.White.copy(alpha = 0.18f) else c.dividerGrey.copy(alpha = 0.35f)
     val hitText = if (darkItineraryStyle) Color.White else c.textPrimary
     val iconBg = if (darkItineraryStyle) Color.White.copy(alpha = 0.10f) else c.surfaceMuted
@@ -198,33 +205,36 @@ internal fun RouteSheetSuggestionBlock(
         }
         results.isNotEmpty() -> {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(panelBg)
-                    .border(1.dp, panelBorder, RoundedCornerShape(14.dp))
-                    .padding(vertical = 4.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(panelBg)
+                        .border(1.dp, panelBorder, RoundedCornerShape(14.dp))
+                        .padding(vertical = 4.dp),
             ) {
                 results.forEachIndexed { index, hit ->
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onHit(hit) }
-                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { onHit(hit) }
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .background(iconBg, CircleShape),
-                            contentAlignment = Alignment.Center
+                            modifier =
+                                Modifier
+                                    .size(32.dp)
+                                    .background(iconBg, CircleShape),
+                            contentAlignment = Alignment.Center,
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = null,
                                 tint = iconTint,
-                                modifier = Modifier.size(15.dp)
+                                modifier = Modifier.size(15.dp),
                             )
                         }
                         Text(
@@ -233,14 +243,14 @@ internal fun RouteSheetSuggestionBlock(
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             maxLines = 2,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     }
                     if (index < results.lastIndex) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 14.dp),
                             color = dividerCol,
-                            thickness = 0.5.dp
+                            thickness = 0.5.dp,
                         )
                     }
                 }
@@ -248,17 +258,18 @@ internal fun RouteSheetSuggestionBlock(
         }
         queryLengthOk -> {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(emptyBg)
-                    .padding(vertical = 8.dp),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(emptyBg)
+                        .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = stringResource(R.string.map_no_address_results),
                     color = emptyText,
-                    fontSize = 13.sp
+                    fontSize = 13.sp,
                 )
             }
         }

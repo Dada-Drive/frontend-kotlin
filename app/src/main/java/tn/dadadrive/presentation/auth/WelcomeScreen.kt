@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,9 +52,20 @@ import com.dadadrive.R
 import tn.dadadrive.core.theme.AppTypography
 import tn.dadadrive.core.theme.LocalAppColors
 
-private val WelcomeCream = Color(0xFFF8F8F5)
-private val HeroBlack = Color(0xFF0A0A0A)
-private val AccentGreen = Color(0xFF22C55E)
+private val WelcomeCream: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAppColors.current.background
+
+private val HeroBlack: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAppColors.current.textPrimary
+
+private val AccentGreen: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAppColors.current.successGreen
 
 @Composable
 fun WelcomeScreen(
@@ -69,11 +80,12 @@ fun WelcomeScreen(
     val view = LocalView.current
     val isLoading = authState is AuthState.Loading
     val rawError = (authState as? AuthState.Error)?.message
-    val error = when {
-        googleCooldownSeconds > 0 ->
-            stringResource(R.string.welcome_rate_limit_seconds, googleCooldownSeconds)
-        else -> rawError
-    }
+    val error =
+        when {
+            googleCooldownSeconds > 0 ->
+                stringResource(R.string.welcome_rate_limit_seconds, googleCooldownSeconds)
+            else -> rawError
+        }
 
     SideEffect {
         val window = (view.context as? Activity)?.window ?: return@SideEffect
@@ -82,29 +94,32 @@ fun WelcomeScreen(
 
     Column(Modifier.fillMaxSize().background(WelcomeCream)) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.48f)
-                .background(HeroBlack),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .weight(0.48f)
+                    .background(HeroBlack),
         ) {
             WelcomeHeroDotsAndCar()
         }
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.52f)
-                .offset(y = (-20).dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .weight(0.52f)
+                    .offset(y = (-20).dp),
             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
             color = WelcomeCream,
             shadowElevation = 0.dp,
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 22.dp)
-                    .padding(top = 28.dp, bottom = 16.dp)
-                    .navigationBarsPadding(),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 22.dp)
+                        .padding(top = 28.dp, bottom = 16.dp)
+                        .navigationBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
@@ -124,19 +139,20 @@ fun WelcomeScreen(
                 if (!error.isNullOrBlank()) {
                     Spacer(Modifier.height(16.dp))
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFFFEBEE))
-                            .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(12.dp))
-                            .padding(14.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(c.errorContainer)
+                                .border(1.dp, c.errorContainer, RoundedCornerShape(12.dp))
+                                .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("!", color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
+                        Text("!", color = c.errorRed, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.width(10.dp))
                         Text(
                             text = error,
-                            color = Color(0xFFD32F2F),
+                            color = c.errorRed,
                             fontSize = 14.sp,
                             modifier = Modifier.weight(1f),
                         )
@@ -173,7 +189,7 @@ fun WelcomeScreen(
                         onClick = onGoogleClick,
                         enabled = !isLoading && !isCoolingDown,
                     ) {
-                        Text("G", color = Color(0xFFEA4335), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text("G", color = c.googleRed, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         Spacer(Modifier.width(10.dp))
                         Text(
                             when {
@@ -194,7 +210,7 @@ fun WelcomeScreen(
                         onClick = onFacebookClick,
                         enabled = !isLoading,
                     ) {
-                        Text("f", color = Color(0xFF1877F2), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text("f", color = c.facebookBlue, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         Spacer(Modifier.width(10.dp))
                         Text(
                             stringResource(R.string.welcome_continue_facebook),
@@ -206,34 +222,36 @@ fun WelcomeScreen(
                 }
                 Spacer(Modifier.height(20.dp))
                 Text(
-                    text = buildAnnotatedString {
-                        append(stringResource(R.string.welcome_legal_part1))
-                        withStyle(
-                            SpanStyle(
-                                color = c.textSecondary,
-                                textDecoration = TextDecoration.Underline,
-                                fontWeight = FontWeight.SemiBold,
-                            ),
-                        ) {
-                            append(stringResource(R.string.welcome_terms_link))
-                        }
-                        append(stringResource(R.string.welcome_legal_connector))
-                        withStyle(
-                            SpanStyle(
-                                color = c.textSecondary,
-                                textDecoration = TextDecoration.Underline,
-                                fontWeight = FontWeight.SemiBold,
-                            ),
-                        ) {
-                            append(stringResource(R.string.welcome_privacy_link))
-                        }
-                        append(stringResource(R.string.welcome_legal_suffix))
-                    },
+                    text =
+                        buildAnnotatedString {
+                            append(stringResource(R.string.welcome_legal_part1))
+                            withStyle(
+                                SpanStyle(
+                                    color = c.textSecondary,
+                                    textDecoration = TextDecoration.Underline,
+                                    fontWeight = FontWeight.SemiBold,
+                                ),
+                            ) {
+                                append(stringResource(R.string.welcome_terms_link))
+                            }
+                            append(stringResource(R.string.welcome_legal_connector))
+                            withStyle(
+                                SpanStyle(
+                                    color = c.textSecondary,
+                                    textDecoration = TextDecoration.Underline,
+                                    fontWeight = FontWeight.SemiBold,
+                                ),
+                            ) {
+                                append(stringResource(R.string.welcome_privacy_link))
+                            }
+                            append(stringResource(R.string.welcome_legal_suffix))
+                        },
                     style = AppTypography.labelS.copy(color = c.textTertiary, lineHeight = 18.sp),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
                 )
             }
         }
@@ -250,20 +268,24 @@ private fun WelcomePillButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp)
-            .clip(RoundedCornerShape(999.dp))
-            .then(
-                if (border != null) Modifier.border(1.dp, border, RoundedCornerShape(999.dp))
-                else Modifier,
-            )
-            .background(
-                if (enabled) background else background.copy(alpha = 0.55f),
-                RoundedCornerShape(999.dp),
-            )
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 18.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .then(
+                    if (border != null) {
+                        Modifier.border(1.dp, border, RoundedCornerShape(999.dp))
+                    } else {
+                        Modifier
+                    },
+                )
+                .background(
+                    if (enabled) background else background.copy(alpha = 0.55f),
+                    RoundedCornerShape(999.dp),
+                )
+                .clickable(enabled = enabled, onClick = onClick)
+                .padding(horizontal = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
         content = content,
@@ -272,6 +294,8 @@ private fun WelcomePillButton(
 
 @Composable
 private fun WelcomeHeroDotsAndCar() {
+    val accentGreen = AccentGreen
+    val tanBorder = LocalAppColors.current.border
     Canvas(Modifier.fillMaxSize()) {
         val step = 14.dp.toPx()
         var x = 0f
@@ -296,10 +320,10 @@ private fun WelcomeHeroDotsAndCar() {
             cornerRadius = CornerRadius(10.dp.toPx(), 10.dp.toPx()),
         )
         val wheelR = 11.dp.toPx()
-        drawCircle(AccentGreen, wheelR, center = Offset(left + carW * 0.28f, top + carH))
-        drawCircle(AccentGreen, wheelR, center = Offset(left + carW * 0.72f, top + carH))
+        drawCircle(accentGreen, wheelR, center = Offset(left + carW * 0.28f, top + carH))
+        drawCircle(accentGreen, wheelR, center = Offset(left + carW * 0.72f, top + carH))
         drawRoundRect(
-            color = Color(0xFFE8DCC8),
+            color = tanBorder,
             topLeft = Offset(left + carW * 0.78f, top + carH * 0.22f),
             size = Size(carW * 0.12f, carH * 0.28f),
             cornerRadius = CornerRadius(2.dp.toPx(), 2.dp.toPx()),

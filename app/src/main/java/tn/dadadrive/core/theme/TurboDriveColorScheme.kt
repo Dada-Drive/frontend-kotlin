@@ -62,6 +62,9 @@ private fun turboDriveLightScheme(): AppColorScheme {
         textCaption = Color(0xFF8A8A85),
         dragHandle = Color(0xFF8A8A85),
         outlineLight = Color(0xFFCFCABE),
+        ratingYellow = Color(0xFFFFC107),
+        coinSilver = Color(0xFFC0C0C0),
+        coinGold = Color(0xFFD4AF37),
     )
 }
 
@@ -119,5 +122,8 @@ private fun turboDriveDarkScheme(): AppColorScheme {
         textCaption = Color(0xFF6E6E68),
         dragHandle = Color(0xFF6E6E68),
         outlineLight = Color(0xFF3A3A40),
+        ratingYellow = Color(0xFFFFC107),
+        coinSilver = Color(0xFF9B9B9B),
+        coinGold = Color(0xFFB89530),
     )
 }

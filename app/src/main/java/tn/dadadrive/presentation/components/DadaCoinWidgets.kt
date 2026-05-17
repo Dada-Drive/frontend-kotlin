@@ -36,25 +36,29 @@ fun AnimatedDadaCoinIcon(
     metal: DadaCoinMetal,
     modifier: Modifier = Modifier,
 ) {
-    val base = when (metal) {
-        DadaCoinMetal.Silver -> Color(0xFFC0C0C0)
-        DadaCoinMetal.Gold -> Color(0xFFD4AF37)
-    }
+    val appColors = LocalAppColors.current
+    val base =
+        when (metal) {
+            DadaCoinMetal.Silver -> appColors.coinSilver
+            DadaCoinMetal.Gold -> appColors.coinGold
+        }
     val transition = rememberInfiniteTransition(label = "dada_coin")
     val rotation by transition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2800, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(2800, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart,
+            ),
         label = "rot",
     )
     Box(
-        modifier = modifier
-            .size(size)
-            .rotate(rotation)
-            .background(base, CircleShape),
+        modifier =
+            modifier
+                .size(size)
+                .rotate(rotation)
+                .background(base, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -70,9 +74,10 @@ fun AnimatedDadaCoinIcon(
 fun FullScreenCoinIntroOverlay(modifier: Modifier = Modifier) {
     val c = LocalAppColors.current
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.72f)),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.72f)),
         contentAlignment = Alignment.Center,
     ) {
         AnimatedDadaCoinIcon(size = 120.dp, metal = DadaCoinMetal.Gold)
@@ -81,9 +86,10 @@ fun FullScreenCoinIntroOverlay(modifier: Modifier = Modifier) {
             color = c.onPrimary,
             fontWeight = FontWeight.Black,
             fontSize = 22.sp,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 72.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 72.dp),
         )
     }
 }

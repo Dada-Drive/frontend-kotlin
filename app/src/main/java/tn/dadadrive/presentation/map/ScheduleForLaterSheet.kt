@@ -47,8 +47,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.R
-import tn.dadadrive.core.theme.LocalAppColors
 import kotlinx.coroutines.flow.distinctUntilChanged
+import tn.dadadrive.core.theme.LocalAppColors
+import tn.dadadrive.core.theme.MapColorTokens
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -69,64 +70,78 @@ internal fun ScheduleForLaterSheet(
 
     val now = remember { Calendar.getInstance() }
     val minEpochMs = remember { System.currentTimeMillis() + SCHEDULE_MIN_LEAD_MS }
-    val minCalendar = remember {
-        Calendar.getInstance().apply {
-            timeInMillis = minEpochMs
-            // round up minutes to next 5
-            val m = get(Calendar.MINUTE)
-            val rounded = ((m + 4) / 5) * 5
-            if (rounded >= 60) {
-                set(Calendar.MINUTE, 0)
-                add(Calendar.HOUR_OF_DAY, 1)
-            } else {
-                set(Calendar.MINUTE, rounded)
+    val minCalendar =
+        remember {
+            Calendar.getInstance().apply {
+                timeInMillis = minEpochMs
+                // round up minutes to next 5
+                val m = get(Calendar.MINUTE)
+                val rounded = ((m + 4) / 5) * 5
+                if (rounded >= 60) {
+                    set(Calendar.MINUTE, 0)
+                    add(Calendar.HOUR_OF_DAY, 1)
+                } else {
+                    set(Calendar.MINUTE, rounded)
+                }
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
             }
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
         }
-    }
 
-    val dayItems = remember {
-        val list = mutableListOf<DayItem>()
-        val cal = Calendar.getInstance().apply {
-            timeInMillis = System.currentTimeMillis()
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        val todayFormat = SimpleDateFormat("EEE MMM d", Locale.getDefault())
-        for (i in 0..SCHEDULE_MAX_DAYS_AHEAD) {
-            val label = when (i) {
-                0 -> "Today"
-                1 -> "Tomorrow"
-                else -> todayFormat.format(cal.time)
+    val dayItems =
+        remember {
+            val list = mutableListOf<DayItem>()
+            val cal =
+                Calendar.getInstance().apply {
+                    timeInMillis = System.currentTimeMillis()
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+            val todayFormat = SimpleDateFormat("EEE MMM d", Locale.getDefault())
+            for (i in 0..SCHEDULE_MAX_DAYS_AHEAD) {
+                val label =
+                    when (i) {
+                        0 -> "Today"
+                        1 -> "Tomorrow"
+                        else -> todayFormat.format(cal.time)
+                    }
+                list.add(DayItem(label = label, dayOffsetFromToday = i, calendarSnapshot = (cal.clone() as Calendar)))
+                cal.add(Calendar.DAY_OF_MONTH, 1)
             }
-            list.add(DayItem(label = label, dayOffsetFromToday = i, calendarSnapshot = (cal.clone() as Calendar)))
-            cal.add(Calendar.DAY_OF_MONTH, 1)
+            list
         }
-        list
-    }
 
     val hours12 = remember { (1..12).toList() }
     val minutes5 = remember { (0..55 step 5).toList() }
     val ampm = remember { listOf("AM", "PM") }
 
-    val initial = remember(initialEpochMs) {
-        val cal = Calendar.getInstance().apply {
-            timeInMillis = (initialEpochMs ?: minCalendar.timeInMillis).coerceAtLeast(minCalendar.timeInMillis)
+    val initial =
+        remember(initialEpochMs) {
+            val cal =
+                Calendar.getInstance().apply {
+                    timeInMillis = (initialEpochMs ?: minCalendar.timeInMillis).coerceAtLeast(minCalendar.timeInMillis)
+                }
+            val day0 =
+                Calendar.getInstance().apply {
+                    timeInMillis = System.currentTimeMillis()
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+            val dayOffset =
+                (((cal.timeInMillis - day0.timeInMillis) / (24L * 60L * 60L * 1000L)).toInt()).coerceIn(
+                    0,
+                    SCHEDULE_MAX_DAYS_AHEAD,
+                )
+            val h24 = cal.get(Calendar.HOUR_OF_DAY)
+            val isPm = h24 >= 12
+            val h12 = ((h24 + 11) % 12) + 1
+            val m = ((cal.get(Calendar.MINUTE)) / 5) * 5
+            Triple(dayOffset, Triple(h12, m, if (isPm) 1 else 0), Unit)
         }
-        val day0 = Calendar.getInstance().apply {
-            timeInMillis = System.currentTimeMillis()
-            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-        }
-        val dayOffset = (((cal.timeInMillis - day0.timeInMillis) / (24L * 60L * 60L * 1000L)).toInt()).coerceIn(0, SCHEDULE_MAX_DAYS_AHEAD)
-        val h24 = cal.get(Calendar.HOUR_OF_DAY)
-        val isPm = h24 >= 12
-        val h12 = ((h24 + 11) % 12) + 1
-        val m = ((cal.get(Calendar.MINUTE)) / 5) * 5
-        Triple(dayOffset, Triple(h12, m, if (isPm) 1 else 0), Unit)
-    }
 
     var dayIdx by remember { mutableStateOf(initial.first) }
     var hourIdx by remember { mutableStateOf(hours12.indexOf(initial.second.first).coerceAtLeast(0)) }
@@ -138,12 +153,13 @@ internal fun ScheduleForLaterSheet(
             val base = dayItems[dayIdx].calendarSnapshot.clone() as Calendar
             var h12 = hours12[hourIdx]
             val isPm = ampmIdx == 1
-            var h24 = when {
-                isPm && h12 == 12 -> 12
-                isPm -> h12 + 12
-                !isPm && h12 == 12 -> 0
-                else -> h12
-            }
+            var h24 =
+                when {
+                    isPm && h12 == 12 -> 12
+                    isPm -> h12 + 12
+                    !isPm && h12 == 12 -> 0
+                    else -> h12
+                }
             base.set(Calendar.HOUR_OF_DAY, h24)
             base.set(Calendar.MINUTE, minutes5[minuteIdx])
             base.set(Calendar.SECOND, 0)
@@ -153,7 +169,7 @@ internal fun ScheduleForLaterSheet(
     }
     val isValid = selectedEpochMs >= minCalendar.timeInMillis
 
-    val accent = Color(0xFF4FC3C8)
+    val accent = MapColorTokens.scheduleAccent
     val disabledAccent = accent.copy(alpha = 0.45f)
 
     ModalBottomSheet(
@@ -164,24 +180,26 @@ internal fun ScheduleForLaterSheet(
         dragHandle = { BottomSheetDefaults.DragHandle() },
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(4.dp))
             Box(
-                modifier = Modifier
-                    .size(52.dp)
-                    .background(accent.copy(alpha = 0.18f), CircleShape),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(52.dp)
+                        .background(accent.copy(alpha = 0.18f), CircleShape),
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = Icons.Default.Schedule,
                     contentDescription = null,
                     tint = accent,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp),
                 )
             }
             Spacer(Modifier.height(14.dp))
@@ -189,19 +207,19 @@ internal fun ScheduleForLaterSheet(
                 text = stringResource(R.string.map_schedule_when_title),
                 color = c.textPrimary,
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 text = stringResource(R.string.map_schedule_min_lead),
                 color = c.textSecondary,
-                fontSize = 13.sp
+                fontSize = 13.sp,
             )
             Spacer(Modifier.height(18.dp))
 
             WheelRowContainer(
                 height = 180.dp,
-                accent = accent
+                accent = accent,
             ) {
                 WheelPicker(
                     items = dayItems.map { it.label },
@@ -237,83 +255,89 @@ internal fun ScheduleForLaterSheet(
 
             val chipFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
             val dateFormat = remember { SimpleDateFormat("EEE MMM d", Locale.getDefault()) }
-            val chipCal = remember(selectedEpochMs) {
-                Calendar.getInstance().apply { timeInMillis = selectedEpochMs }
-            }
-            val chipText = when (dayIdx) {
-                0 -> stringResource(R.string.map_schedule_today_at_format, chipFormat.format(chipCal.time))
-                1 -> stringResource(R.string.map_schedule_tomorrow_at_format, chipFormat.format(chipCal.time))
-                else -> stringResource(
-                    R.string.map_schedule_date_at_format,
-                    dateFormat.format(chipCal.time),
-                    chipFormat.format(chipCal.time)
-                )
-            }
+            val chipCal =
+                remember(selectedEpochMs) {
+                    Calendar.getInstance().apply { timeInMillis = selectedEpochMs }
+                }
+            val chipText =
+                when (dayIdx) {
+                    0 -> stringResource(R.string.map_schedule_today_at_format, chipFormat.format(chipCal.time))
+                    1 -> stringResource(R.string.map_schedule_tomorrow_at_format, chipFormat.format(chipCal.time))
+                    else ->
+                        stringResource(
+                            R.string.map_schedule_date_at_format,
+                            dateFormat.format(chipCal.time),
+                            chipFormat.format(chipCal.time),
+                        )
+                }
 
             Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(accent.copy(alpha = 0.12f))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(accent.copy(alpha = 0.12f))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.CalendarMonth,
                     contentDescription = null,
                     tint = accent,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(16.dp),
                 )
                 Text(
                     text = chipText,
                     color = accent,
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
             }
 
             Spacer(Modifier.height(18.dp))
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(if (isValid) accent else disabledAccent)
-                    .clickable(enabled = isValid) { onConfirm(selectedEpochMs) }
-                    .padding(horizontal = 16.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(if (isValid) accent else disabledAccent)
+                        .clickable(enabled = isValid) { onConfirm(selectedEpochMs) }
+                        .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(18.dp),
                 )
                 Spacer(Modifier.size(8.dp))
                 Text(
                     text = stringResource(R.string.map_schedule_confirm_time),
                     color = Color.White,
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
 
             Spacer(Modifier.height(8.dp))
 
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(44.dp)
-                    .clickable { onDismiss() },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(44.dp)
+                        .clickable { onDismiss() },
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = stringResource(R.string.common_cancel),
                     color = c.textSecondary,
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
             }
         }
@@ -323,32 +347,34 @@ internal fun ScheduleForLaterSheet(
 private data class DayItem(
     val label: String,
     val dayOffsetFromToday: Int,
-    val calendarSnapshot: Calendar
+    val calendarSnapshot: Calendar,
 )
 
 @Composable
 private fun WheelRowContainer(
     height: androidx.compose.ui.unit.Dp,
     accent: Color,
-    content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit
+    content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit,
 ) {
     val c = LocalAppColors.current
     Box(modifier = Modifier.fillMaxWidth().height(height)) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Center),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly,
-            content = content
+            content = content,
         )
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(38.dp)
-                .align(Alignment.Center)
-                .background(c.surfaceMuted.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
-                .border(1.dp, accent.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(38.dp)
+                    .align(Alignment.Center)
+                    .background(c.surfaceMuted.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+                    .border(1.dp, accent.copy(alpha = 0.18f), RoundedCornerShape(10.dp)),
         )
     }
 }
@@ -396,41 +422,45 @@ private fun androidx.compose.foundation.layout.RowScope.WheelPicker(
     }
 
     Box(
-        modifier = Modifier
-            .weight(weight)
-            .height(itemHeight * visibleCount),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .weight(weight)
+                .height(itemHeight * visibleCount),
+        contentAlignment = Alignment.Center,
     ) {
         LazyColumn(
             state = listState,
             flingBehavior = flingBehavior,
             contentPadding = PaddingValues(vertical = itemHeight * halfVisible),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             items(items.size) { index ->
                 val distance = abs(index - selectedIndex)
-                val alphaValue = when (distance) {
-                    0 -> 1f
-                    1 -> 0.45f
-                    else -> 0.18f
-                }
-                val fontSizeSp = when (distance) {
-                    0 -> 17
-                    1 -> 14
-                    else -> 13
-                }
+                val alphaValue =
+                    when (distance) {
+                        0 -> 1f
+                        1 -> 0.45f
+                        else -> 0.18f
+                    }
+                val fontSizeSp =
+                    when (distance) {
+                        0 -> 17
+                        1 -> 14
+                        else -> 13
+                    }
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(itemHeight),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(itemHeight),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = items[index],
                         color = c.textPrimary,
                         fontSize = fontSizeSp.sp,
                         fontWeight = if (distance == 0) FontWeight.Bold else FontWeight.Medium,
-                        modifier = Modifier.alpha(alphaValue)
+                        modifier = Modifier.alpha(alphaValue),
                     )
                 }
             }
