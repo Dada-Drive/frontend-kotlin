@@ -89,4 +89,50 @@ class ApiCallTest {
         assertEquals("EMPTY_BODY", be.apiError.code)
         assertEquals(204, be.httpCode)
     }
+
+    // R-1.4 -- extended cases
+
+    @Test
+    fun `unwrap with success=true and null data routes through Unit branch`() {
+        // Ambiguous backend response: success without a data payload.
+        // Caller typing as ApiResponse<Unit> accepts this as a "completed without payload" case
+        // (logout, delete, etc.).
+        val response: Response<ApiResponse<Unit>> =
+            Response.success(ApiResponse(success = true, data = null, error = null))
+
+        val result = response.unwrap()
+
+        assertTrue("Success without data should resolve to Unit success", result.isSuccess)
+        assertEquals(Unit, result.getOrNull())
+    }
+
+    @Test
+    fun `unwrap on HTTP 200 with success=false envelope propagates backend code`() {
+        // The whole point of the envelope: HTTP 200 + {success:false, error:{...}} is a
+        // business failure surface, distinct from HTTP-level failures. Retrofit only allows
+        // 2xx codes in Response.success() so 4xx/5xx are tested via Response.error() above.
+        val apiError = ApiError(code = "VALIDATION_ERROR", message = "field 'email' is required")
+        val response: Response<ApiResponse<Payload>> =
+            Response.success(ApiResponse<Payload>(success = false, data = null, error = apiError))
+
+        val result = response.unwrap()
+
+        assertTrue(result.isFailure)
+        val be = result.exceptionOrNull() as BackendException
+        assertEquals("VALIDATION_ERROR", be.apiError.code)
+        assertEquals(200, be.httpCode)
+    }
+
+    @Test
+    fun `unwrap on HTTP 500 with empty error body returns BackendException HTTP_500`() {
+        val errorBody = "".toResponseBody("application/json".toMediaType())
+        val response: Response<ApiResponse<Payload>> = Response.error(500, errorBody)
+
+        val result = response.unwrap()
+
+        assertTrue(result.isFailure)
+        val be = result.exceptionOrNull() as BackendException
+        assertEquals("HTTP_500", be.apiError.code)
+        assertEquals(500, be.httpCode)
+    }
 }

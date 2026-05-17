@@ -5,12 +5,17 @@ import com.dadadrive.R
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import retrofit2.HttpException
+import retrofit2.Response
 import tn.dadadrive.data.network.envelope.ApiError
 import tn.dadadrive.data.network.envelope.BackendException
 import tn.dadadrive.domain.models.BackendErrorCode
@@ -128,5 +133,44 @@ class PresentableErrorMapperTest {
                     result.code,
                 )
             }
+    }
+
+    // R-1.4 -- extended cases
+
+    @Test
+    fun `fromHttpException parses error code from JSON body and routes to localized message`() {
+        // Body contains the legacy envelope {success:false, error:{code, message}} -- proves
+        // PresentableErrorMapper.parseErrorCodeFromBody() correctly extracts the code from a
+        // raw HttpException (not yet a BackendException).
+        val body =
+            """{"success":false,"error":{"code":"INSUFFICIENT_BALANCE","message":"low"}}"""
+                .toResponseBody("application/json".toMediaType())
+        val httpResponse: Response<Any> = Response.error(409, body)
+        val httpEx = HttpException(httpResponse)
+
+        val result = mapper.fromThrowable(httpEx)
+
+        assertEquals(BackendErrorCode.INSUFFICIENT_BALANCE, result.code)
+        assertEquals(ErrorCategory.BusinessRule, result.category)
+        verify { context.getString(R.string.error_insufficient_balance) }
+    }
+
+    @Test
+    fun `fromHttp 429 with Retry-After header propagates retryAfterSeconds`() {
+        val result = mapper.fromHttp(httpCode = 429, backendErrorCode = null, retryAfterHeader = "120")
+
+        assertEquals(ErrorCategory.RateLimit, result.category)
+        assertTrue(result.isRetryable)
+        assertNotNull(result.retryAfterSeconds)
+        assertEquals(120, result.retryAfterSeconds)
+        verify { context.getString(R.string.error_rate_limited) }
+    }
+
+    @Test
+    fun `fromHttp 429 without Retry-After header leaves retryAfterSeconds null`() {
+        val result = mapper.fromHttp(httpCode = 429, backendErrorCode = null, retryAfterHeader = null)
+
+        assertEquals(ErrorCategory.RateLimit, result.category)
+        assertNull(result.retryAfterSeconds)
     }
 }
