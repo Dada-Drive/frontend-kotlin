@@ -23,6 +23,7 @@ import tn.dadadrive.data.network.api.WalletApiService
 import tn.dadadrive.data.network.authenticator.TokenAuthenticator
 import tn.dadadrive.data.network.interceptor.AuthInterceptor
 import tn.dadadrive.data.network.interceptor.DefaultHeadersInterceptor
+import tn.dadadrive.data.network.interceptor.IdempotencyKeyInterceptor
 import tn.dadadrive.data.network.interceptor.RedactingHttpLoggingInterceptor
 import tn.dadadrive.data.network.interceptor.RetryInterceptor
 import tn.dadadrive.data.storage.TokenStorage
@@ -70,6 +71,7 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         retryInterceptor: RetryInterceptor,
+        idempotencyKeyInterceptor: IdempotencyKeyInterceptor,
         defaultHeadersInterceptor: DefaultHeadersInterceptor,
         authInterceptor: AuthInterceptor,
         tokenAuthenticator: TokenAuthenticator,
@@ -78,6 +80,10 @@ object NetworkModule {
         val builder =
             OkHttpClient.Builder()
                 .authenticator(tokenAuthenticator)
+                // IdempotencyKey must run BEFORE RetryInterceptor : the latter captures
+                // `initial = chain.request()` once and replays it as-is, so the stamped
+                // header travels unchanged across rate-limit and server-error retries.
+                .addInterceptor(idempotencyKeyInterceptor)
                 .addInterceptor(retryInterceptor)
                 .addInterceptor(CertificatePinningReporter())
                 .addInterceptor(defaultHeadersInterceptor)

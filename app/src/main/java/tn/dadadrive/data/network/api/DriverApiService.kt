@@ -7,6 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
+import tn.dadadrive.data.network.annotation.Idempotent
 import tn.dadadrive.data.network.envelope.ApiResponse
 import tn.dadadrive.data.network.model.AvailableRidesResponseDto
 import tn.dadadrive.data.network.model.CancelRideRequestDto
@@ -62,6 +63,7 @@ interface DriverApiService {
     @GET("rides/available")
     suspend fun getAvailableRides(): Response<ApiResponse<AvailableRidesResponseDto>>
 
+    @Idempotent
     @POST("rides/{id}/accept")
     suspend fun acceptRide(
         @Path("id") id: String,

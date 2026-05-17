@@ -7,6 +7,7 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+import tn.dadadrive.data.network.annotation.Idempotent
 import tn.dadadrive.data.network.envelope.ApiResponse
 import tn.dadadrive.data.network.model.AddRideStopsRequestDto
 import tn.dadadrive.data.network.model.CancelRideBodyDto
@@ -28,6 +29,7 @@ interface RidesApiService {
         @Query("estimated_minutes") estimatedMinutes: Int,
     ): Response<ApiResponse<FareApiResponse>>
 
+    @Idempotent
     @POST("rides")
     suspend fun requestRide(
         @Body body: RequestRideRequestDto,
@@ -55,6 +57,7 @@ interface RidesApiService {
     @GET("rides/scheduled")
     suspend fun getScheduledRides(): Response<ApiResponse<RidesResponseDto>>
 
+    @Idempotent
     @PATCH("rides/{id}/offers/{offerId}/pick")
     suspend fun pickRideOffer(
         @Path("id") rideId: String,
@@ -67,6 +70,7 @@ interface RidesApiService {
         @Body body: CancelRideBodyDto,
     ): Response<ApiResponse<RideResponseDto>>
 
+    @Idempotent
     @POST("ratings/rides/{rideId}")
     suspend fun submitRideRating(
         @Path("rideId") rideId: String,
