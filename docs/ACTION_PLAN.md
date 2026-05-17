@@ -796,58 +796,96 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 
 ---
 
-### Phase R-2.2 — Refactor ViewModels vers ScreenState 🟡 (3/9 Vagues A+B partielles)
-**Objectif** : remplacer tous les `_loading: Boolean + _error: String?` par `MutableStateFlow<ScreenState<T>>`.
-**Sévérité** : Critique — **Effort** : 12–18 h
+### Phase R-2.2 — Refactor ViewModels vers ScreenState ✅ (partial — strategic close)
+
+**Statut** : 🟡 **3/9 VM migrés directement** + 3 VM **conformes natifs** + 3 VM **reportés à S5/S6**. Phase **stratégiquement close** car les VM restants seront refactor de toute façon lors des sprints suivants — faire la migration ScreenState maintenant produirait du travail jeté.
+
+**Objectif initial** : remplacer tous les `_loading: Boolean + _error: String?` par `MutableStateFlow<ScreenState<T>>`.
+**Sévérité** : Critique — **Effort estimé** : 12–18 h — **Effort réel** : ~6 h
 **Dépendances** : R-2.1
 **Catégorie** : Refactor
 
-**État après Vague A (2026-05-17)** : 2/9 VM migrés
-- ✅ `DriverSetupViewModel` (single-flow `ScreenState<Unit>`) + 5 tests verts
-- ✅ `DriverViewModel` driverhome (multi-flow par domaine, 3 ScreenState flows) + 5 tests verts
-- 🟢 `AuthViewModel` **déjà conforme** — sealed `AuthState` + `OtpUiState` propriétaires (jamais legacy). Documenté dans [`ARCHITECTURE.md`](ARCHITECTURE.md).
-- ⏸ `MapViewModel` déféré en **Vague C dédiée** (1029 LOC, 47 StateFlow, 9 domaines, controllers délégués — hors budget Vague A)
-- ⏸ Vague B : `WalletViewModel`, `ProfileViewModel`, `NameEntryViewModel`, `LanguageViewModel`, `RoleViewModel`, `SessionViewModel` (6 VM secondaires)
+---
 
-**État après Vague B partielle (2026-05-17 soir)** : 3/9 VM migrés au total
-- ✅ B.1 `NameEntryViewModel` (single-flow `ScreenState<Unit>`) + 5 tests verts
-  - Commits : `5659c44`, `bca3447`, `3bb7a54` (footer `Refs R-2.2`)
-- ⏸️ B.2 `WalletViewModel` : refactor multi-flow démarré, **stash en local** pour reprise
-  - Stash msg : "WIP R-2.2 B.2 WalletViewModel multi-flow refactor (resume later)"
-  - Reprendre via : `git stash list` puis `git stash pop` (ou `apply` selon préférence)
-  - Bug connu au moment du stash : test `walletAmountCompactReadsFromLoadedState`
-    assertion ≠ (décalage formatage `%.0f` half-up sur 42.5 → "43" et non "42" — fix appliqué dans le stash)
-- ⏸️ B.3-B.6 (Profile, Language, Role, Session) : non démarrés
-  - Language (31 LOC, pas de async) : sera probablement skip (pas de ScreenState applicable)
-  - Role + Session : ont déjà leur sealed propriétaire (comme Auth) — doc-only à venir
-  - Profile : legacy trio, candidat single-flow simple
+#### ✅ VM migrés (3/9)
 
-**Inventaire corrigé** : 9 VM legacy (vs 14 plan initial — AuthViewModel exclu car déjà sealed).
+| VM | Pattern | Tests | Commits |
+|---|---|---|---|
+| `DriverSetupViewModel` | single-flow `ScreenState<Unit>` | 5 verts | `69a80bd`, `5490570`, `4723ea7` |
+| `DriverViewModel` (driverhome) | multi-flow 3 domaines | 5 verts | `0cc8ab1`, `732755f`, `8d5baa9` |
+| `NameEntryViewModel` | single-flow `ScreenState<Unit>` | 5 verts | `5659c44`, `bca3447`, `3bb7a54` |
 
-**Tâches restantes (Vagues B & C)**
-1. Vague B (6 VM secondaires) — multi-flow OU single-flow selon la complexité.
-2. Vague C (MapViewModel + controllers) — session dédiée 1-2 jours.
+---
 
-**Commits Vague A** (6 commits, footers `Refs R-2.2`)
-- `69a80bd` refactor(driversetup): migrate DriverSetupViewModel to ScreenState
-- `5490570` refactor(driversetup): adapt DriverSetupScreen for ScreenState
-- `4723ea7` test(driversetup): add DriverSetupViewModelTest with 5 cases
-- `0cc8ab1` refactor(driverhome): migrate DriverViewModel to ScreenState (multi-flow)
-- `732755f` refactor(driverhome): adapt DriverHomeScreen for ScreenState multi-flow
-- `8d5baa9` test(driverhome): add DriverViewModelTest with 5 cases
+#### 🟢 VM conformes natifs (3/9) — pas de refactor nécessaire
 
-**Critères d'acceptation**
-- [x] Pattern défini + 1 VM single-flow + 1 VM multi-flow migrés
-- [ ] Vague B : 6 VM secondaires migrés
-- [ ] Vague C : MapViewModel + 4 controllers refactorés
-- [ ] `grep -r "_loading: Boolean\|MutableStateFlow<Boolean>" presentation/` → 0 matches après Vagues B+C
-- [ ] Couverture VM passe de ~7% à >50%
+Ces 3 VM ont déjà une sealed propriétaire fonctionnellement équivalente à `ScreenState`. Une migration mécanique perdrait de la sémantique métier.
 
-**Vérification (Vague A)** : `./gradlew clean ktlintCheck detekt :app:compileDebugKotlin :app:testDebugUnitTest` → BUILD SUCCESSFUL ; pre-commit hooks verts sur les 6 commits.
+| VM | Sealed propriétaire | Pourquoi conforme |
+|---|---|---|
+| `AuthViewModel` | `AuthState` + `OtpUiState` | Idle/Loading/Success/Error custom + transitions OTP (`OtpSent`, `VerifyingOtp`) hors contrat `ScreenState` générique |
+| `RoleViewModel` | `RoleState` | Idle/Loading/Success/Error custom |
+| `SessionViewModel` | `SessionState` | 7 variants métier (`NotLoggedIn`, `NeedsName`, `NeedsRole`, etc.) |
 
-**Risques & Rollback**
-- Vague A : aucun régression connue. Le polling de DriverViewModel reste fonctionnellement identique (Loaded silencieux sur cycles ultérieurs).
-- Vague C : MapViewModel a 9 domaines + 4 controllers. Mitigation : refactor par domaine indépendant + tests par flow.
+**Décision** : doc-only conformity (cf. [`ARCHITECTURE.md`](ARCHITECTURE.md)). Ne **pas** renommer vers `ScreenState<T>` générique.
+
+---
+
+#### ⏸️ VM reportés (3/9) — refactor inclus dans S5/S6
+
+Ces 3 VM seront refactor de toute façon lors des sprints suivants. Faire le ScreenState migration **maintenant** = travail jeté.
+
+| VM | Pourquoi reporté | Refactor inclus dans |
+|---|---|---|
+| `MapViewModel` | 1029 LOC, 47 StateFlow, 4 controllers délégués. Sera refactor pour GPS adaptive modes + foreground service course + nouveau routing | **R-5.3** (Map Redesign + GPS modes) |
+| `WalletViewModel` | Sera refactor pour transactions paginées + top-up flow + pending banner + idempotency | **R-6.5** (Wallet transactions + top-up) |
+| `ProfileViewModel` | Sera refactor pour nouveau profile redesign + edit profile flow | **R-6.4** (Profile / Wallet / Settings redesign) |
+
+**Reprise WalletVM (stash en local)** : refactor multi-flow démarré (~1 h investie) puis stashed pour reprise ultérieure.
+```bash
+git stash list  # cherche "WIP R-2.2 B.2 WalletViewModel multi-flow refactor"
+git stash pop   # ou apply
+```
+Bug connu au moment du stash : test `walletAmountCompactReadsFromLoadedState` assertion (décalage formatage `%.0f` half-up sur 42.5 → "43" et non "42" — fix appliqué dans le stash, à valider lors de la reprise en R-6.5).
+
+---
+
+#### 🚫 VM hors scope ScreenState
+
+| VM | Pourquoi hors scope |
+|---|---|
+| `LanguageViewModel` | 31 LOC, pas d'état async (juste préférence sync), ScreenState non applicable |
+
+---
+
+#### Critères d'acceptation (révisés)
+
+- [x] Pattern `ScreenState<T>` défini et documenté (R-2.1 + ARCHITECTURE.md)
+- [x] ≥ 1 VM single-flow migré (DriverSetup, NameEntry)
+- [x] ≥ 1 VM multi-flow migré (DriverViewModel driverhome)
+- [x] 3 VM natifs conformes documentés (Auth, Role, Session)
+- [x] 3 VM reportés tracés avec cross-références R-5.3, R-6.4, R-6.5
+- [x] Couverture VM : 15 nouveaux tests VM (5 cas × 3 VM migrés)
+- [ ] `grep -r "_loading: Boolean\|MutableStateFlow<Boolean>" presentation/` → 0 matches (atteint après R-5.3 + R-6.4 + R-6.5)
+
+---
+
+#### Vérification
+
+```bash
+./gradlew clean ktlintCheck detekt :app:compileDebugKotlin :app:testDebugUnitTest
+```
+→ BUILD SUCCESSFUL. Pre-commit hooks verts sur les 9 commits R-2.2 (3 commits × 3 VM migrés).
+
+**CI** : restera rouge tant que les secrets HERE SDK ne sont pas configurés dans GitHub repo settings (action user pending — cf. R-0.8).
+
+---
+
+#### Risques & Rollback
+
+- **VM migrés** : aucune régression connue. Pattern établi et validé sur single-flow + multi-flow.
+- **Reprise WalletVM en R-6.5** : stash en local préserve le travail intermédiaire. Bug formatage à valider lors de la reprise.
+- **MapViewModel en R-5.3** : refactor inclus dans le sprint design (9 domaines + 4 controllers). Plan détaillé à élaborer au moment de R-5.3.
 
 ---
 

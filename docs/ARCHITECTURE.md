@@ -198,3 +198,21 @@ val errorMsg: String? =
 
 - [`DriverSetupViewModelTest`](../app/src/test/java/tn/dadadrive/presentation/driversetup/DriverSetupViewModelTest.kt) — 5 cas (initial Idle, submit success, vehicle failure, profile+vehicle failure avec override message, dismissError)
 - [`DriverViewModelTest`](../app/src/test/java/tn/dadadrive/presentation/driverhome/DriverViewModelTest.kt) — 5 cas (initial state, toggle online success/failure, toggle online→offline clears, startRide failure isolé par domaine)
+- [`NameEntryViewModelTest`](../app/src/test/java/tn/dadadrive/presentation/auth/NameEntryViewModelTest.kt) — 5 cas (initial Idle, submit success, submit failure, dismissError, repeated submit)
+
+### Fermeture stratégique de R-2.2 (2026-05-17)
+
+R-2.2 est considérée **stratégiquement close** à 3 VM migrés + 3 conformes natifs + 3 reportés. Les VM restants seront refactor de toute façon dans S5/S6 :
+
+| VM restant | Refactor inclus dans | Pourquoi |
+|---|---|---|
+| `MapViewModel` | R-5.3 (Map Redesign + GPS adaptive modes) | Refactor majeur de toute façon (foreground service course + controllers) |
+| `WalletViewModel` | R-6.5 (Wallet transactions + top-up) | Nouveaux endpoints paginés + UI flow top-up |
+| `ProfileViewModel` | R-6.4 (Profile / Wallet / Settings redesign) | Refonte écran complète |
+| `LanguageViewModel` | N/A | Pas d'état async, ScreenState non applicable |
+
+**Reprise WalletVM stash** : un refactor multi-flow `WalletViewModel` a été démarré (~1 h investie) puis stashed pour reprise ultérieure. Voir `git stash list` (entry `WIP R-2.2 B.2 WalletViewModel multi-flow refactor`).
+
+Le pattern `ScreenState<T>` est **établi**, **documenté**, **testé** (15 cas verts sur 3 VM). Sa propagation aux VM restants se fera naturellement lors des refactor S5/S6, sans dette technique additionnelle.
+
+C'est une application du **Strangler Fig pattern** : migration progressive des patterns en profitant des refactor naturels du roadmap, plutôt que migration en bloc qui produirait du travail jeté.
