@@ -7,7 +7,10 @@ if (localPropertiesFile.exists()) {
 }
 
 /** Sans guillemets autour de la valeur : evite `BASE_URL=""https://...""` dans BuildConfig. */
-fun Properties.localProp(key: String, default: String = ""): String {
+fun Properties.localProp(
+    key: String,
+    default: String = "",
+): String {
     val raw = getProperty(key, default)?.trim().orEmpty()
     return raw.removeSurrounding("\"").removeSurrounding("'")
 }
@@ -27,12 +30,15 @@ plugins {
 }
 
 val legacyBaseUrl = localProperties.localProp("BASE_URL")
-val debugBackendUrl = localProperties.localProp("BACKEND_BASE_URL_DEBUG")
-    .ifBlank { legacyBaseUrl.ifBlank { "http://10.0.2.2:3000/api/v1" } }
-val stagingBackendUrl = localProperties.localProp("BACKEND_BASE_URL_STAGING")
-    .ifBlank { "https://staging-api.turbodrive.tn/api/v1" }
-val releaseBackendUrl = localProperties.localProp("BACKEND_BASE_URL_RELEASE")
-    .ifBlank { legacyBaseUrl.ifBlank { "https://api.turbodrive.tn/api/v1" } }
+val debugBackendUrl =
+    localProperties.localProp("BACKEND_BASE_URL_DEBUG")
+        .ifBlank { legacyBaseUrl.ifBlank { "http://10.0.2.2:3000/api/v1" } }
+val stagingBackendUrl =
+    localProperties.localProp("BACKEND_BASE_URL_STAGING")
+        .ifBlank { "https://staging-api.turbodrive.tn/api/v1" }
+val releaseBackendUrl =
+    localProperties.localProp("BACKEND_BASE_URL_RELEASE")
+        .ifBlank { legacyBaseUrl.ifBlank { "https://api.turbodrive.tn/api/v1" } }
 val keystorePath = localProperties.localProp("KEYSTORE_PATH")
 val keystoreStorePassword = localProperties.localProp("KEYSTORE_STORE_PASSWORD")
 val keystoreKeyPassword = localProperties.localProp("KEYSTORE_KEY_PASSWORD")
@@ -63,17 +69,29 @@ android {
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",
-            "\"${localProperties.localProp("GOOGLE_WEB_CLIENT_ID")}\""
+            "\"${localProperties.localProp("GOOGLE_WEB_CLIENT_ID")}\"",
         )
         buildConfigField("String", "CERTIFICATE_PINS", "\"${localProperties.localProp("CERTIFICATE_PINS")}\"")
-        buildConfigField("String", "HERE_ACCESS_KEY_ID",
-            "\"${localProperties.localProp("HERE_ACCESS_KEY_ID")}\"")
-        buildConfigField("String", "HERE_ACCESS_KEY_SECRET",
-            "\"${localProperties.localProp("HERE_ACCESS_KEY_SECRET")}\"")
+        buildConfigField(
+            "String",
+            "HERE_ACCESS_KEY_ID",
+            "\"${localProperties.localProp("HERE_ACCESS_KEY_ID")}\"",
+        )
+        buildConfigField(
+            "String",
+            "HERE_ACCESS_KEY_SECRET",
+            "\"${localProperties.localProp("HERE_ACCESS_KEY_SECRET")}\"",
+        )
         manifestPlaceholders["HERE_ACCESS_KEY_ID"] =
             localProperties.localProp("HERE_ACCESS_KEY_ID")
         manifestPlaceholders["HERE_ACCESS_KEY_SECRET"] =
             localProperties.localProp("HERE_ACCESS_KEY_SECRET")
+
+        // R-1.1 -- Strict envelope mode (future use).
+        // When true, unwrap() will refuse legacy raw responses and require ApiResponse<T> envelope.
+        // Currently false : unwrap() is already strict in code, but the flag is reserved so a later
+        // phase can wire a compat fallback (R-1.x or later) without build.gradle.kts modification.
+        buildConfigField("boolean", "STRICT_ENVELOPE", "false")
     }
 
     // Opt-in release signing (ENABLE_RELEASE_SIGNING=true); otherwise release uses debug keystore so ./gradlew build works locally.
@@ -107,7 +125,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             signingConfig =
                 if (keystoreConfigured) {
@@ -138,12 +156,11 @@ detekt {
     buildUponDefaultConfig = true
     allRules = false
     config.setFrom(files(rootProject.file("detekt.yml")))
-    ignoreFailures = true
+    baseline = file("$projectDir/detekt-baseline.xml")
 }
 
 ktlint {
     android.set(true)
-    ignoreFailures.set(true)
 }
 
 dependencies {
