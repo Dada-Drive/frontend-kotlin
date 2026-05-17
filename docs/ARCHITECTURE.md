@@ -1,4 +1,4 @@
-# DadaDrive Android — Architecture Notes
+# TurboDrive Android — Architecture Notes
 
 Living document. Each major refactor adds a section anchored on its phase ID (R-X.Y).
 
@@ -19,7 +19,7 @@ sealed interface ScreenState<out T> {
 }
 ```
 
-Fichier : [`presentation/common/ScreenState.kt`](../app/src/main/java/tn/dadadrive/presentation/common/ScreenState.kt)
+Fichier : [`presentation/common/ScreenState.kt`](../app/src/main/java/tn/turbodrive/presentation/common/ScreenState.kt)
 
 **Variance** : `out T` est obligatoire — sans elle, `MutableStateFlow<ScreenState<User>>(ScreenState.Idle)` ne compilerait pas (`Idle` est `ScreenState<Nothing>`, incompatible avec `ScreenState<User>` en variance invariante).
 
@@ -82,7 +82,7 @@ repo.observeActiveRide()
 
 ### Helpers de convenance
 
-Fichier : [`presentation/common/ScreenStateExtensions.kt`](../app/src/main/java/tn/dadadrive/presentation/common/ScreenStateExtensions.kt)
+Fichier : [`presentation/common/ScreenStateExtensions.kt`](../app/src/main/java/tn/turbodrive/presentation/common/ScreenStateExtensions.kt)
 
 - `state.dataOrNull(): T?` — valeur si `Loaded`, `null` sinon
 - `state.errorOrNull(): PresentableError?` — erreur si `Error`, `null` sinon
@@ -104,8 +104,8 @@ private val _state = MutableStateFlow<ScreenState<UserProfile>>(ScreenState.Idle
 
 ### Tests
 
-- [`ScreenStateTest`](../app/src/test/java/tn/dadadrive/presentation/common/ScreenStateTest.kt) — 5 cas : variance Idle/Loading, inférence Loaded, payload Error, exhaustiveness `when`
-- [`ScreenStateExtensionsTest`](../app/src/test/java/tn/dadadrive/presentation/common/ScreenStateExtensionsTest.kt) — 6 cas : `dataOrNull` / `errorOrNull` / booléens / `toScreenState` success+failure / `asScreenStateFlow` ordre `[Loading, Loaded, Error]`
+- [`ScreenStateTest`](../app/src/test/java/tn/turbodrive/presentation/common/ScreenStateTest.kt) — 5 cas : variance Idle/Loading, inférence Loaded, payload Error, exhaustiveness `when`
+- [`ScreenStateExtensionsTest`](../app/src/test/java/tn/turbodrive/presentation/common/ScreenStateExtensionsTest.kt) — 6 cas : `dataOrNull` / `errorOrNull` / booléens / `toScreenState` success+failure / `asScreenStateFlow` ordre `[Loading, Loaded, Error]`
 
 ---
 
@@ -128,7 +128,7 @@ R-2.2 migre les ViewModels legacy `(loading: Boolean, error: String?, data: T?)`
 `AuthViewModel` n'a jamais utilisé le trio legacy. Il expose deux sealed maison qui couvrent fonctionnellement le contrat `ScreenState` :
 
 ```kotlin
-// app/src/main/java/tn/dadadrive/presentation/auth/AuthState.kt
+// app/src/main/java/tn/turbodrive/presentation/auth/AuthState.kt
 sealed class AuthState {
     object Idle : AuthState()
     object Loading : AuthState()
@@ -136,7 +136,7 @@ sealed class AuthState {
     data class Error(val message: String) : AuthState()
 }
 
-// app/src/main/java/tn/dadadrive/presentation/auth/AuthViewModel.kt
+// app/src/main/java/tn/turbodrive/presentation/auth/AuthViewModel.kt
 sealed class OtpUiState {
     object Idle : OtpUiState()
     object SendingOtp : OtpUiState()
@@ -159,7 +159,7 @@ sealed class OtpUiState {
 
 **A.1 — `DriverSetupViewModel` : single-flow `ScreenState<Unit>`**
 
-VM simple (wizard 3 steps → 1 submit). Une seule opération `submitDriverSetup` → un seul `_state: MutableStateFlow<ScreenState<Unit>>`. La valeur métier (`Vehicle`) est passée au callback `onComplete`, pas portée par le state. Voir [`DriverSetupViewModel.kt`](../app/src/main/java/tn/dadadrive/presentation/driversetup/DriverSetupViewModel.kt).
+VM simple (wizard 3 steps → 1 submit). Une seule opération `submitDriverSetup` → un seul `_state: MutableStateFlow<ScreenState<Unit>>`. La valeur métier (`Vehicle`) est passée au callback `onComplete`, pas portée par le state. Voir [`DriverSetupViewModel.kt`](../app/src/main/java/tn/turbodrive/presentation/driversetup/DriverSetupViewModel.kt).
 
 **A.2 — `DriverViewModel` : multi-flow par domaine**
 
@@ -186,7 +186,7 @@ val errorMsg: String? =
 
 **Polling-aware Loading** : `fetchAvailableRides` n'émet `Loading` que si la liste est vide. Le polling périodique met à jour silencieusement la `Loaded(list)` pour éviter le flicker.
 
-**Trade-off `ScreenState.Error` perd la donnée** : transition `Loaded(x) → Error` efface `x`. Pour les opérations qui doivent préserver l'état affiché (ex : start/cancel sur une ride active visible), le consommateur peut cacher la dernière valeur via `remember { mutableStateOf(...) }`. Voir [`DriverHomeScreen.kt`](../app/src/main/java/tn/dadadrive/presentation/driverhome/DriverHomeScreen.kt) (variante simplifiée actuelle : la sheet disparaît brièvement durant Error — acceptable, l'erreur reste visible en snackbar).
+**Trade-off `ScreenState.Error` perd la donnée** : transition `Loaded(x) → Error` efface `x`. Pour les opérations qui doivent préserver l'état affiché (ex : start/cancel sur une ride active visible), le consommateur peut cacher la dernière valeur via `remember { mutableStateOf(...) }`. Voir [`DriverHomeScreen.kt`](../app/src/main/java/tn/turbodrive/presentation/driverhome/DriverHomeScreen.kt) (variante simplifiée actuelle : la sheet disparaît brièvement durant Error — acceptable, l'erreur reste visible en snackbar).
 
 ### Helpers réutilisés
 
@@ -196,9 +196,9 @@ val errorMsg: String? =
 
 ### Tests Vague A
 
-- [`DriverSetupViewModelTest`](../app/src/test/java/tn/dadadrive/presentation/driversetup/DriverSetupViewModelTest.kt) — 5 cas (initial Idle, submit success, vehicle failure, profile+vehicle failure avec override message, dismissError)
-- [`DriverViewModelTest`](../app/src/test/java/tn/dadadrive/presentation/driverhome/DriverViewModelTest.kt) — 5 cas (initial state, toggle online success/failure, toggle online→offline clears, startRide failure isolé par domaine)
-- [`NameEntryViewModelTest`](../app/src/test/java/tn/dadadrive/presentation/auth/NameEntryViewModelTest.kt) — 5 cas (initial Idle, submit success, submit failure, dismissError, repeated submit)
+- [`DriverSetupViewModelTest`](../app/src/test/java/tn/turbodrive/presentation/driversetup/DriverSetupViewModelTest.kt) — 5 cas (initial Idle, submit success, vehicle failure, profile+vehicle failure avec override message, dismissError)
+- [`DriverViewModelTest`](../app/src/test/java/tn/turbodrive/presentation/driverhome/DriverViewModelTest.kt) — 5 cas (initial state, toggle online success/failure, toggle online→offline clears, startRide failure isolé par domaine)
+- [`NameEntryViewModelTest`](../app/src/test/java/tn/turbodrive/presentation/auth/NameEntryViewModelTest.kt) — 5 cas (initial Idle, submit success, submit failure, dismissError, repeated submit)
 
 ### Fermeture stratégique de R-2.2 (2026-05-17, mise à jour post-audit)
 
@@ -219,7 +219,7 @@ C'est une application du **Strangler Fig pattern** : migration progressive des p
 
 ### Re-classification ProfileViewModel (post-audit S2)
 
-L'audit triple-expert (2026-05-17, note 8.6/10) a révélé que [`ProfileViewModel`](../app/src/main/java/tn/dadadrive/presentation/profile/ProfileViewModel.kt) utilise déjà un `sealed class SaveState` (`Idle` / `Loading` / `Success` / `PartialSuccess(warning)` / `Error(message)`) fonctionnellement équivalent à `ScreenState`.
+L'audit triple-expert (2026-05-17, note 8.6/10) a révélé que [`ProfileViewModel`](../app/src/main/java/tn/turbodrive/presentation/profile/ProfileViewModel.kt) utilise déjà un `sealed class SaveState` (`Idle` / `Loading` / `Success` / `PartialSuccess(warning)` / `Error(message)`) fonctionnellement équivalent à `ScreenState`.
 
 Le variant `PartialSuccess(warning)` couvre un cas métier spécifique (upload photo Cloudinary KO mais sauvegarde du nom OK) qu'un `ScreenState<T>` générique ne peut pas exprimer — décision identique à `AuthState.NeedsPhone` ou `SessionState.NeedsRole`.
 

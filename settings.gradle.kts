@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "DadaDrive"
+rootProject.name = "TurboDrive"
 include(":app")

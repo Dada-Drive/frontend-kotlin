@@ -54,11 +54,11 @@ val keystoreConfigured =
         keystoreKeyPassword.isNotEmpty()
 
 android {
-    namespace = "com.dadadrive"
+    namespace = "com.turbodrive"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.dadadrive"
+        applicationId = "com.turbodrive"
         minSdk = 28
         targetSdk = 35
         versionCode = 1

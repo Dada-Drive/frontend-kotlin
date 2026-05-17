@@ -1,15 +1,41 @@
-# Aligné rules.md §19 — renforcer progressivement (ignoreFailures retirable dans app/build.gradle.kts).
+# Aligné rules.md §19 — gate strict, dette legacy figée dans detekt-baseline.xml.
+# Toute NOUVELLE violation bloque la CI ; l'existant est tracé et destiné à être résorbé
+# au fil des sprints (notamment R-2.* tokens / ScreenState et R-5.* refactor Composables).
 config:
   validation: true
 
 build:
-  maxIssues: 10000
+  maxIssues: 0
 
 complexity:
+  LongMethod:
+    active: true
+    threshold: 60
+    ignoreAnnotated: ['Composable']
   LongParameterList:
     active: true
     functionThreshold: 8
+    constructorThreshold: 8
     ignoreDefaultParameters: true
+    ignoreDataClasses: true
+    ignoreAnnotated: ['Composable']
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 15
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    active: true
+    thresholdInClasses: 15
+    thresholdInInterfaces: 20
+    thresholdInObjects: 15
+    thresholdInEnums: 15
+    thresholdInFiles: 20
+  NestedBlockDepth:
+    active: true
+    threshold: 4
+  LargeClass:
+    active: true
+    threshold: 600
 
 style:
   MaxLineLength:
@@ -17,3 +43,52 @@ style:
     maxLineLength: 140
     excludePackageStatements: true
     excludeImportStatements: true
+  ReturnCount:
+    active: true
+    max: 5
+    excludeGuardClauses: true
+  MagicNumber:
+    active: true
+    # Compose et UI : la majorité des "magic numbers" sont des dp/sp/alpha/index.
+    # On exempte les Composables et on étend la liste des nombres ignorés aux valeurs
+    # design-token courantes (8, 16, 24, 32, 48, 64, 100, 1000).
+    ignoreNumbers: ['-1', '0', '1', '2', '3', '4', '5', '8', '10', '16', '24', '32', '48', '50', '60', '64', '100', '255', '300', '500', '1000']
+    ignoreHashCodeFunction: true
+    ignoreEnums: true
+    ignoreRanges: true
+    ignoreAnnotation: true
+    ignoreNamedArgument: true
+    ignorePropertyDeclaration: true
+    ignoreLocalVariableDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotated: ['Composable', 'Preview']
+  WildcardImport:
+    active: true
+  ForbiddenComment:
+    active: true
+    comments:
+      - reason: 'Forbidden TODO todo marker in comment, please do the changes.'
+        value: 'TODO:'
+
+naming:
+  FunctionNaming:
+    active: true
+    # Les @Composable et @Preview sont PascalCase par convention Jetpack Compose.
+    ignoreAnnotated: ['Composable', 'Preview']
+  FunctionParameterNaming:
+    active: true
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: true
+  SwallowedException:
+    active: true
+
+empty-blocks:
+  active: true
+
+potential-bugs:
+  active: true
+
+performance:
+  active: true

@@ -12,5 +12,9 @@ indent_size = 4
 ij_kotlin_allow_trailing_comma_on_call_site = true
 ij_kotlin_allow_trailing_comma_on_declaration_site = true
 
+# Jetpack Compose : les @Composable et @Preview sont PascalCase par convention.
+# Sans cette dispense, ktlint signale chaque Composable comme erreur de nommage.
+ktlint_function_naming_ignore_when_annotated_with = Composable, Preview, Test, ParameterizedTest
+
 [*.md]
 trim_trailing_whitespace = false

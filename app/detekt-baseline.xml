@@ -207,15 +207,15 @@
     <ID>ReturnCount:SessionViewModel.kt$SessionViewModel$private suspend fun nextStateAfterMe( phone: String?, fullName: String?, roleRaw: String, user: User, ): SessionState</ID>
     <ID>TooGenericExceptionCaught:AuthRepositoryImpl.kt$AuthRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CloudinaryManager.kt$CloudinaryManager$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:DadaDriveApplication.kt$DadaDriveApplication$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:DadaDriveApplication.kt$DadaDriveApplication$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:TurboDriveApplication.kt$TurboDriveApplication$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:TurboDriveApplication.kt$TurboDriveApplication$e: Throwable</ID>
     <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MapTrafficUtils.kt$MapTrafficUtils$e: Exception</ID>
     <ID>TooGenericExceptionCaught:OtpAutofill.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:RidesRepositoryImpl.kt$RidesRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:TokenManager.kt$TokenManager$e: Exception</ID>
     <ID>TooManyFunctions:DriverRepositoryImpl.kt$DriverRepositoryImpl : DriverRepository</ID>
-    <ID>TooManyFunctions:DriverSetupComponents.kt$tn.dadadrive.presentation.driversetup.DriverSetupComponents.kt</ID>
+    <ID>TooManyFunctions:DriverSetupComponents.kt$tn.turbodrive.presentation.driversetup.DriverSetupComponents.kt</ID>
     <ID>TooManyFunctions:DriverViewModel.kt$DriverViewModel : ViewModel</ID>
     <ID>TooManyFunctions:MapRideOperations.kt$MapRideOperations</ID>
     <ID>TooManyFunctions:MapViewModel.kt$MapViewModel : ViewModel</ID>

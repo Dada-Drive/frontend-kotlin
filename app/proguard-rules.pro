@@ -40,10 +40,10 @@
 -keep public class com.here.time.Duration { *; }
 
 # Gson / modèles API
--keep class tn.dadadrive.data.network.model.** { *; }
+-keep class tn.turbodrive.data.network.model.** { *; }
 -keepclassmembers,allowobfuscation class * {
   @com.google.gson.annotations.SerializedName <fields>;
 }
 
 # Rétrofit
--keep,allowobfuscation,allowshrinking interface tn.dadadrive.data.network.api.** { *; }
+-keep,allowobfuscation,allowshrinking interface tn.turbodrive.data.network.api.** { *; }

@@ -4,6 +4,6 @@
         android:width="72dp"
         android:height="72dp"
         android:gravity="center">
-        <bitmap android:src="@drawable/ic_dadadrive_logo" />
+        <bitmap android:src="@drawable/ic_turbodrive_logo" />
     </item>
 </layer-list>

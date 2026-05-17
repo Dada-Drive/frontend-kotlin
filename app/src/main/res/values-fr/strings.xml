@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DadaDrive</string>
-    <string name="app_version_label">DadaDrive v1.0</string>
+    <string name="app_name">TurboDrive</string>
+    <string name="app_version_label">TurboDrive v1.0</string>
 
     <string name="welcome_continue_with_apple">Continuer avec Apple</string>
     <string name="welcome_tagline">Votre trajet, votre prix.</string>
@@ -16,7 +16,7 @@
     <string name="welcome_continue_google">Continuer avec Google</string>
     <string name="welcome_continue_phone">Continuer avec le téléphone</string>
     <string name="welcome_coming_soon">Bientôt</string>
-    <string name="cd_dadadrive_logo">Logo DadaDrive</string>
+    <string name="cd_turbodrive_logo">Logo TurboDrive</string>
     <string name="cd_google_sign_in">Connexion Google</string>
 
     <string name="onboarding_page1_title">Votre appli pour des tarifs justes</string>
@@ -43,7 +43,7 @@
     <string name="ob_trust_card2_title">Suivi GPS</string>
     <string name="ob_trust_card2_body">Partagez votre itinéraire en temps réel avec vos contacts de confiance.</string>
     <string name="ob_loc_title">Localisation intelligente</string>
-    <string name="ob_loc_body">Permettez à votre chauffeur de vous localiser avec une précision absolue. Dada Drive utilise vos données pour anticiper vos besoins de déplacement en temps réel.</string>
+    <string name="ob_loc_body">Permettez à votre chauffeur de vous localiser avec une précision absolue. Turbo Drive utilise vos données pour anticiper vos besoins de déplacement en temps réel.</string>
     <string name="ob_next">Suivant</string>
     <string name="ob_skip">Ignorer</string>
     <string name="ob_allow">Autoriser</string>
@@ -80,7 +80,7 @@
     <string name="welcome_google_error_internal">La connexion Google ne peut pas s’ouvrir depuis cet écran. Redémarrez l’application puis réessayez.</string>
     <string name="welcome_google_error_unexpected_credential">Réponse Google inattendue. Réessayez.</string>
     <string name="welcome_google_error_no_account">Aucun compte Google sur cet appareil. Ajoutez un compte Google dans les réglages système, puis réessayez.</string>
-    <string name="welcome_google_error_framework">Échec de la connexion Google. Dans la console Firebase, ajoutez l’empreinte SHA-1 de debug pour le package com.dadadrive.debug et vérifiez que GOOGLE_WEB_CLIENT_ID est bien l’ID client Web du même projet Firebase.</string>
+    <string name="welcome_google_error_framework">Échec de la connexion Google. Dans la console Firebase, ajoutez l’empreinte SHA-1 de debug pour le package com.turbodrive.debug et vérifiez que GOOGLE_WEB_CLIENT_ID est bien l’ID client Web du même projet Firebase.</string>
     <string name="welcome_google_error_unknown">Échec de la connexion Google. Réessayez.</string>
     <string name="welcome_google_error_no_id_token">Google n’a pas renvoyé de jeton (ID). Vérifiez GOOGLE_WEB_CLIENT_ID (client OAuth Web) et le SHA-1 de l’app dans Firebase.</string>
 
@@ -248,7 +248,7 @@
     <string name="cd_map_type">Type de carte</string>
     <string name="cd_close">Fermer</string>
     <string name="cd_photo_profile">Photo de profil</string>
-    <string name="brand_dada_drive">TURBODRIVE</string>
+    <string name="brand_turbo_drive">TURBODRIVE</string>
     <string name="brand_currency_dada">DADA</string>
 
     <string name="common_settings">Paramètres</string>
@@ -493,7 +493,7 @@
     <string name="cd_change_photo">Changer la photo</string>
     <string name="cd_locked">Verrouillé</string>
 
-    <string name="splash_logo_cd">Logo DadaDrive</string>
+    <string name="splash_logo_cd">Logo TurboDrive</string>
     <string name="splash_tagline">Votre trajet, à votre façon</string>
 
     <string name="name_entry_title">Comment vous appelez-vous ?</string>

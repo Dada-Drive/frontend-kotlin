@@ -2,7 +2,7 @@
 sdk.dir=
 
 GOOGLE_WEB_CLIENT_ID=
-# OAuth 2.0 « Web application » (Firebase : Project settings → Your apps → Web app client ID, ou Google Cloud Console → Credentials). Pas l’ID client Android. Requis pour « Continue with Google » (Credential Manager). Ajoutez aussi l’empreinte SHA-1 du keystore debug pour com.dadadrive.debug dans Firebase.
+# OAuth 2.0 « Web application » (Firebase : Project settings → Your apps → Web app client ID, ou Google Cloud Console → Credentials). Pas l’ID client Android. Requis pour « Continue with Google » (Credential Manager). Ajoutez aussi l’empreinte SHA-1 du keystore debug pour com.turbodrive.debug dans Firebase.
 
 # Backend dada-api (backend-integration.md §1.1)
 # Émulateur Android : 10.0.2.2 = machine hôte. Appareil physique + hotspot Windows : souvent 192.168.137.1 (adapter « Local Area Connection* »).
@@ -22,7 +22,7 @@ MAPBOX_ACCESS_TOKEN=
 # Certificate pinning (rules.md §4.6 — R-0.6) — voir README "Certificate pinning"
 # Format : "host|sha256/BASE64=" séparés par virgule ; multi-pin par host autorisé.
 # Exemple FACTICE (ne PAS utiliser tel quel) :
-# CERTIFICATE_PINS=api-staging.dadadrive.tn|sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=|sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=,api.dadadrive.tn|sha256/CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=
+# CERTIFICATE_PINS=api-staging.turbodrive.tn|sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=|sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=,api.turbodrive.tn|sha256/CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=
 # Activé via BuildConfig.ENABLE_CERT_PINNING (true en staging+release, false en debug).
 CERTIFICATE_PINS=
 

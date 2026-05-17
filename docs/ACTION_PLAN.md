@@ -1,4 +1,4 @@
-# Plan d'action de remédiation — DadaDrive Android (`frontend-kotlin/`)
+# Plan d'action de remédiation — TurboDrive Android (`frontend-kotlin/`)
 
 > **Contexte** : Ce plan transforme les constats de `AUDIT.md` (racine du projet) en un **plan d'exécution séquentiel** organisé en **9 sprints** et **41 phases de remédiation** (notation `R-X.Y`). Chaque phase est cadrée pour 1–5 jours, autonome, avec critères d'acceptation testables. Le plan couvre intégralement les phases roadmap principal (0–15) ET le redesign (D0–D12).
 > **Auteur** : Claude (Opus 4.7) — **Date** : 2026-05-16.
@@ -198,7 +198,7 @@ BUILD SUCCESSFUL in 11s
 5. Tester sur émulateur : refuser caméra → l'app ne crash pas.
 
 **Fichiers touchés**
-- `frontend-kotlin/app/src/main/java/tn/dadadrive/presentation/driversetup/DriverSetupScreen.kt:206-222`
+- `frontend-kotlin/app/src/main/java/tn/turbodrive/presentation/driversetup/DriverSetupScreen.kt:206-222`
 - Potentiellement `DriverSetupViewModel.kt` pour state d'erreur
 
 **Critères d'acceptation**
@@ -223,7 +223,7 @@ BUILD SUCCESSFUL in 11s
 
 **Tâches**
 1. Réécrire tableau stack (L43-47) : Socket.IO (pas Firestore), HERE Maps SDK 4.25.5 (pas Google Maps), JWT custom + TokenAuthenticator (pas Firebase Auth), JUnit4 + MockK + Paparazzi (pas Mockito/Espresso).
-2. Réécrire schéma "Structure des dossiers" (L99-127) pour refléter `tn.dadadrive.*` (pas `com.dadadrive.*`).
+2. Réécrire schéma "Structure des dossiers" (L99-127) pour refléter `tn.turbodrive.*` (pas `com.turbodrive.*`).
 3. Ajouter section "Build variants" (debug/staging/release + BACKEND_BASE_URL_*).
 4. Ajouter section "Secrets locaux" pointant `local.properties.template`.
 5. Retirer toutes les instructions Windows PowerShell hardcodées (`C:\Users\...`).
@@ -238,7 +238,7 @@ BUILD SUCCESSFUL in 11s
 - [x] Path Windows hardcodé retiré (PowerShell, `C:\`, `Invoke-WebRequest` → bash macOS/Linux)
 - [x] Sections ajoutées : **Build variants** (debug/staging/release) + **Secrets locaux** (table `local.properties`)
 - [x] Note sur `google-services.json` stub local (cohérence R-0.1)
-- [x] Package `tn.dadadrive.*` partout dans la doc (le seul `com.dadadrive` restant = note explicative `applicationId` / `namespace`)
+- [x] Package `tn.turbodrive.*` partout dans la doc (le seul `com.turbodrive` restant = note explicative `applicationId` / `namespace`)
 
 **Vérification**
 - Relecture par un dev tiers (ou grep des termes interdits).
@@ -289,11 +289,11 @@ BUILD SUCCESSFUL in 11s
 
 **Tâches**
 1. Déplacer `domain/model/PresentableError.kt` → `domain/models/PresentableError.kt`.
-2. Mettre à jour le package declaration (`tn.dadadrive.domain.models`).
+2. Mettre à jour le package declaration (`tn.turbodrive.domain.models`).
 3. Lancer `./gradlew compileDebugKotlin` ; corriger les imports cassés (IDE).
 
 **Fichiers touchés**
-- `frontend-kotlin/app/src/main/java/tn/dadadrive/domain/model/PresentableError.kt` (déplacé)
+- `frontend-kotlin/app/src/main/java/tn/turbodrive/domain/model/PresentableError.kt` (déplacé)
 - Tous les imports `domain.model.PresentableError` (refactor automatique)
 
 **Critères d'acceptation**
@@ -322,10 +322,10 @@ BUILD SUCCESSFUL in 11s
 **Fichiers touchés**
 - `frontend-kotlin/local.properties.template`
 - `frontend-kotlin/app/build.gradle.kts` (lecture BuildConfig — déjà en place R-0.1)
-- `frontend-kotlin/app/src/main/java/tn/dadadrive/di/NetworkModule.kt` (handler échec)
-- `frontend-kotlin/app/src/main/java/tn/dadadrive/core/network/CertificatePinningParser.kt` (nouveau)
-- `frontend-kotlin/app/src/main/java/tn/dadadrive/core/network/CertificatePinningReporter.kt` (nouveau)
-- `frontend-kotlin/app/src/test/java/tn/dadadrive/core/network/CertificatePinningParserTest.kt` (nouveau, 10 tests)
+- `frontend-kotlin/app/src/main/java/tn/turbodrive/di/NetworkModule.kt` (handler échec)
+- `frontend-kotlin/app/src/main/java/tn/turbodrive/core/network/CertificatePinningParser.kt` (nouveau)
+- `frontend-kotlin/app/src/main/java/tn/turbodrive/core/network/CertificatePinningReporter.kt` (nouveau)
+- `frontend-kotlin/app/src/test/java/tn/turbodrive/core/network/CertificatePinningParserTest.kt` (nouveau, 10 tests)
 - `frontend-kotlin/README.md` (section "Certificate pinning")
 
 **Critères d'acceptation**
@@ -449,14 +449,14 @@ BUILD SUCCESSFUL in 11s
 **Catégorie** : Repo hygiene
 
 **Contexte**
-Le ré-audit S0 a noté que le working tree porte un backlog massif (~5400 entrées) hérité de la migration `com.dadadrive` → `tn.dadadrive` et de cleanups partiels. Option (c) "backlog tracé" approuvée par les 3 experts à condition de planifier la résorption avant R-1.x. Slot R-0.6/0.7/0.8 déjà pris (cert pinning, turbodrive_redesign, CI) ⇒ phase placée en R-0.9.
+Le ré-audit S0 a noté que le working tree porte un backlog massif (~5400 entrées) hérité de la migration `com.turbodrive` → `tn.turbodrive` et de cleanups partiels. Option (c) "backlog tracé" approuvée par les 3 experts à condition de planifier la résorption avant R-1.x. Slot R-0.6/0.7/0.8 déjà pris (cert pinning, turbodrive_redesign, CI) ⇒ phase placée en R-0.9.
 
 **Tâches**
 1. Auditer `git diff --stat HEAD` et catégoriser les ~195 fichiers modifiés :
    - Legitimate WIP à committer
    - Résidu temporaire à `git restore`
    - Forgotten cleanup à finir
-2. Valider que les ~5211 deletions correspondent toutes à `app/libs/_tmp_here/*` ou à l'ancien arbre `com.dadadrive/*`.
+2. Valider que les ~5211 deletions correspondent toutes à `app/libs/_tmp_here/*` ou à l'ancien arbre `com.turbodrive/*`.
 3. Commits ciblés par catégorie (1 par catégorie max) OU `git restore` ce qui n'a pas lieu d'être versionné.
 4. Vérifier qu'aucun secret n'est accidentellement commité (clés API, tokens, `local.properties` réel).
 5. Re-run `./gradlew clean ktlintCheck detekt :app:compileDebugKotlin` post-cleanup pour confirmer que la codebase build toujours.
@@ -509,9 +509,9 @@ L'audit S0 a relevé 6 `!!` subsistant hors `DriverSetupScreen` (refactorisé en
 4. À la fin : `grep -rn "!!" app/src/main/java --include='*.kt' | grep -v test` → **0 résultat** (hors tests, où `!!` reste autorisé).
 
 **Fichiers touchés**
-- `app/src/main/java/tn/dadadrive/presentation/driverhome/DriverHomeScreen.kt` (2 sites)
-- `app/src/main/java/tn/dadadrive/presentation/map/HereMapViewComposable.kt` (1 site)
-- `app/src/main/java/tn/dadadrive/presentation/map/MapScreen.kt` (3 sites)
+- `app/src/main/java/tn/turbodrive/presentation/driverhome/DriverHomeScreen.kt` (2 sites)
+- `app/src/main/java/tn/turbodrive/presentation/map/HereMapViewComposable.kt` (1 site)
+- `app/src/main/java/tn/turbodrive/presentation/map/MapScreen.kt` (3 sites)
 - Éventuellement nouveaux fichiers `MapState.kt` (sealed) selon le refactor R-5.x
 
 **Critères d'acceptation**
@@ -727,7 +727,7 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 4. Coverage minimum visée 80% sur les 3 nouveaux packages.
 
 **Fichiers touchés**
-- Nouveaux : 3 fichiers tests sous `app/src/test/java/tn/dadadrive/`
+- Nouveaux : 3 fichiers tests sous `app/src/test/java/tn/turbodrive/`
 
 **Critères d'acceptation**
 - [x] `./gradlew test` exécute >= 15 tests sur ces nouveaux fichiers (32 tests S1 verts : 8 ApiCallTest + 5 IdempotencyKeyInterceptorTest + 6 BackendErrorCodeTest + 11 PresentableErrorMapperTest + 2 ErrorSnackbarPaparazziTest)
@@ -880,7 +880,7 @@ apRouteSheet.kt`, autres map
 - `frontend-kotlin/detekt.yml` (règle custom ou plugin)
 
 **Critères d'acceptation**
-- [ ] `grep -rn "Color(0xFF" app/src/main/java/tn/dadadrive/presentation/` ⇒ 0
+- [ ] `grep -rn "Color(0xFF" app/src/main/java/tn/turbodrive/presentation/` ⇒ 0
 - [ ] Règle detekt active : tout nouveau hex literal bloque le build
 
 **Vérification** : screenshots avant/après identiques sur 3 écrans (Paparazzi diff).
@@ -959,7 +959,7 @@ L'audit triple-expert S2 (2026-05-17, note 8.6/10) a **VALIDÉ AVEC RÉSERVES** 
 - `AppColorScheme.ratingYellow` (batch 2-5, light/dark `FFC107`) — star rating accent
 - `AppColorScheme.coinSilver` (light `C0C0C0` / dark `9B9B9B`) — DadaCoin tier
 - `AppColorScheme.coinGold` (light `D4AF37` / dark `B89530`) — DadaCoin tier
-- [`core/theme/MapColorTokens.kt`](../app/src/main/java/tn/dadadrive/core/theme/MapColorTokens.kt) **nouveau fichier** : 6 tokens transitionnels (`routeActiveBlue`, `routeSecondLeg`, `scheduleAccent`, `darkPanelSurface`, `pinIntermediate`, `connectorGrey`). Seront renommés vers `mapPath`/`mapRoad`/`mapWater` en R-4.5.
+- [`core/theme/MapColorTokens.kt`](../app/src/main/java/tn/turbodrive/core/theme/MapColorTokens.kt) **nouveau fichier** : 6 tokens transitionnels (`routeActiveBlue`, `routeSecondLeg`, `scheduleAccent`, `darkPanelSurface`, `pinIntermediate`, `connectorGrey`). Seront renommés vers `mapPath`/`mapRoad`/`mapWater` en R-4.5.
 
 **Pattern appliqué**
 - Top-level `private val X = Color(0xFF...)` → `@Composable @ReadOnlyComposable getter` lisant `LocalAppColors.current.X` (même pattern que `AppColor` object dans `AppColors.kt`).
@@ -967,7 +967,7 @@ L'audit triple-expert S2 (2026-05-17, note 8.6/10) a **VALIDÉ AVEC RÉSERVES** 
 - DrawScope/Canvas : capture du token dans une `val` locale du parent `@Composable` avant d'entrer dans la lambda non-composable.
 
 **Critères d'acceptation**
-- [x] `grep -rE "Color\(0xFF" app/src/main/java/tn/dadadrive/presentation/ --include="*.kt"` ⇒ **0** (vérifié)
+- [x] `grep -rE "Color\(0xFF" app/src/main/java/tn/turbodrive/presentation/ --include="*.kt"` ⇒ **0** (vérifié)
 - [x] `./gradlew :app:compileDebugKotlin :app:ktlintCheck :app:detekt` → BUILD SUCCESSFUL
 - [ ] Règle detekt custom `ForbiddenColorLiteral` (interdit `Color(0xFF` en dehors de `core/theme/`) — déférée à R-4.5 (avec renommage tokens v2)
 
@@ -1375,7 +1375,7 @@ DE (P1 — chemin critique)
 - [ ] GPS mode switch testé (logs)
 - [ ] Notification foreground visible pendant ride
 - [ ] Filtres GPS actifs
-- [ ] **Migration ScreenState (R-2.2 deferred)** : `MapViewModel` refactorisé vers `MutableStateFlow<ScreenState<T>>` par domaine (GPS, routing, POI, ride request, scheduled, rating). Les controllers délégués (`MapLocationController`, `MapPassengerRoutingController`, `PoiSearchHelper`, `MapRideOperations`, `MapDriverPreviewRouting`) revus pour cohérence pattern. Validation : `grep -cE "_loading\|MutableStateFlow<Boolean>\|MutableStateFlow<String\?>" app/src/main/java/tn/dadadrive/presentation/map/MapViewModel.kt` → 0.
+- [ ] **Migration ScreenState (R-2.2 deferred)** : `MapViewModel` refactorisé vers `MutableStateFlow<ScreenState<T>>` par domaine (GPS, routing, POI, ride request, scheduled, rating). Les controllers délégués (`MapLocationController`, `MapPassengerRoutingController`, `PoiSearchHelper`, `MapRideOperations`, `MapDriverPreviewRouting`) revus pour cohérence pattern. Validation : `grep -cE "_loading\|MutableStateFlow<Boolean>\|MutableStateFlow<String\?>" app/src/main/java/tn/turbodrive/presentation/map/MapViewModel.kt` → 0.
 
 **Risques** : foreground service exige permission notif (Android 13+). Mitigation : prompt user au démarrage du ride.
 
@@ -1533,7 +1533,7 @@ DE (P1 — chemin critique)
 - [ ] 3 endpoints fonctionnels
 - [ ] UI top-up testée end-to-end staging
 - [ ] Pagination transactions
-- [ ] **Migration ScreenState (R-2.2 deferred)** : `WalletViewModel` refactorisé vers `MutableStateFlow<ScreenState<T>>` multi-flow par domaine (wallet info + transactions paginées + top-up flow + pending banner). Reprendre le stash `WIP R-2.2 B.2 WalletViewModel multi-flow refactor (resume later)` via `git stash pop` au début de R-6.5, fixer le bug `walletAmountCompactReadsFromLoadedState` (test "42 vs 43"), puis compléter avec les nouveaux endpoints transactions. Validation : `grep -cE "_loading\|MutableStateFlow<Boolean>\|MutableStateFlow<String\?>" app/src/main/java/tn/dadadrive/presentation/wallet/WalletViewModel.kt` → 0.
+- [ ] **Migration ScreenState (R-2.2 deferred)** : `WalletViewModel` refactorisé vers `MutableStateFlow<ScreenState<T>>` multi-flow par domaine (wallet info + transactions paginées + top-up flow + pending banner). Reprendre le stash `WIP R-2.2 B.2 WalletViewModel multi-flow refactor (resume later)` via `git stash pop` au début de R-6.5, fixer le bug `walletAmountCompactReadsFromLoadedState` (test "42 vs 43"), puis compléter avec les nouveaux endpoints transactions. Validation : `grep -cE "_loading\|MutableStateFlow<Boolean>\|MutableStateFlow<String\?>" app/src/main/java/tn/turbodrive/presentation/wallet/WalletViewModel.kt` → 0.
 - [ ] **Deadline stash WalletVM** : reprendre OU supprimer le stash **avant 2026-06-16** (30 jours après création 2026-05-17). Au-delà, considérer comme perdu — restart from scratch lors de R-6.5.
 
 ---
@@ -1587,7 +1587,7 @@ DE (P1 — chemin critique)
 ---
 
 ### Phase R-7.2 — DeepLinkQueue tests + intégration nav
-**Objectif** : deeplinks (`dadadrive://ride/{id}`, `dadadrive://wallet/topup`) testés et naviguent vers le bon écran.
+**Objectif** : deeplinks (`turbodrive://ride/{id}`, `turbodrive://wallet/topup`) testés et naviguent vers le bon écran.
 **Sévérité** : Important — **Effort** : 4–6 h
 **Dépendances** : R-7.1
 **Catégorie** : Missing tests + feature

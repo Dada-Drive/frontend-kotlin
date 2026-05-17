@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DadaDrive</string>
-    <string name="app_version_label">DadaDrive v1.0</string>
+    <string name="app_name">TurboDrive</string>
+    <string name="app_version_label">TurboDrive v1.0</string>
 
     <string name="welcome_continue_with_apple">Continue with Apple</string>
     <string name="welcome_tagline">Your ride, your price.</string>
@@ -18,7 +18,7 @@
     <string name="welcome_facebook_soon">Facebook sign-in is not available yet.</string>
     <string name="welcome_continue_phone">Continue with Phone</string>
     <string name="welcome_coming_soon">Coming Soon</string>
-    <string name="cd_dadadrive_logo">DadaDrive logo</string>
+    <string name="cd_turbodrive_logo">TurboDrive logo</string>
     <string name="cd_google_sign_in">Google sign in</string>
 
     <string name="onboarding_page1_title">Your app for fair deals</string>
@@ -45,7 +45,7 @@
     <string name="ob_trust_card2_title">GPS tracking</string>
     <string name="ob_trust_card2_body">Share your live route with trusted contacts.</string>
     <string name="ob_loc_title">Intelligent location</string>
-    <string name="ob_loc_body">Let your driver locate you with absolute precision. Dada Drive uses your data in real time to anticipate your travel needs.</string>
+    <string name="ob_loc_body">Let your driver locate you with absolute precision. Turbo Drive uses your data in real time to anticipate your travel needs.</string>
     <string name="ob_next">Next</string>
     <string name="ob_skip">Skip</string>
     <string name="ob_allow">Allow</string>
@@ -76,7 +76,7 @@
     <string name="welcome_google_error_internal">Google sign-in cannot open from this screen. Please try again after restarting the app.</string>
     <string name="welcome_google_error_unexpected_credential">Google sign-in returned an unexpected response. Please try again.</string>
     <string name="welcome_google_error_no_account">No Google account found on this device. Add a Google account in system settings, then try again.</string>
-    <string name="welcome_google_error_framework">Google sign-in failed. In Firebase Console, add the debug SHA-1 fingerprint for package com.dadadrive.debug and ensure GOOGLE_WEB_CLIENT_ID is the Web client ID from the same Firebase project.</string>
+    <string name="welcome_google_error_framework">Google sign-in failed. In Firebase Console, add the debug SHA-1 fingerprint for package com.turbodrive.debug and ensure GOOGLE_WEB_CLIENT_ID is the Web client ID from the same Firebase project.</string>
     <string name="welcome_google_error_unknown">Google sign-in failed. Please try again.</string>
     <string name="welcome_google_error_no_id_token">Google did not return an ID token. Check GOOGLE_WEB_CLIENT_ID (Web OAuth client) and your app SHA-1 in Firebase.</string>
     <string name="welcome_legal_tiny">By continuing, you accept our terms of use and privacy policy</string>
@@ -249,7 +249,7 @@
     <string name="cd_map_type">Map type</string>
     <string name="cd_close">Close</string>
     <string name="cd_photo_profile">Profile photo</string>
-    <string name="brand_dada_drive">TURBODRIVE</string>
+    <string name="brand_turbo_drive">TURBODRIVE</string>
     <string name="brand_currency_dada">DADA</string>
 
     <string name="common_settings">Settings</string>
@@ -532,7 +532,7 @@
     <string name="cd_change_photo">Change photo</string>
     <string name="cd_locked">Locked</string>
 
-    <string name="splash_logo_cd">DadaDrive Logo</string>
+    <string name="splash_logo_cd">TurboDrive Logo</string>
     <string name="splash_tagline">Your ride, your way</string>
 
     <string name="name_entry_title">What\'s your name?</string>

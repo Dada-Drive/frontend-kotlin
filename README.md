@@ -1,4 +1,4 @@
-# 🚗 DadaDrive
+# 🚗 TurboDrive
 
 [![Android CI](https://github.com/Dada-Drive/frontend-kotlin/actions/workflows/android-ci.yml/badge.svg?branch=main)](https://github.com/Dada-Drive/frontend-kotlin/actions/workflows/android-ci.yml)
 
@@ -20,7 +20,7 @@
 
 ## Aperçu du projet
 
-DadaDrive est une application mobile Android qui permet :
+TurboDrive est une application mobile Android qui permet :
 
 - 📍 La **géolocalisation en temps réel** du passager et du chauffeur
 - 🚕 La **mise en relation** instantanée passager ↔ chauffeur
@@ -58,7 +58,7 @@ DadaDrive est une application mobile Android qui permet :
 
 ## Architecture MVVM
 
-DadaDrive suit le pattern **MVVM (Model – View – ViewModel)** combiné aux principes de la **Clean Architecture**, organisée en 3 couches indépendantes :
+TurboDrive suit le pattern **MVVM (Model – View – ViewModel)** combiné aux principes de la **Clean Architecture**, organisée en 3 couches indépendantes :
 
 ```
 ┌─────────────────────────────────────────┐
@@ -104,12 +104,12 @@ Implémente les interfaces du domaine. Orchestre les données entre la base loca
 
 ## Structure des dossiers
 
-> **Note importante** : le code Kotlin réside sous `tn.dadadrive.*`. L'`applicationId` et le `namespace` Android (déclarés dans `app/build.gradle.kts`) restent `com.dadadrive` — c'est sous ce dernier package qu'est généré le `R` Android. Ne pas confondre les deux.
+> **Note importante** : le code Kotlin réside sous `tn.turbodrive.*`. L'`applicationId` et le `namespace` Android (déclarés dans `app/build.gradle.kts`) restent `com.turbodrive` — c'est sous ce dernier package qu'est généré le `R` Android. Ne pas confondre les deux.
 
 ```
-app/src/main/java/tn/dadadrive/
+app/src/main/java/tn/turbodrive/
 │
-├── app/             # DadaDriveApplication, MainActivity, AppProcessLifecycleBridge
+├── app/             # TurboDriveApplication, MainActivity, AppProcessLifecycleBridge
 │
 ├── core/            # Briques transverses (sans dépendance présentation)
 │   ├── constants/        # Clés / URLs / valeurs partagées
@@ -236,7 +236,7 @@ Tous les secrets vivent dans `local.properties` à la racine du projet (non vers
 | `KEYSTORE_KEY_ALIAS`         | Alias de la clé                                                      | si `ENABLE_RELEASE_SIGNING=true` |
 | `KEYSTORE_KEY_PASSWORD`      | Mot de passe de la clé                                               | si `ENABLE_RELEASE_SIGNING=true` |
 
-> **À propos de `google-services.json`** : le fichier `app/google-services.json` actuellement versionné est un **stub local** mis en place lors de la phase R-0.1 pour que `compileDebugKotlin` passe sans dépendance Firebase Console. Pour activer Crashlytics, FCM et Analytics réels (typiquement en staging/release), remplace-le par le fichier obtenu via Firebase Console pour l'`applicationId` correspondant (`com.dadadrive`, `com.dadadrive.debug`, `com.dadadrive.staging`).
+> **À propos de `google-services.json`** : le fichier `app/google-services.json` actuellement versionné est un **stub local** mis en place lors de la phase R-0.1 pour que `compileDebugKotlin` passe sans dépendance Firebase Console. Pour activer Crashlytics, FCM et Analytics réels (typiquement en staging/release), remplace-le par le fichier obtenu via Firebase Console pour l'`applicationId` correspondant (`com.turbodrive`, `com.turbodrive.debug`, `com.turbodrive.staging`).
 
 ---
 
@@ -320,7 +320,7 @@ Tout `SSLPeerUnverifiedException` (cert qui ne matche pas un pin) est loggué da
 Ajouter dans `local.properties` (gitignored — voir `local.properties.template:CERTIFICATE_PINS`) :
 
 ```properties
-CERTIFICATE_PINS=api-staging.dadadrive.tn|sha256/AAAA…=|sha256/BBBB…=,api.dadadrive.tn|sha256/CCCC…=|sha256/DDDD…=
+CERTIFICATE_PINS=api-staging.turbodrive.tn|sha256/AAAA…=|sha256/BBBB…=,api.turbodrive.tn|sha256/CCCC…=|sha256/DDDD…=
 ```
 
 Convention : `host|sha256/PIN_BASE64=` séparés par virgule ; **2 pins minimum par host** (cert actuel + cert backup) pour survivre à une rotation.
@@ -335,7 +335,7 @@ echo | openssl s_client -servername HOST -connect HOST:443 2>/dev/null \
   | openssl enc -base64
 ```
 
-Exemple : `HOST=api.dadadrive.tn`. Le résultat est la partie après `sha256/`.
+Exemple : `HOST=api.turbodrive.tn`. Le résultat est la partie après `sha256/`.
 
 ### CI / GitHub Actions
 
@@ -358,7 +358,7 @@ Le workflow CI génère `local.properties` à la volée à partir des secrets Gi
 
 ## 🌐 Network architecture (R-1.1)
 
-Tous les retours backend passent par un **wrapper typé homogène** `ApiResponse<T>` défini dans [`data/network/envelope/`](app/src/main/java/tn/dadadrive/data/network/envelope/) :
+Tous les retours backend passent par un **wrapper typé homogène** `ApiResponse<T>` défini dans [`data/network/envelope/`](app/src/main/java/tn/turbodrive/data/network/envelope/) :
 
 ```kotlin
 data class ApiResponse<T>(
@@ -439,7 +439,7 @@ Cette convention :
 
 ### Tests
 
-[`ApiCallTest.kt`](app/src/test/java/tn/dadadrive/data/network/envelope/ApiCallTest.kt) — 5 cas :
+[`ApiCallTest.kt`](app/src/test/java/tn/turbodrive/data/network/envelope/ApiCallTest.kt) — 5 cas :
 - `success` nominal (`{success:true, data:{...}}`)
 - `success` Unit (logout / delete sans data → `Result.success(Unit)`)
 - `failure` backend (`{success:false, error:{code,message}}` → `BackendException(apiError.code)`)
