@@ -542,9 +542,31 @@ L'audit S0 a relevé 6 `!!` subsistant hors `DriverSetupScreen` (refactorisé en
 
 ---
 
-### Phase R-1.1 — Implémenter `ApiResponse<T>` générique
+### Phase R-1.1 — Implémenter `ApiResponse<T>` générique ✅
+**Statut** : Terminée le 2026-05-17 — 12 commits push sur `origin/main`.
+- `f013120` feat(network) — ApiResponse + ApiError + BackendException envelope types
+- `49be9f5` feat(network) — extension `Response<ApiResponse<T>>.unwrap()`
+- `a237238` test(network) — ApiCallTest (5 cas : success / Unit / error backend / HTTP 401 / EMPTY_BODY)
+- `cc54f5f` refactor(auth) — AuthApiService (9 endpoints) + AuthRepositoryImpl + UserRepositoryImpl
+- `f2a1a2c` refactor(wallet) — WalletApiService (2) + WalletRepositoryImpl
+- `32d0959` refactor(notification) — NotificationApiService (2) + PushTokenRegistrar
+- `639dfbd` refactor(driver-reg) — DriverRegistrationApiService (1, placeholder)
+- `f26e1a7` refactor(driver) — DriverApiService (16) + DriverRepositoryImpl
+- `c78a719` refactor(rides) — RidesApiService (13) + RidesRepositoryImpl
+- `c15ab09` chore(build) — BuildConfig.STRICT_ENVELOPE feature flag (default false)
+- `cabff2d` docs(readme) — Network architecture section
+- (ce commit) docs(plan) — mark R-1.1 done
+
+**Métriques finales**
+- 43/43 endpoints migrés vers `Response<ApiResponse<T>>` (validé par grep)
+- 5 repositories adaptés (`.unwrap().fold()` ou `.unwrap().getOrThrow()`)
+- ~12 DTOs nettoyés (champ `success` retiré — porté désormais par l'enveloppe)
+- `LogoutResponse` supprimé → endpoint logout typé `ApiResponse<Unit>`
+- 5 tests unitaires `ApiCallTest` verts
+- BUILD SUCCESSFUL : `./gradlew clean ktlintCheck detekt :app:compileDebugKotlin :app:testDebugUnitTest`
+
 **Objectif** : tous les retours backend passent par un wrapper typé `{success: Boolean, data: T?, error: ApiError?}` ; les DTOs métier sont décollés du transport.
-**Sévérité** : Bloquant — **Effort** : 8–12 h
+**Sévérité** : Bloquant — **Effort estimé** : 8–12 h — **Effort réel** : ~4 h en 5 vagues
 **Dépendances** : R-0.1
 **Catégorie** : Drift backend
 
@@ -563,15 +585,23 @@ L'audit S0 a relevé 6 `!!` subsistant hors `DriverSetupScreen` (refactorisé en
 - DTOs : possiblement renommer `AuthResponse` → `AuthData` (data class interne au wrapper)
 
 **Critères d'acceptation**
-- [ ] Tous les endpoints retournent `Response<ApiResponse<*>>`
-- [ ] Aucun call site ne dépaque manuellement `success`
-- [ ] 5 tests unit sur `unwrap()` (success, error, malformed)
+- [x] Tous les endpoints retournent `Response<ApiResponse<*>>` (43/43)
+- [x] Aucun call site ne dépaque manuellement `success`
+- [x] 5 tests unit sur `unwrap()` (success, Unit, error backend, HTTP 401, EMPTY_BODY)
+- [x] `BuildConfig.STRICT_ENVELOPE` flag posé (default `false`)
+- [x] README documente l'architecture réseau (section "Network architecture (R-1.1)")
 
 **Vérification**
 - `./gradlew test` + run d'une requête réelle vers `/auth/me` qui renvoie l'enveloppe.
 
 **Risques & Rollback**
 - Risque : backend ne renvoie pas encore l'enveloppe partout. **Mitigation** : `unwrap()` accepte fallback compat. Activer compat strict via feature flag `BuildConfig.STRICT_ENVELOPE`.
+
+> **Note — Risques connus tracés (à traiter en R-1.x ultérieur)**
+> - **`rides/{id}/stops`** : `RideStopsResponseDto` legacy `{status, stops}` — si backend non normalisé, `unwrap()` renverra `BackendException("EMPTY_BODY")` à runtime. Mitigation à prévoir en R-1.x avec fallback contrôlé par `STRICT_ENVELOPE=false`.
+> - **`TokenAuthenticator` + `RefreshTokenExecutor`** : OkHttp direct, hors envelope (le refresh token a son propre format) — préservé intact, ne devrait pas être migré tant que backend ne normalise pas le refresh endpoint.
+> - **`ApiClient.kt` legacy** (178 lignes, OkHttp pur) : coexiste avec Retrofit envelope, utilisé par Cloudinary upload + appels paginés ; décommissionnable en R-1.x si jugé prioritaire.
+> - **Filet de secours** : tous les repositories migrés gardent un `runCatching` outer pour capturer IOException / ClassCastException pendant la transition.
 
 ---
 
