@@ -200,19 +200,27 @@ val errorMsg: String? =
 - [`DriverViewModelTest`](../app/src/test/java/tn/dadadrive/presentation/driverhome/DriverViewModelTest.kt) — 5 cas (initial state, toggle online success/failure, toggle online→offline clears, startRide failure isolé par domaine)
 - [`NameEntryViewModelTest`](../app/src/test/java/tn/dadadrive/presentation/auth/NameEntryViewModelTest.kt) — 5 cas (initial Idle, submit success, submit failure, dismissError, repeated submit)
 
-### Fermeture stratégique de R-2.2 (2026-05-17)
+### Fermeture stratégique de R-2.2 (2026-05-17, mise à jour post-audit)
 
-R-2.2 est considérée **stratégiquement close** à 3 VM migrés + 3 conformes natifs + 3 reportés. Les VM restants seront refactor de toute façon dans S5/S6 :
+R-2.2 est considérée **stratégiquement close** à 3 VM migrés + 4 conformes natifs + 2 reportés. Les VM restants seront refactor de toute façon dans S5/S6 :
 
 | VM restant | Refactor inclus dans | Pourquoi |
 |---|---|---|
 | `MapViewModel` | R-5.3 (Map Redesign + GPS adaptive modes) | Refactor majeur de toute façon (foreground service course + controllers) |
-| `WalletViewModel` | R-6.5 (Wallet transactions + top-up) | Nouveaux endpoints paginés + UI flow top-up |
-| `ProfileViewModel` | R-6.4 (Profile / Wallet / Settings redesign) | Refonte écran complète |
+| `WalletViewModel` | R-6.5 (Wallet transactions + top-up) | Nouveaux endpoints paginés + UI flow top-up. **Deadline stash : 2026-06-16**. |
+| ~~`ProfileViewModel`~~ | ~~R-6.4~~ | **Reclassé conforme natif** (post-audit S2) : sealed `SaveState` propriétaire |
 | `LanguageViewModel` | N/A | Pas d'état async, ScreenState non applicable |
 
-**Reprise WalletVM stash** : un refactor multi-flow `WalletViewModel` a été démarré (~1 h investie) puis stashed pour reprise ultérieure. Voir `git stash list` (entry `WIP R-2.2 B.2 WalletViewModel multi-flow refactor`).
+**Reprise WalletVM stash** : un refactor multi-flow `WalletViewModel` a été démarré (~1 h investie) puis stashed pour reprise ultérieure. Voir `git stash list` (entry `WIP R-2.2 B.2 WalletViewModel multi-flow refactor`). Deadline reprise/suppression : **2026-06-16** (30 jours, post-audit).
 
 Le pattern `ScreenState<T>` est **établi**, **documenté**, **testé** (15 cas verts sur 3 VM). Sa propagation aux VM restants se fera naturellement lors des refactor S5/S6, sans dette technique additionnelle.
 
 C'est une application du **Strangler Fig pattern** : migration progressive des patterns en profitant des refactor naturels du roadmap, plutôt que migration en bloc qui produirait du travail jeté.
+
+### Re-classification ProfileViewModel (post-audit S2)
+
+L'audit triple-expert (2026-05-17, note 8.6/10) a révélé que [`ProfileViewModel`](../app/src/main/java/tn/dadadrive/presentation/profile/ProfileViewModel.kt) utilise déjà un `sealed class SaveState` (`Idle` / `Loading` / `Success` / `PartialSuccess(warning)` / `Error(message)`) fonctionnellement équivalent à `ScreenState`.
+
+Le variant `PartialSuccess(warning)` couvre un cas métier spécifique (upload photo Cloudinary KO mais sauvegarde du nom OK) qu'un `ScreenState<T>` générique ne peut pas exprimer — décision identique à `AuthState.NeedsPhone` ou `SessionState.NeedsRole`.
+
+ProfileVM est désormais classé **conformant natively** (4ᵉ membre du groupe avec Auth/Role/Session). Aucune migration requise en R-6.4 ; seule la documentation de conformité reste (couverte par cette section).

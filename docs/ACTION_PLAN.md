@@ -796,9 +796,9 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 
 ---
 
-### Phase R-2.2 — Refactor ViewModels vers ScreenState ✅ (partial — strategic close)
+### Phase R-2.2 — Refactor ViewModels vers ScreenState ✅ (3 migrated + 4 conformant + 2 deferred)
 
-**Statut** : 🟡 **3/9 VM migrés directement** + 3 VM **conformes natifs** + 3 VM **reportés à S5/S6**. Phase **stratégiquement close** car les VM restants seront refactor de toute façon lors des sprints suivants — faire la migration ScreenState maintenant produirait du travail jeté.
+**Statut** : 🟡 **3/9 VM migrés directement** + **4/9 VM conformes natifs** (Auth, Role, Session, Profile) + **2/9 VM reportés à S5/S6** (Map → R-5.3, Wallet → R-6.5). Phase **stratégiquement close** car les VM restants seront refactor de toute façon lors des sprints suivants — faire la migration ScreenState maintenant produirait du travail jeté. (Inventaire mis à jour post-audit S2 : ProfileViewModel reclassé de "deferred R-6.4" à "conformant" — sealed `SaveState` propriétaire détecté.)
 
 **Objectif initial** : remplacer tous les `_loading: Boolean + _error: String?` par `MutableStateFlow<ScreenState<T>>`.
 **Sévérité** : Critique — **Effort estimé** : 12–18 h — **Effort réel** : ~6 h
@@ -817,29 +817,29 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 
 ---
 
-#### 🟢 VM conformes natifs (3/9) — pas de refactor nécessaire
+#### 🟢 VM conformes natifs (4/9) — pas de refactor nécessaire
 
-Ces 3 VM ont déjà une sealed propriétaire fonctionnellement équivalente à `ScreenState`. Une migration mécanique perdrait de la sémantique métier.
+Ces 4 VM ont déjà une sealed propriétaire fonctionnellement équivalente à `ScreenState`. Une migration mécanique perdrait de la sémantique métier.
 
 | VM | Sealed propriétaire | Pourquoi conforme |
 |---|---|---|
 | `AuthViewModel` | `AuthState` + `OtpUiState` | Idle/Loading/Success/Error custom + transitions OTP (`OtpSent`, `VerifyingOtp`) hors contrat `ScreenState` générique |
 | `RoleViewModel` | `RoleState` | Idle/Loading/Success/Error custom |
 | `SessionViewModel` | `SessionState` | 7 variants métier (`NotLoggedIn`, `NeedsName`, `NeedsRole`, etc.) |
+| `ProfileViewModel` | `SaveState` (Idle/Loading/Success/PartialSuccess/Error) | Variant `PartialSuccess(warning)` métier (upload Cloudinary KO mais nom sauvegardé) impossible à exprimer dans `ScreenState<T>` générique. Détecté post-audit S2 — reclassé depuis "deferred R-6.4". |
 
 **Décision** : doc-only conformity (cf. [`ARCHITECTURE.md`](ARCHITECTURE.md)). Ne **pas** renommer vers `ScreenState<T>` générique.
 
 ---
 
-#### ⏸️ VM reportés (3/9) — refactor inclus dans S5/S6
+#### ⏸️ VM reportés (2/9) — refactor inclus dans S5/S6
 
-Ces 3 VM seront refactor de toute façon lors des sprints suivants. Faire le ScreenState migration **maintenant** = travail jeté.
+Ces 2 VM seront refactor de toute façon lors des sprints suivants. Faire le ScreenState migration **maintenant** = travail jeté.
 
 | VM | Pourquoi reporté | Refactor inclus dans |
 |---|---|---|
 | `MapViewModel` | 1029 LOC, 47 StateFlow, 4 controllers délégués. Sera refactor pour GPS adaptive modes + foreground service course + nouveau routing | **R-5.3** (Map Redesign + GPS modes) |
 | `WalletViewModel` | Sera refactor pour transactions paginées + top-up flow + pending banner + idempotency | **R-6.5** (Wallet transactions + top-up) |
-| `ProfileViewModel` | Sera refactor pour nouveau profile redesign + edit profile flow | **R-6.4** (Profile / Wallet / Settings redesign) |
 
 **Reprise WalletVM (stash en local)** : refactor multi-flow démarré (~1 h investie) puis stashed pour reprise ultérieure.
 ```bash
@@ -863,10 +863,10 @@ Bug connu au moment du stash : test `walletAmountCompactReadsFromLoadedState` as
 - [x] Pattern `ScreenState<T>` défini et documenté (R-2.1 + ARCHITECTURE.md)
 - [x] ≥ 1 VM single-flow migré (DriverSetup, NameEntry)
 - [x] ≥ 1 VM multi-flow migré (DriverViewModel driverhome)
-- [x] 3 VM natifs conformes documentés (Auth, Role, Session)
-- [x] 3 VM reportés tracés avec cross-références R-5.3, R-6.4, R-6.5
+- [x] 4 VM natifs conformes documentés (Auth, Role, Session, Profile)
+- [x] 2 VM reportés tracés avec cross-références R-5.3, R-6.5
 - [x] Couverture VM : 15 nouveaux tests VM (5 cas × 3 VM migrés)
-- [ ] `grep -r "_loading: Boolean\|MutableStateFlow<Boolean>" presentation/` → 0 matches (atteint après R-5.3 + R-6.4 + R-6.5)
+- [ ] `grep -r "_loading: Boolean\|MutableStateFlow<Boolean>" presentation/` → 0 matches (atteint après R-5.3 + R-6.5)
 
 ---
 
@@ -886,6 +886,23 @@ Bug connu au moment du stash : test `walletAmountCompactReadsFromLoadedState` as
 - **VM migrés** : aucune régression connue. Pattern établi et validé sur single-flow + multi-flow.
 - **Reprise WalletVM en R-6.5** : stash en local préserve le travail intermédiaire. Bug formatage à valider lors de la reprise.
 - **MapViewModel en R-5.3** : refactor inclus dans le sprint design (9 domaines + 4 controllers). Plan détaillé à élaborer au moment de R-5.3.
+
+---
+
+### ⚠️ Politique "partial closed strategic" — usage limité (post-audit S2)
+
+L'audit triple-expert S2 (2026-05-17, note 8.6/10) a **VALIDÉ AVEC RÉSERVES** la fermeture stratégique de R-2.2. **Cette politique n'est PAS généralisable** sans audit indépendant.
+
+**Conditions strictes pour invoquer "partial closed strategic"** :
+1. La portion non finalisée doit être **explicitement intégrée** dans le critère d'acceptation d'une phase ultérieure (cf. R-5.3 et R-6.5 pour R-2.2).
+2. Si la phase ultérieure est repoussée ou modifiée, **rouvrir la phase partiellement close**.
+3. Un audit triple-expert doit valider la décision **avant** la fermeture stratégique.
+4. Maximum **1 phase partial closed per sprint** — au-delà = signal d'érosion discipline.
+
+**Phases actuellement en "partial closed strategic"** :
+- R-2.2 (Sprint S2) — 3/9 migrés + 4/9 conformes natifs + 2/9 reportés → R-5.3 / R-6.5.
+
+**Si un audit futur révèle qu'une phase ultérieure NE migre PAS ScreenState** : rouvrir R-2.2 immédiatement et compléter avant tout autre sprint.
 
 ---
 
@@ -1324,6 +1341,7 @@ Bug connu au moment du stash : test `walletAmountCompactReadsFromLoadedState` as
 - [ ] GPS mode switch testé (logs)
 - [ ] Notification foreground visible pendant ride
 - [ ] Filtres GPS actifs
+- [ ] **Migration ScreenState (R-2.2 deferred)** : `MapViewModel` refactorisé vers `MutableStateFlow<ScreenState<T>>` par domaine (GPS, routing, POI, ride request, scheduled, rating). Les controllers délégués (`MapLocationController`, `MapPassengerRoutingController`, `PoiSearchHelper`, `MapRideOperations`, `MapDriverPreviewRouting`) revus pour cohérence pattern. Validation : `grep -cE "_loading\|MutableStateFlow<Boolean>\|MutableStateFlow<String\?>" app/src/main/java/tn/dadadrive/presentation/map/MapViewModel.kt` → 0.
 
 **Risques** : foreground service exige permission notif (Android 13+). Mitigation : prompt user au démarrage du ride.
 
@@ -1458,6 +1476,8 @@ Bug connu au moment du stash : test `walletAmountCompactReadsFromLoadedState` as
 
 **Fichiers touchés** : `presentation/profile/*`, `presentation/wallet/*`, `presentation/settings/*` (nouveau package)
 
+**Note R-2.2** : `ProfileViewModel` est **conforme natif** (sealed `SaveState` propriétaire avec variant métier `PartialSuccess(warning)`). **Aucune migration ScreenState requise** en R-6.4 — seule la documentation de conformité reste (déjà couverte dans ARCHITECTURE.md). Cf. post-audit S2.
+
 ---
 
 ### Phase R-6.5 — P10 Wallet transactions + top-up
@@ -1479,6 +1499,8 @@ Bug connu au moment du stash : test `walletAmountCompactReadsFromLoadedState` as
 - [ ] 3 endpoints fonctionnels
 - [ ] UI top-up testée end-to-end staging
 - [ ] Pagination transactions
+- [ ] **Migration ScreenState (R-2.2 deferred)** : `WalletViewModel` refactorisé vers `MutableStateFlow<ScreenState<T>>` multi-flow par domaine (wallet info + transactions paginées + top-up flow + pending banner). Reprendre le stash `WIP R-2.2 B.2 WalletViewModel multi-flow refactor (resume later)` via `git stash pop` au début de R-6.5, fixer le bug `walletAmountCompactReadsFromLoadedState` (test "42 vs 43"), puis compléter avec les nouveaux endpoints transactions. Validation : `grep -cE "_loading\|MutableStateFlow<Boolean>\|MutableStateFlow<String\?>" app/src/main/java/tn/dadadrive/presentation/wallet/WalletViewModel.kt` → 0.
+- [ ] **Deadline stash WalletVM** : reprendre OU supprimer le stash **avant 2026-06-16** (30 jours après création 2026-05-17). Au-delà, considérer comme perdu — restart from scratch lors de R-6.5.
 
 ---
 
