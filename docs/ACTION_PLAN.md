@@ -481,6 +481,60 @@ Le ré-audit S0 a noté que le working tree porte un backlog massif (~5400 entr�
 
 ---
 
+### Phase R-0.10 — Cleanup `!!` résiduels en prod
+**Statut** : 🟠 Identifiée lors de l'audit triple-expert post-S0 (2026-05-17). Hors scope R-0.2 qui ciblait `DriverSetupScreen.kt` uniquement.
+**Objectif** : zéro `!!` en code de production hors tests ; chaque site refactoré selon le pattern adapté (sealed `ScreenState`, recovery state, guard explicite).
+**Sévérité** : Important — **Effort estimé** : éclaté sur S2/S3/S5 (≈ 30 min par site, total ~3 h)
+**Dépendances** : R-2.1 (`ScreenState<T>`) pour le pattern de référence
+**Catégorie** : Type safety (rules.md §1) / dette tracée
+
+**Contexte**
+L'audit S0 a relevé 6 `!!` subsistant hors `DriverSetupScreen` (refactorisé en R-0.2). Plutôt qu'un cleanup global immédiat, ils sont **ventilés par fichier sur leur sprint cible** car chacun appelle un pattern de refactor différent (state, recovery, map). Cette phase sert de **registre de suivi** : chaque ligne sera cochée au moment où le sprint visé refactorise le composant.
+
+**Inventaire**
+
+| Fichier | Ligne | Variable | Pattern de refactor | Sprint cible |
+|---|---|---|---|---|
+| `presentation/driverhome/DriverHomeScreen.kt` | 323 | `completeResult!!` | `ScreenState.Success(data)` exhaustif | R-2.x (ScreenState) |
+| `presentation/driverhome/DriverHomeScreen.kt` | 384 | `activeRide!!` | recovery state explicite (`ride ?: return @composable EmptyState`) | R-3.5 (crash recovery) |
+| `presentation/map/HereMapViewComposable.kt` | 864 | `mapError!!` | sealed `MapState.Error(message)` | R-5.x (map refactor) |
+| `presentation/map/MapScreen.kt` | 519 | `intermediateStopPickerIndex!!` | guard explicite + early return composable | R-5.x |
+| `presentation/map/MapScreen.kt` | 737 | `tappedPoi!!.first` | destructuring sealed POI state | R-5.x |
+| `presentation/map/MapScreen.kt` | 738 | `tappedPoi!!.second` | idem (même destructuring) | R-5.x |
+
+**Tâches**
+1. À l'ouverture de **R-2.1 (ScreenState)** : refactorer `DriverHomeScreen.kt:323` (`completeResult!!`) en `ScreenState.Success`. Cocher la ligne ici.
+2. À l'ouverture de **R-3.5 (crash recovery)** : refactorer `DriverHomeScreen.kt:384` (`activeRide!!`) en recovery state. Cocher la ligne ici.
+3. À l'ouverture de **R-5.x (map refactor)** : refactorer en lot les 4 sites de `MapScreen.kt` + `HereMapViewComposable.kt`. Cocher ici.
+4. À la fin : `grep -rn "!!" app/src/main/java --include='*.kt' | grep -v test` → **0 résultat** (hors tests, où `!!` reste autorisé).
+
+**Fichiers touchés**
+- `app/src/main/java/tn/dadadrive/presentation/driverhome/DriverHomeScreen.kt` (2 sites)
+- `app/src/main/java/tn/dadadrive/presentation/map/HereMapViewComposable.kt` (1 site)
+- `app/src/main/java/tn/dadadrive/presentation/map/MapScreen.kt` (3 sites)
+- Éventuellement nouveaux fichiers `MapState.kt` (sealed) selon le refactor R-5.x
+
+**Critères d'acceptation**
+- [ ] `DriverHomeScreen.kt:323` (`completeResult!!`) refactoré en R-2.x
+- [ ] `DriverHomeScreen.kt:384` (`activeRide!!`) refactoré en R-3.5
+- [ ] `HereMapViewComposable.kt:864` (`mapError!!`) refactoré en R-5.x
+- [ ] `MapScreen.kt:519` (`intermediateStopPickerIndex!!`) refactoré en R-5.x
+- [ ] `MapScreen.kt:737-738` (`tappedPoi!!.first/.second`) refactorés en R-5.x
+- [ ] `grep -rn "!!" app/src/main/java --include='*.kt' | grep -v test` → 0 résultat
+- [ ] Build vert + tests verts à la fermeture de R-5.x
+
+**Vérification**
+- À chaque sprint qui ferme une ligne : re-run `grep -c "!!" <fichier>` → décrément attendu.
+- Vérification finale (post-R-5.x) : `grep -rn "!!" app/src/main/java --include='*.kt' | grep -v test | wc -l` doit retourner 0.
+
+**Risques & Rollback**
+- Risque : refactor R-5.x déplace certains sites avant que cette phase soit cochée → désynchronisation ligne/numéro. Mitigation : re-vérifier `grep` au moment du refactor effectif, ne pas se fier aveuglément aux numéros.
+- Pas de rollback nécessaire : c'est une phase de suivi, pas une modification atomique.
+
+> **Note** : cette phase n'a **pas** vocation à être exécutée en bloc. Elle existe pour **rendre visible** la dette identifiée en audit et garantir qu'aucun `!!` ne survit à S5. Les checkbox seront cochées par les sprints qui touchent naturellement aux composants concernés.
+
+---
+
 # SPRINT 1 — COUCHE RÉSEAU & ENVELOPPE (P0)
 
 > **Objectif sprint** : aligner intégralement la couche réseau sur le contrat `backend-integration.md` §1.4 (enveloppe `{success, data}` / `{success, error}`) et §2.2 (codes erreur localisés). Idempotency-key automatique.
