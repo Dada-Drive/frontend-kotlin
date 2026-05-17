@@ -400,6 +400,39 @@ result.fold(
 - **TokenAuthenticator + RefreshTokenExecutor** intacts (OkHttp direct — refresh token a son propre format hors enveloppe)
 - **`ApiClient.kt` legacy** coexiste pendant la transition (Cloudinary uploader, paginated requests)
 
+### Convention `ApiResponse<Unit>` pour les endpoints sans payload
+
+Les endpoints qui ne renvoient pas de données utiles (logout, delete, action sans retour) sont typés `ApiResponse<Unit>` plutôt qu'avec un DTO `EmptyResponse` ad-hoc :
+
+```kotlin
+@POST("auth/logout")
+suspend fun logout(
+    @Body body: LogoutRequest,
+): Response<ApiResponse<Unit>>
+```
+
+Côté `unwrap()`, le succès sans `data` est résolu vers `Result.success(Unit)` :
+
+```kotlin
+// Dans ApiCall.unwrap()
+when {
+    body.success && body.data != null -> Result.success(body.data)
+    body.success && body.data == null -> {
+        // Endpoint sans payload : succès implicite
+        @Suppress("UNCHECKED_CAST")
+        Result.success(Unit as T)
+    }
+    // ... cas error
+}
+```
+
+Cette convention :
+- Évite la prolifération de `EmptyResponse` / `VoidResponse` / etc.
+- Reste type-safe : le compilateur Kotlin garantit qu'on ne consomme pas `Unit` comme une donnée
+- Aligne `logout()` avec les futurs endpoints `DELETE /resources/{id}` (R-6.5+)
+
+⚠️ **Garde-fou** : ne déclarer `ApiResponse<Unit>` que pour les endpoints qui retournent **réellement** rien. Pour `ApiResponse<DtoX>` avec `data: null`, le cast `Unit as T` provoquerait une `ClassCastException` à l'usage. Voir le test `ApiCallTest.unwrap returns success Unit when backend envelope success=true with null data` pour la validation.
+
 ### Feature flag `STRICT_ENVELOPE`
 
 `BuildConfig.STRICT_ENVELOPE = false` (default) — réservé à une phase future. Quand `true`, `unwrap()` refusera tout endpoint qui renvoie l'ancien format brut. Pour l'instant, `unwrap()` est déjà strict côté code ; le flag permet d'ajouter un fallback compat plus tard sans toucher `build.gradle.kts`.
