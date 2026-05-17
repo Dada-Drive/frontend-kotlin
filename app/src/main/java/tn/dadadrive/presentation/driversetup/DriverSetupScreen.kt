@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dadadrive.R
+import tn.dadadrive.core.theme.LocalAppColors
 import tn.dadadrive.core.validation.DateParseResult
 import tn.dadadrive.presentation.common.ScreenState
 
@@ -351,7 +352,7 @@ fun DriverSetupScreen(
                     modifier = Modifier.size(40.dp),
                     shape = CircleShape,
                     color = Color.White,
-                    border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
+                    border = BorderStroke(1.dp, LocalAppColors.current.border),
                     shadowElevation = 2.dp,
                     onClick = { onHeaderBack() },
                 ) {
@@ -377,7 +378,7 @@ fun DriverSetupScreen(
                     modifier = Modifier.size(40.dp),
                     shape = CircleShape,
                     color = Color.White,
-                    border = BorderStroke(1.dp, Color(0xFFE5E5E5)),
+                    border = BorderStroke(1.dp, LocalAppColors.current.border),
                     shadowElevation = 2.dp,
                     onClick = { onHeaderClose() },
                 ) {

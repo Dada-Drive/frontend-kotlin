@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -26,6 +25,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dadadrive.R
+import tn.dadadrive.core.theme.LocalAppColors
 
 @Composable
 internal fun DriverLicenseStep(
@@ -47,14 +47,14 @@ internal fun DriverLicenseStep(
         text = stringResource(R.string.driver_license_title),
         color = OnboardingTitle,
         fontSize = titleFontSize,
-        fontWeight = FontWeight.Bold
+        fontWeight = FontWeight.Bold,
     )
     Spacer(Modifier.height(8.dp))
     Text(
         text = stringResource(R.string.driver_license_subtitle),
         color = OnboardingSubtitle,
         fontSize = 15.sp,
-        lineHeight = 22.sp
+        lineHeight = 22.sp,
     )
     Spacer(Modifier.height(24.dp))
 
@@ -63,13 +63,13 @@ internal fun DriverLicenseStep(
             label = stringResource(R.string.driver_license_front_label),
             bitmap = licenseFrontBmp,
             onClick = onLicenseFrontClick,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         UploadPlaceholderCard(
             label = stringResource(R.string.driver_license_back_label),
             bitmap = licenseBackBmp,
             onClick = onLicenseBackClick,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
     Spacer(Modifier.height(18.dp))
@@ -84,13 +84,13 @@ internal fun DriverLicenseStep(
         placeholder = { Text(stringResource(R.string.driver_license_suffix_hint), color = OnboardingLabel.copy(alpha = 0.65f)) },
         singleLine = true,
         shape = RoundedCornerShape(14.dp),
-        colors = onboardingFieldColors()
+        colors = onboardingFieldColors(),
     )
     Spacer(Modifier.height(20.dp))
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Column(Modifier.weight(1f)) {
             UnderscoreDateTextField(
@@ -113,33 +113,39 @@ internal fun DriverLicenseStep(
     }
     Spacer(Modifier.height(20.dp))
 
-    Text(stringResource(R.string.driver_license_category_label), color = OnboardingTitle, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+    Text(
+        stringResource(R.string.driver_license_category_label),
+        color = OnboardingTitle,
+        fontSize = 15.sp,
+        fontWeight = FontWeight.SemiBold,
+    )
     Spacer(Modifier.height(10.dp))
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         listOf('A', 'B', 'C', 'D').forEach { cat ->
             val selected = cat in licenseCategories
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(if (selected) MonoPrimary else Color.White)
-                    .border(
-                        width = 1.dp,
-                        color = if (selected) MonoPrimary else Color(0xFFE0E0E0),
-                        shape = RoundedCornerShape(14.dp)
-                    )
-                    .clickable { onLicenseCategoryToggle(cat) },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(if (selected) MonoPrimary else Color.White)
+                        .border(
+                            width = 1.dp,
+                            color = if (selected) MonoPrimary else LocalAppColors.current.border,
+                            shape = RoundedCornerShape(14.dp),
+                        )
+                        .clickable { onLicenseCategoryToggle(cat) },
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = cat.toString(),
                     color = if (selected) MonoOnPrimary else OnboardingTitle,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
                 )
             }
         }

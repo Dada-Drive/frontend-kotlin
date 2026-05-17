@@ -6,8 +6,7 @@ import androidx.compose.ui.graphics.Color
  * Couleurs [design-system.md] §2.1 (clair) et §2.2 (sombre) — redesign TurboDrive v2.
  * Les champs [AppColorScheme] réutilisent les noms historiques du projet (mapping sémantique).
  */
-internal fun buildTurboDriveColorScheme(isDark: Boolean): AppColorScheme =
-    if (isDark) turboDriveDarkScheme() else turboDriveLightScheme()
+internal fun buildTurboDriveColorScheme(isDark: Boolean): AppColorScheme = if (isDark) turboDriveDarkScheme() else turboDriveLightScheme()
 
 private fun turboDriveLightScheme(): AppColorScheme {
     val primary = Color(0xFF0A0A0A)
@@ -54,6 +53,7 @@ private fun turboDriveLightScheme(): AppColorScheme {
         dividerGrey = Color(0xFFEDEAE0),
         errorContainer = Color(0xFFFEE2E2),
         onErrorContainer = Color(0xFFDC2626),
+        successContainer = Color(0xFFDCFCE7),
         surfaceElevated = Color(0xFFFFFFFF),
         surfaceMuted = Color(0xFFF1EFEA),
         surfaceOverlaySemi = Color(0x80000000),
@@ -110,6 +110,7 @@ private fun turboDriveDarkScheme(): AppColorScheme {
         dividerGrey = Color(0xFF22222A),
         errorContainer = Color(0xFF3B0E13),
         onErrorContainer = Color(0xFFEF4444),
+        successContainer = Color(0xFF14532D),
         surfaceElevated = Color(0xFF161618),
         surfaceMuted = Color(0xFF1F1F22),
         surfaceOverlaySemi = Color(0x80000000),

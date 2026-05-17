@@ -4,8 +4,6 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,18 +15,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,7 +49,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.dadadrive.R
+import tn.dadadrive.core.theme.LocalAppColors
 import tn.dadadrive.presentation.components.BlackCloseIconButton
+
 @Composable
 internal fun DriverVehicleStep(
     vehicleFrontBmp: Bitmap?,
@@ -83,11 +84,12 @@ internal fun DriverVehicleStep(
     val otherPresetSelected = vehiclePreset == DriverVehiclePreset.Other
     val otherColorSelected = selectedColorSlug == "other"
     val selectedColorDef = vehicleColors.firstOrNull { it.apiValue == selectedColorSlug }
-    val selectedColorLabel = when {
-        otherColorSelected -> customColorText.ifBlank { stringResource(R.string.vehicle_color_other) }
-        selectedColorDef != null -> stringResource(selectedColorDef.nameRes)
-        else -> ""
-    }
+    val selectedColorLabel =
+        when {
+            otherColorSelected -> customColorText.ifBlank { stringResource(R.string.vehicle_color_other) }
+            selectedColorDef != null -> stringResource(selectedColorDef.nameRes)
+            else -> ""
+        }
 
     var showColorPicker by remember { mutableStateOf(false) }
 
@@ -100,26 +102,35 @@ internal fun DriverVehicleStep(
                 showColorPicker = false
             },
             onCustomColorChange = onCustomColorChange,
-            onDismiss = { showColorPicker = false }
+            onDismiss = { showColorPicker = false },
         )
     }
 
     Text(
         text = stringResource(R.string.driver_vehicle_title),
-        color = OnboardingTitle, fontSize = titleFontSize, fontWeight = FontWeight.Bold
+        color = OnboardingTitle,
+        fontSize = titleFontSize,
+        fontWeight = FontWeight.Bold,
     )
     Spacer(Modifier.height(8.dp))
     Text(
         text = stringResource(R.string.driver_vehicle_subtitle),
-        color = OnboardingSubtitle, fontSize = 15.sp, lineHeight = 22.sp
+        color = OnboardingSubtitle,
+        fontSize = 15.sp,
+        lineHeight = 22.sp,
     )
     Spacer(Modifier.height(24.dp))
 
     // ── Vehicle photos ────────────────────────────────────────────────────────
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        UploadPlaceholderCard(stringResource(R.string.driver_vehicle_picture_label), vehicleFrontBmp, onVehicleFrontClick, Modifier.weight(1f))
-        UploadPlaceholderCard(stringResource(R.string.driver_vehicle_side_label),    vehicleSideBmp,  onVehicleSideClick,  Modifier.weight(1f))
-        UploadPlaceholderCard(stringResource(R.string.driver_vehicle_back_label),    vehicleBackBmp,  onVehicleBackClick,  Modifier.weight(1f))
+        UploadPlaceholderCard(
+            stringResource(R.string.driver_vehicle_picture_label),
+            vehicleFrontBmp,
+            onVehicleFrontClick,
+            Modifier.weight(1f),
+        )
+        UploadPlaceholderCard(stringResource(R.string.driver_vehicle_side_label), vehicleSideBmp, onVehicleSideClick, Modifier.weight(1f))
+        UploadPlaceholderCard(stringResource(R.string.driver_vehicle_back_label), vehicleBackBmp, onVehicleBackClick, Modifier.weight(1f))
     }
     Spacer(Modifier.height(20.dp))
 
@@ -130,14 +141,14 @@ internal fun DriverVehicleStep(
             value = vehicleMake,
             onValueChange = onMakeChange,
             placeholder = stringResource(R.string.driver_placeholder_make),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         OnboardingSmallField(
             label = stringResource(R.string.driver_field_model),
             value = vehicleModel,
             onValueChange = onModelChange,
             placeholder = stringResource(R.string.driver_placeholder_model),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
     Spacer(Modifier.height(14.dp))
@@ -149,14 +160,14 @@ internal fun DriverVehicleStep(
             value = vehicleYear,
             onValueChange = { onYearChange(it.filter { ch -> ch.isDigit() }.take(4)) },
             placeholder = stringResource(R.string.driver_placeholder_year),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         OnboardingSmallField(
             label = stringResource(R.string.driver_seats_label),
             value = seatInput,
             onValueChange = { onSeatChange(it.filter { ch -> ch.isDigit() }.take(2)) },
             placeholder = stringResource(R.string.driver_seats_hint),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
     Spacer(Modifier.height(14.dp))
@@ -174,64 +185,69 @@ internal fun DriverVehicleStep(
                     val selected = vehiclePreset == preset
                     val assetName = preset.categoryImageAssetName()
                     Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(if (selected) MonoPrimary.copy(alpha = 0.08f) else OnboardingFieldBg)
-                            .border(
-                                width = if (selected) 2.dp else 1.dp,
-                                color = if (selected) MonoPrimary else Color(0xFFD8D8D8),
-                                shape = RoundedCornerShape(14.dp)
-                            )
-                            .clickable { onPresetChange(preset) }
-                            .padding(vertical = 12.dp, horizontal = 6.dp)
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(if (selected) MonoPrimary.copy(alpha = 0.08f) else OnboardingFieldBg)
+                                .border(
+                                    width = if (selected) 2.dp else 1.dp,
+                                    color = if (selected) MonoPrimary else LocalAppColors.current.outlineLight,
+                                    shape = RoundedCornerShape(14.dp),
+                                )
+                                .clickable { onPresetChange(preset) }
+                                .padding(vertical = 12.dp, horizontal = 6.dp),
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                             if (assetName != null) {
                                 AsyncImage(
-                                    model = ImageRequest.Builder(context)
-                                        .data("file:///android_asset/$assetName")
-                                        .crossfade(200)
-                                        .build(),
+                                    model =
+                                        ImageRequest.Builder(context)
+                                            .data("file:///android_asset/$assetName")
+                                            .crossfade(200)
+                                            .build(),
                                     contentDescription = stringResource(preset.labelRes),
                                     contentScale = ContentScale.Fit,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(categoryVisualHeight)
-                                        .alpha(if (selected) 1f else 0.88f)
-                                        .clip(RoundedCornerShape(8.dp))
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .height(categoryVisualHeight)
+                                            .alpha(if (selected) 1f else 0.88f)
+                                            .clip(RoundedCornerShape(8.dp)),
                                 )
                             } else {
                                 Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(categoryVisualHeight)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(Color.White)
-                                        .border(
-                                            width = 1.dp,
-                                            color = if (selected) MonoPrimary.copy(alpha = 0.35f) else Color(0xFFE0E0E0),
-                                            shape = RoundedCornerShape(8.dp)
-                                        ),
-                                    contentAlignment = Alignment.Center
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .height(categoryVisualHeight)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(Color.White)
+                                            .border(
+                                                width = 1.dp,
+                                                color = if (selected) MonoPrimary.copy(alpha = 0.35f) else LocalAppColors.current.border,
+                                                shape = RoundedCornerShape(8.dp),
+                                            ),
+                                    contentAlignment = Alignment.Center,
                                 ) {
                                     Icon(
                                         imageVector = preset.categoryIcon(),
                                         contentDescription = stringResource(preset.labelRes),
                                         modifier = Modifier.size(36.dp),
-                                        tint = if (selected) MonoPrimary else OnboardingLabel.copy(alpha = 0.75f)
+                                        tint = if (selected) MonoPrimary else OnboardingLabel.copy(alpha = 0.75f),
                                     )
                                 }
                             }
                         }
                         if (selected) {
                             Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(4.dp)
-                                    .size(18.dp)
-                                    .background(MonoPrimary, CircleShape),
-                                contentAlignment = Alignment.Center
+                                modifier =
+                                    Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(4.dp)
+                                        .size(18.dp)
+                                        .background(MonoPrimary, CircleShape),
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Icon(Icons.Default.Check, null, tint = MonoOnPrimary, modifier = Modifier.size(11.dp))
                             }
@@ -252,7 +268,7 @@ internal fun DriverVehicleStep(
             placeholder = { Text(stringResource(R.string.driver_vehicle_custom_hint), color = OnboardingLabel.copy(alpha = 0.65f)) },
             singleLine = true,
             shape = RoundedCornerShape(14.dp),
-            colors = onboardingFieldColors()
+            colors = onboardingFieldColors(),
         )
     }
 
@@ -263,7 +279,7 @@ internal fun DriverVehicleStep(
         label = stringResource(R.string.driver_field_color),
         value = selectedColorLabel,
         placeholder = stringResource(R.string.driver_placeholder_color),
-        onClick = { showColorPicker = true }
+        onClick = { showColorPicker = true },
     )
     if (otherColorSelected) {
         Spacer(Modifier.height(10.dp))
@@ -272,7 +288,7 @@ internal fun DriverVehicleStep(
             value = customColorText,
             onValueChange = onCustomColorChange,
             placeholder = stringResource(R.string.driver_placeholder_color),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
     }
     Spacer(Modifier.height(14.dp))
@@ -285,7 +301,7 @@ internal fun DriverVehicleStep(
             onPlateInputChange(input.uppercase().filter { ch -> ch.isLetterOrDigit() || ch == ' ' }.take(16))
         },
         placeholder = stringResource(R.string.driver_plate_hint),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
 
     Spacer(Modifier.height(24.dp))
@@ -298,7 +314,7 @@ private fun VehicleColorPickerSheet(
     customColorText: String,
     onColorSelected: (String) -> Unit,
     onCustomColorChange: (String) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val otherSelected = selectedColorSlug == "other"
@@ -306,29 +322,30 @@ private fun VehicleColorPickerSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = OnboardingPageBg
+        containerColor = OnboardingPageBg,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.8f)
-                .padding(horizontal = 20.dp, vertical = 8.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.8f)
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = stringResource(R.string.vehicle_color_picker_title),
                     color = OnboardingTitle,
                     fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 BlackCloseIconButton(
                     onClick = onDismiss,
                     buttonSize = 32.dp,
-                    iconSize = 18.dp
+                    iconSize = 18.dp,
                 )
             }
             Spacer(Modifier.height(12.dp))
@@ -336,49 +353,52 @@ private fun VehicleColorPickerSheet(
                 items(vehicleColors) { colorDef ->
                     val selected = selectedColorSlug == colorDef.apiValue
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onColorSelected(colorDef.apiValue) }
-                            .padding(vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { onColorSelected(colorDef.apiValue) }
+                                .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Box(
-                            modifier = Modifier
-                                .size(16.dp)
-                                .clip(CircleShape)
-                                .background(Color(colorDef.hex))
-                                .border(1.dp, Color(0xFFE0E0E0), CircleShape)
+                            modifier =
+                                Modifier
+                                    .size(16.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(colorDef.hex))
+                                    .border(1.dp, LocalAppColors.current.border, CircleShape),
                         )
                         Spacer(Modifier.width(12.dp))
                         Text(
                             text = stringResource(colorDef.nameRes),
                             color = if (selected) MonoPrimary else OnboardingTitle,
                             fontSize = 18.sp,
-                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                         )
                     }
-                    HorizontalDivider(color = Color(0xFFF0F0F0))
+                    HorizontalDivider(color = LocalAppColors.current.surfaceMuted)
                 }
                 item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onColorSelected("other") }
-                            .padding(vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { onColorSelected("other") }
+                                .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = null,
                             tint = if (otherSelected) MonoPrimary else OnboardingLabel,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(18.dp),
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
                             text = stringResource(R.string.vehicle_color_other),
                             color = if (otherSelected) MonoPrimary else OnboardingTitle,
                             fontSize = 18.sp,
-                            fontWeight = if (otherSelected) FontWeight.SemiBold else FontWeight.Normal
+                            fontWeight = if (otherSelected) FontWeight.SemiBold else FontWeight.Normal,
                         )
                     }
                 }

@@ -8,7 +8,6 @@
     <ID>CyclomaticComplexMethod:DriverSetupComponents.kt$internal fun DriverVehiclePreset.categoryImageAssetName(): String?</ID>
     <ID>CyclomaticComplexMethod:MapLocationController.kt$MapLocationController$private fun updateHeadingFromLocation(loc: Location)</ID>
     <ID>CyclomaticComplexMethod:MapRideOperations.kt$MapRideOperations$fun requestRide()</ID>
-    <ID>CyclomaticComplexMethod:PresentableErrorMapper.kt$PresentableErrorMapper$@StringRes private fun stringResForBackendCode(code: String): Int?</ID>
     <ID>CyclomaticComplexMethod:RouteHeadingSnapper.kt$RouteHeadingSnapper$fun match( position: GeoCoordinates, polylines: List&lt;GeoPolyline&gt;, referenceHeadingDeg: Float? = null, maxSnapMeters: Double = 30.0, maxReferenceDivergenceDeg: Float = 90f, ): Match?</ID>
     <ID>ForEachOnRange:MapRiderDestinationConfirmedBar.kt$1..5</ID>
     <ID>ForbiddenComment:MapScreen.kt$/* TODO: notifications */</ID>
@@ -25,7 +24,6 @@
     <ID>LongParameterList:DriverSetupViewModel.kt$DriverSetupViewModel$( fullLicenseNumber: String, licenseExpiry: String, cin: String, cinDeliveredAt: String, cinPhotoFront: String, cinPhotoBack: String, licensePhotoFront: String, licensePhotoBack: String, make: String, model: String, year: Int, plateNumber: String, color: String, vehicleType: String, seats: Int, photoFront: String, photoSide: String, photoBack: String, onComplete: () -&gt; Unit, )</ID>
     <ID>LongParameterList:DriverUseCases.kt$CreateDriverProfileUseCase$( licenseNumber: String, licenseExpiry: String, cin: String, cinDeliveredAt: String, cinPhotoFront: String, cinPhotoBack: String, licensePhotoFront: String, licensePhotoBack: String, )</ID>
     <ID>LongParameterList:DriverUseCases.kt$CreateVehicleUseCase$( make: String, model: String, year: Int, plateNumber: String, color: String, vehicleType: String, seats: Int, photoFront: String, photoSide: String, photoBack: String, )</ID>
-    <ID>LongParameterList:DriverViewModel.kt$DriverViewModel$( private val setOnlineStatusUseCase: SetOnlineStatusUseCase, private val getAvailableRidesUseCase: GetAvailableRidesUseCase, private val acceptRideUseCase: AcceptRideUseCase, private val refuseRideUseCase: RefuseRideUseCase, private val getMyRidesUseCase: GetMyRidesUseCase, private val startRideUseCase: StartRideUseCase, private val completeRideUseCase: CompleteRideUseCase, private val cancelRideUseCase: CancelRideUseCase, private val activeRideDraftCache: ActiveRideDraftCache, )</ID>
     <ID>LongParameterList:MapLocationController.kt$MapLocationController$( private val context: Context, private val fusedLocationClient: FusedLocationProviderClient, private val scope: CoroutineScope, private val currentLocation: MutableStateFlow&lt;GeoCoordinates?&gt;, private val locationAccuracy: MutableStateFlow&lt;Float?&gt;, private val locationHeadingDegrees: MutableStateFlow&lt;Float?&gt;, private val currentAddress: MutableStateFlow&lt;String?&gt;, private val isTracking: MutableStateFlow&lt;Boolean&gt;, private val onAfterFusedLocationFix: () -&gt; Unit, )</ID>
     <ID>LongParameterList:MapPassengerRoutingController.kt$MapPassengerRoutingController$( private val scope: CoroutineScope, private val routingEngine: RoutingEngine, private val ridesRepository: RidesRepository, private val pickupOverride: MutableStateFlow&lt;GeoCoordinates?&gt;, private val currentLocation: MutableStateFlow&lt;GeoCoordinates?&gt;, private val confirmedDestination: MutableStateFlow&lt;GeoCoordinates?&gt;, private val riderFareEstimate: MutableStateFlow&lt;RiderFareEstimate?&gt;, private val passengerRouteGeometries: MutableStateFlow&lt;List&lt;GeoPolyline&gt;&gt;, private val passengerTrafficSpans: MutableStateFlow&lt;List&lt;PassengerTrafficSpan&gt;&gt;, private val passengerRouteOptions: MutableStateFlow&lt;List&lt;PassengerRouteOption&gt;&gt;, private val selectedPassengerRouteIndex: MutableStateFlow&lt;Int&gt;, private val intermediateStopCoordinatesProvider: () -&gt; List&lt;GeoCoordinates&gt; = { emptyList() }, )</ID>
     <ID>LongParameterList:MapRideOperations.kt$MapRideOperations$( private val context: Context, private val scope: CoroutineScope, private val ridesRepository: RidesRepository, private val activeRideDraftCache: ActiveRideDraftCache, private val passengerRouting: MapPassengerRoutingController, private val confirmedDestination: MutableStateFlow&lt;GeoCoordinates?&gt;, private val pickupOverrideLabel: MutableStateFlow&lt;String?&gt;, private val currentAddress: MutableStateFlow&lt;String?&gt;, private val destinationLabel: MutableStateFlow&lt;String?&gt;, private val passengerRouteOptions: MutableStateFlow&lt;List&lt;PassengerRouteOption&gt;&gt;, private val selectedPassengerRouteIndex: MutableStateFlow&lt;Int&gt;, private val riderFareEstimate: MutableStateFlow&lt;RiderFareEstimate?&gt;, private val ridePickupNow: MutableStateFlow&lt;Boolean&gt;, private val rideForMe: MutableStateFlow&lt;Boolean&gt;, private val rideScheduledAtEpochMs: MutableStateFlow&lt;Long?&gt;, private val passengerBookingName: MutableStateFlow&lt;String&gt;, private val passengerBookingPhone: MutableStateFlow&lt;String&gt;, private val isRequestingRide: MutableStateFlow&lt;Boolean&gt;, private val rideRequestError: MutableStateFlow&lt;String?&gt;, private val lastRequestedRide: MutableStateFlow&lt;ActiveRide?&gt;, private val incomingRideOffers: MutableStateFlow&lt;List&lt;PassengerRideOffer&gt;&gt;, private val isLoadingRideOffers: MutableStateFlow&lt;Boolean&gt;, private val pickingOfferId: MutableStateFlow&lt;String?&gt;, private val matchedRideOffer: MutableStateFlow&lt;PassengerRideOffer?&gt;, private val isRideMatched: MutableStateFlow&lt;Boolean&gt;, private val scheduledRides: MutableStateFlow&lt;List&lt;ActiveRide&gt;&gt;, private val isLoadingScheduledRides: MutableStateFlow&lt;Boolean&gt;, private val scheduledRidesError: MutableStateFlow&lt;String?&gt;, private val rideRating: MutableStateFlow&lt;RideRating?&gt;, private val isLoadingRideRating: MutableStateFlow&lt;Boolean&gt;, private val rideRatingError: MutableStateFlow&lt;String?&gt;, private val isSubmittingRideRating: MutableStateFlow&lt;Boolean&gt;, private val submitRideRatingError: MutableStateFlow&lt;String?&gt;, private val driverRatingsStats: MutableStateFlow&lt;DriverRatingsStats&gt;, /** Supplies any rider-entered intermediate stops, filtered to only on-route ones. */ private val pendingIntermediateStopsProvider: () -&gt; List&lt;RideStop&gt; = { emptyList() }, private val onIntermediateStopsPosted: () -&gt; Unit = {}, )</ID>
@@ -45,6 +43,7 @@
     <ID>MagicNumber:ColorSchemes.kt$0xFF0D47A1</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFF111111</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFF121212</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFF14532D</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFF1565C0</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFF1877F2</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFF1976D2</ID>
@@ -68,6 +67,7 @@
     <ID>MagicNumber:ColorSchemes.kt$0xFFBBDEFB</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFBDBDBD</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFCCCCCC</ID>
+    <ID>MagicNumber:ColorSchemes.kt$0xFFDCFCE7</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFE0E0E0</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFE53935</ID>
     <ID>MagicNumber:ColorSchemes.kt$0xFFEA4335</ID>
@@ -140,6 +140,7 @@
     <ID>MagicNumber:TurboDriveColorScheme.kt$0x80000000</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF0A0A0A</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF0A0A0C</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF14532D</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF161618</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF16A34A</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFF1877F2</ID>
@@ -164,6 +165,7 @@
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFD97706</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFDBEAFE</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFDC2626</ID>
+    <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFDCFCE7</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFE5E2D8</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFEA4335</ID>
     <ID>MagicNumber:TurboDriveColorScheme.kt$0xFFEDEAE0</ID>
@@ -185,18 +187,20 @@
     <ID>MagicNumber:UserLocationMarkerBitmap.kt$1.5f</ID>
     <ID>MagicNumber:UserLocationMarkerBitmap.kt$11.5f</ID>
     <ID>MagicNumber:UserLocationMarkerBitmap.kt$2.5f</ID>
-    <ID>MagicNumber:UserRepositoryImpl.kt$UserRepositoryImpl$400</ID>
     <ID>MatchingDeclarationName:DadaCoinWidgets.kt$DadaCoinMetal</ID>
     <ID>MatchingDeclarationName:DesignIconButton.kt$DesignIconButtonVariant</ID>
     <ID>MatchingDeclarationName:PhoneScreen.kt$Country</ID>
     <ID>MatchingDeclarationName:PrimaryButton.kt$PrimaryButtonState</ID>
     <ID>MatchingDeclarationName:TeardropPickupPinBitmap.kt$TeardropPinLayout</ID>
-    <ID>NestedBlockDepth:AuthRepositoryImpl.kt$AuthRepositoryImpl$override suspend fun loginWithGoogle(idToken: String): Result&lt;User&gt;</ID>
-    <ID>NestedBlockDepth:AuthRepositoryImpl.kt$AuthRepositoryImpl$override suspend fun signup( fullName: String, email: String, password: String, phoneNumber: String, profilePictureUri: String?, ): Result&lt;User&gt;</ID>
+    <ID>MaxLineLength:DriverAccessSetupScreen.kt$Text(text = stringResource(R.string.driver_permission_close), fontSize = 18.sp, modifier = Modifier.clickable(onClick = onClose))</ID>
+    <ID>MaxLineLength:DriverLicenseStep.kt$Text(stringResource(R.string.driver_license_category_label), color = OnboardingTitle, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)</ID>
+    <ID>MaxLineLength:DriverVehicleStep.kt$UploadPlaceholderCard(stringResource(R.string.driver_vehicle_back_label), vehicleBackBmp, onVehicleBackClick, Modifier.weight(1f))</ID>
+    <ID>MaxLineLength:DriverVehicleStep.kt$UploadPlaceholderCard(stringResource(R.string.driver_vehicle_picture_label), vehicleFrontBmp, onVehicleFrontClick, Modifier.weight(1f))</ID>
+    <ID>MaxLineLength:DriverVehicleStep.kt$UploadPlaceholderCard(stringResource(R.string.driver_vehicle_side_label), vehicleSideBmp, onVehicleSideClick, Modifier.weight(1f))</ID>
+    <ID>MaxLineLength:WalletScreen.kt$text = if (isActive) stringResource(R.string.wallet_status_active) else stringResource(R.string.wallet_status_suspended)</ID>
     <ID>NestedBlockDepth:RouteHeadingSnapper.kt$RouteHeadingSnapper$fun match( position: GeoCoordinates, polylines: List&lt;GeoPolyline&gt;, referenceHeadingDeg: Float? = null, maxSnapMeters: Double = 30.0, maxReferenceDivergenceDeg: Float = 90f, ): Match?</ID>
     <ID>ReturnCount:MapRideOperations.kt$MapRideOperations$fun requestRide()</ID>
     <ID>ReturnCount:SessionViewModel.kt$SessionViewModel$private suspend fun nextStateAfterMe( phone: String?, fullName: String?, roleRaw: String, user: User, ): SessionState</ID>
-    <ID>SwallowedException:AuthRepositoryImpl.kt$AuthRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:AuthRepositoryImpl.kt$AuthRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CloudinaryManager.kt$CloudinaryManager$e: Exception</ID>
     <ID>TooGenericExceptionCaught:DadaDriveApplication.kt$DadaDriveApplication$e: Exception</ID>
@@ -206,7 +210,6 @@
     <ID>TooGenericExceptionCaught:OtpAutofill.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:RidesRepositoryImpl.kt$RidesRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:TokenManager.kt$TokenManager$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:UserRepositoryImpl.kt$UserRepositoryImpl$e: Exception</ID>
     <ID>TooManyFunctions:DriverRepositoryImpl.kt$DriverRepositoryImpl : DriverRepository</ID>
     <ID>TooManyFunctions:DriverSetupComponents.kt$tn.dadadrive.presentation.driversetup.DriverSetupComponents.kt</ID>
     <ID>TooManyFunctions:DriverViewModel.kt$DriverViewModel : ViewModel</ID>
