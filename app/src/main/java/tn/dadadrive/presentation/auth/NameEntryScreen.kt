@@ -43,13 +43,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dadadrive.R
 import tn.dadadrive.core.theme.LocalAppColors
+import tn.dadadrive.presentation.common.ScreenState
 
 private val ScreenBg = Color(0xFFF9F8F5)
 private val Muted = Color(0xFF757575)
@@ -63,29 +64,41 @@ fun NameEntryScreen(
     val c = LocalAppColors.current
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    val loading by viewModel.loading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val state by viewModel.state.collectAsState()
+    val loading: Boolean =
+        when (state) {
+            ScreenState.Loading -> true
+            ScreenState.Idle, is ScreenState.Loaded, is ScreenState.Error -> false
+        }
+    val error: String? =
+        when (val s = state) {
+            is ScreenState.Error -> s.error.message
+            ScreenState.Idle, ScreenState.Loading, is ScreenState.Loaded -> null
+        }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ScreenBg)
-            .statusBarsPadding()
-            .navigationBarsPadding(),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(ScreenBg)
+                .statusBarsPadding()
+                .navigationBarsPadding(),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFE0E0E0), CircleShape)
-                    .clickable(onClick = onBack),
+                modifier =
+                    Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE0E0E0), CircleShape)
+                        .clickable(onClick = onBack),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -106,10 +119,11 @@ fun NameEntryScreen(
             Spacer(Modifier.width(40.dp))
         }
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp),
         ) {
             Spacer(Modifier.height(16.dp))
             Text(
@@ -142,15 +156,16 @@ fun NameEntryScreen(
                     Icon(Icons.Outlined.Person, null, tint = Muted)
                 },
                 shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Black,
-                    unfocusedBorderColor = Color(0xFFE0E0E0),
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    cursorColor = Color.Black,
-                ),
+                colors =
+                    OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Black,
+                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        cursorColor = Color.Black,
+                    ),
             )
             Spacer(Modifier.height(20.dp))
             Text(
@@ -171,15 +186,16 @@ fun NameEntryScreen(
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFE0E0E0),
-                    unfocusedBorderColor = Color(0xFFE0E0E0),
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    cursorColor = Color.Black,
-                ),
+                colors =
+                    OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFFE0E0E0),
+                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        cursorColor = Color.Black,
+                    ),
             )
             Text(
                 stringResource(R.string.name_email_helper),
@@ -196,17 +212,19 @@ fun NameEntryScreen(
         Button(
             onClick = { viewModel.submitFullName(name, email, onContinue) },
             enabled = !loading && name.isNotBlank(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp)
-                .height(54.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .height(54.dp),
             shape = RoundedCornerShape(999.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black,
-                contentColor = Color.White,
-                disabledContainerColor = Color(0xFFE0E0E0),
-                disabledContentColor = Color(0xFF9E9E9E),
-            ),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White,
+                    disabledContainerColor = Color(0xFFE0E0E0),
+                    disabledContentColor = Color(0xFF9E9E9E),
+                ),
         ) {
             if (loading) {
                 CircularProgressIndicator(
