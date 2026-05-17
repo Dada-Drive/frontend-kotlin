@@ -11,6 +11,7 @@ import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import timber.log.Timber
 import tn.dadadrive.core.constants.Constants
 import tn.dadadrive.core.network.CertificatePinningReporter
 import tn.dadadrive.core.network.parseCertificatePins
@@ -94,7 +95,14 @@ object NetworkModule {
     private fun certificatePinnerOrNull(): CertificatePinner? {
         if (!BuildConfig.ENABLE_CERT_PINNING) return null
         val pins = parseCertificatePins(BuildConfig.CERTIFICATE_PINS)
-        if (pins.isEmpty()) return null
+        if (pins.isEmpty()) {
+            // Misconfiguration : pinning activé par variant mais aucun pin injecté via local.properties / CI secret.
+            // Silencieusement off = faille majeure en staging/release. Log loud pour détecter en review Logcat.
+            Timber.w(
+                "ENABLE_CERT_PINNING=true but CERTIFICATE_PINS is empty -- pinning DISABLED for this build!",
+            )
+            return null
+        }
         val pinBuilder = CertificatePinner.Builder()
         for ((host, pin) in pins) {
             pinBuilder.add(host, pin)
