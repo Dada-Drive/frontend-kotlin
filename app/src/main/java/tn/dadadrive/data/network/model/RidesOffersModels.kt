@@ -1,11 +1,10 @@
 package tn.dadadrive.data.network.model
 
-import tn.dadadrive.domain.models.PassengerRideOffer
 import com.google.gson.annotations.SerializedName
+import tn.dadadrive.domain.models.PassengerRideOffer
 
 data class RideOffersResponseDto(
-    val success: Boolean? = null,
-    val offers: List<PassengerRideOfferDto>
+    val offers: List<PassengerRideOfferDto>,
 )
 
 data class PassengerRideOfferDto(
@@ -20,20 +19,22 @@ data class PassengerRideOfferDto(
     @SerializedName("total_rides") val totalRides: Int?,
     val make: String?,
     val model: String?,
-    val year: Int?
+    val year: Int?,
 )
 
-fun PassengerRideOfferDto.toDomain() = PassengerRideOffer(
-    id = id,
-    rideId = rideId,
-    driverId = driverId,
-    offeredFare = offeredFare,
-    status = status,
-    driverName = driverName,
-    driverPhone = driverPhone,
-    driverRating = rating,
-    totalRides = totalRides,
-    vehicleLabel = listOfNotNull(make, model).joinToString(" ").ifBlank {
-        year?.toString()
-    }
-)
+fun PassengerRideOfferDto.toDomain() =
+    PassengerRideOffer(
+        id = id,
+        rideId = rideId,
+        driverId = driverId,
+        offeredFare = offeredFare,
+        status = status,
+        driverName = driverName,
+        driverPhone = driverPhone,
+        driverRating = rating,
+        totalRides = totalRides,
+        vehicleLabel =
+            listOfNotNull(make, model).joinToString(" ").ifBlank {
+                year?.toString()
+            },
+    )

@@ -1,17 +1,16 @@
 package tn.dadadrive.data.network.model
 
+import com.google.gson.annotations.SerializedName
 import tn.dadadrive.domain.models.DriverRatingsStats
 import tn.dadadrive.domain.models.RideRating
-import com.google.gson.annotations.SerializedName
 
 data class SubmitRideRatingRequestDto(
     val score: Int,
-    val comment: String? = null
+    val comment: String? = null,
 )
 
 data class RideRatingResponseDto(
-    val success: Boolean? = null,
-    val rating: RideRatingDto
+    val rating: RideRatingDto,
 )
 
 data class RideRatingDto(
@@ -20,30 +19,31 @@ data class RideRatingDto(
     @SerializedName("driver_id") val driverId: String?,
     val score: Int,
     val comment: String? = null,
-    @SerializedName("created_at") val createdAt: String? = null
+    @SerializedName("created_at") val createdAt: String? = null,
 )
 
-fun RideRatingDto.toDomain() = RideRating(
-    id = id,
-    rideId = rideId,
-    driverId = driverId,
-    score = score,
-    comment = comment,
-    createdAt = createdAt
-)
+fun RideRatingDto.toDomain() =
+    RideRating(
+        id = id,
+        rideId = rideId,
+        driverId = driverId,
+        score = score,
+        comment = comment,
+        createdAt = createdAt,
+    )
 
 data class DriverRatingsResponseDto(
-    val success: Boolean? = null,
     val ratings: List<RideRatingDto> = emptyList(),
-    val stats: DriverRatingsStatsDto? = null
+    val stats: DriverRatingsStatsDto? = null,
 )
 
 data class DriverRatingsStatsDto(
     @SerializedName("avg_rating") val avgRating: Double? = null,
-    @SerializedName("total_ratings") val totalRatings: Int? = null
+    @SerializedName("total_ratings") val totalRatings: Int? = null,
 )
 
-fun DriverRatingsStatsDto.toDomain() = DriverRatingsStats(
-    avgRating = avgRating ?: 0.0,
-    totalRatings = totalRatings ?: 0
-)
+fun DriverRatingsStatsDto.toDomain() =
+    DriverRatingsStats(
+        avgRating = avgRating ?: 0.0,
+        totalRatings = totalRatings ?: 0,
+    )
