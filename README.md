@@ -356,6 +356,69 @@ Le workflow CI génère `local.properties` à la volée à partir des secrets Gi
 
 ---
 
+## 🌐 Network architecture (R-1.1)
+
+Tous les retours backend passent par un **wrapper typé homogène** `ApiResponse<T>` défini dans [`data/network/envelope/`](app/src/main/java/tn/dadadrive/data/network/envelope/) :
+
+```kotlin
+data class ApiResponse<T>(
+    val success: Boolean = true,
+    val data: T? = null,
+    val error: ApiError? = null,
+)
+
+data class ApiError(
+    val code: String,
+    val message: String,
+    val details: Map<String, Any?>? = null,
+)
+```
+
+### Pattern de consommation
+
+```kotlin
+// 1. ApiService renvoie Response<ApiResponse<T>>
+@POST("auth/login")
+suspend fun login(@Body req: LoginRequest): Response<ApiResponse<AuthResponse>>
+
+// 2. Repository appelle .unwrap() pour obtenir Result<T>
+val result: Result<AuthResponse> = api.login(req).unwrap()
+
+// 3. ViewModel consomme via Result.fold (en attendant R-2.1 ScreenState)
+result.fold(
+    onSuccess = { /* ... */ },
+    onFailure = { e ->
+        val msg = (e as? BackendException)?.apiError?.message ?: "Erreur"
+    },
+)
+```
+
+### Périmètre couvert
+
+- **43 endpoints** migrés sur 6 ApiServices : Auth ×9, Driver ×16, Rides ×13, Wallet ×2, Notification ×2, DriverRegistration ×1
+- **5 repositories** consommateurs adaptés (`.unwrap().fold()` quand messages localisés, `.unwrap().getOrThrow()` quand propagation simple)
+- **TokenAuthenticator + RefreshTokenExecutor** intacts (OkHttp direct — refresh token a son propre format hors enveloppe)
+- **`ApiClient.kt` legacy** coexiste pendant la transition (Cloudinary uploader, paginated requests)
+
+### Feature flag `STRICT_ENVELOPE`
+
+`BuildConfig.STRICT_ENVELOPE = false` (default) — réservé à une phase future. Quand `true`, `unwrap()` refusera tout endpoint qui renvoie l'ancien format brut. Pour l'instant, `unwrap()` est déjà strict côté code ; le flag permet d'ajouter un fallback compat plus tard sans toucher `build.gradle.kts`.
+
+### Tests
+
+[`ApiCallTest.kt`](app/src/test/java/tn/dadadrive/data/network/envelope/ApiCallTest.kt) — 5 cas :
+- `success` nominal (`{success:true, data:{...}}`)
+- `success` Unit (logout / delete sans data → `Result.success(Unit)`)
+- `failure` backend (`{success:false, error:{code,message}}` → `BackendException(apiError.code)`)
+- `failure` HTTP 401 (`Response.error(401, ...)` → `BackendException("HTTP_401")`)
+- `failure` malformed (body null → `BackendException("EMPTY_BODY")`)
+
+### Codes erreur localisés
+
+Les `apiError.message` bruts sont propagés tels quels en R-1.1. Le mapping codes backend → FR/AR localisé arrive en **R-1.2**.
+
+---
+
 ## ⚙️ Continuous Integration (R-0.8)
 
 **Workflow** : [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) — lancé sur chaque `push` et `pull_request` ciblant `main`.
