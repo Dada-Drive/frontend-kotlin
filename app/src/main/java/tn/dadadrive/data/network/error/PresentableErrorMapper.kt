@@ -127,6 +127,7 @@ class PresentableErrorMapper
                 isRetryable = httpCode == 429 || httpCode in 500..599,
                 retryAfterSeconds = if (httpCode == 429) retryAfter else null,
                 code = enumCode,
+                messageResId = resId,
             )
         }
 

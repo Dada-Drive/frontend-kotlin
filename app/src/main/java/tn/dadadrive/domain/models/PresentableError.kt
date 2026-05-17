@@ -1,5 +1,7 @@
 package tn.dadadrive.domain.models
 
+import androidx.annotation.StringRes
+
 data class PresentableError(
     val message: String,
     val category: ErrorCategory,
@@ -11,6 +13,16 @@ data class PresentableError(
      * ViewModels can branch on this without parsing [message].
      */
     val code: BackendErrorCode? = null,
+    /**
+     * Pre-resolved `@StringRes` of the localized message (R-1.2). Set by
+     * [tn.dadadrive.data.network.error.PresentableErrorMapper] when the error
+     * code maps to a known string. UI layers can call `stringResource(messageResId)`
+     * directly without re-mapping via `code.toStringRes()`.
+     *
+     * `null` for non-envelope errors or for [BackendErrorCode.UNKNOWN].
+     * In that case, fall back to [message] which is already resolved.
+     */
+    @StringRes val messageResId: Int? = null,
 )
 
 sealed interface ErrorCategory {

@@ -173,4 +173,25 @@ class PresentableErrorMapperTest {
         assertEquals(ErrorCategory.RateLimit, result.category)
         assertNull(result.retryAfterSeconds)
     }
+
+    @Test
+    fun `BackendException known code propagates messageResId for direct stringResource()`() {
+        val ex = BackendException(ApiError(code = "RIDE_NOT_FOUND", message = "raw"), httpCode = 404)
+
+        val result = mapper.fromThrowable(ex)
+
+        assertEquals(R.string.error_ride_not_found, result.messageResId)
+        assertEquals(BackendErrorCode.RIDE_NOT_FOUND, result.code)
+    }
+
+    @Test
+    fun `BackendException unknown code leaves messageResId null (fallback path)`() {
+        // UNKNOWN -> stringResForBackendCode returns null -> fromBackend returns null
+        // -> fromHttp fallback produces a PresentableError without messageResId.
+        val ex = BackendException(ApiError(code = "WEIRD_FUTURE", message = "raw"), httpCode = 500)
+
+        val result = mapper.fromThrowable(ex)
+
+        assertNull("messageResId should be null on UNKNOWN fallback path", result.messageResId)
+    }
 }
