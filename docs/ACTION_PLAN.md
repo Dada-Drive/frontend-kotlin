@@ -796,36 +796,45 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 
 ---
 
-### Phase R-2.2 — Refactor 14 ViewModels vers ScreenState
+### Phase R-2.2 — Refactor ViewModels vers ScreenState 🟡 (2/9 Vague A)
 **Objectif** : remplacer tous les `_loading: Boolean + _error: String?` par `MutableStateFlow<ScreenState<T>>`.
 **Sévérité** : Critique — **Effort** : 12–18 h
 **Dépendances** : R-2.1
 **Catégorie** : Refactor
 
-**Tâches**
-1. Inventorier les 14 ViewModels (cf. `grep -l "_loading" presentation/`).
-2. Refactor par ordre de criticité :
-   - **Vague A** (critiques) : `DriverSetupViewModel`, `AuthViewModel`, `MapViewModel`, `DriverViewModel` (driverhome).
-   - **Vague B** (secondaires) : `WalletViewModel`, `ProfileViewModel`, `NameEntryViewModel`, `OnboardingViewModel`, `RoleSelectionViewModel`, autres.
-3. Pour chaque VM : remplacer `MutableStateFlow<Boolean>` + `MutableStateFlow<String?>` par `MutableStateFlow<ScreenState<MyData>>`.
-4. Mettre à jour les Composables consommateurs : pattern `when (val s = state) { is Loading → ProgressIndicator(); is Loaded → Content(s.value); is Error → ErrorView(s.error); Idle → Unit }`.
-5. Ajouter 1 test unit par VM (au minimum 14 tests, transitions Idle→Loading→Loaded/Error).
+**État après Vague A (2026-05-17)** : 2/9 VM migrés
+- ✅ `DriverSetupViewModel` (single-flow `ScreenState<Unit>`) + 5 tests verts
+- ✅ `DriverViewModel` driverhome (multi-flow par domaine, 3 ScreenState flows) + 5 tests verts
+- 🟢 `AuthViewModel` **déjà conforme** — sealed `AuthState` + `OtpUiState` propriétaires (jamais legacy). Documenté dans [`ARCHITECTURE.md`](ARCHITECTURE.md).
+- ⏸ `MapViewModel` déféré en **Vague C dédiée** (1029 LOC, 47 StateFlow, 9 domaines, controllers délégués — hors budget Vague A)
+- ⏸ Vague B : `WalletViewModel`, `ProfileViewModel`, `NameEntryViewModel`, `LanguageViewModel`, `RoleViewModel`, `SessionViewModel` (6 VM secondaires)
 
-**Fichiers touchés** (~25 fichiers)
-- 14 VMs sous `presentation/*/`
-- ~14 Composables d'écran appelants
-- 14 nouveaux fichiers test sous `test/presentation/*/`
+**Inventaire corrigé** : 9 VM legacy (vs 14 plan initial — AuthViewModel exclu car déjà sealed).
+
+**Tâches restantes (Vagues B & C)**
+1. Vague B (6 VM secondaires) — multi-flow OU single-flow selon la complexité.
+2. Vague C (MapViewModel + controllers) — session dédiée 1-2 jours.
+
+**Commits Vague A** (6 commits, footers `Refs R-2.2`)
+- `69a80bd` refactor(driversetup): migrate DriverSetupViewModel to ScreenState
+- `5490570` refactor(driversetup): adapt DriverSetupScreen for ScreenState
+- `4723ea7` test(driversetup): add DriverSetupViewModelTest with 5 cases
+- `0cc8ab1` refactor(driverhome): migrate DriverViewModel to ScreenState (multi-flow)
+- `732755f` refactor(driverhome): adapt DriverHomeScreen for ScreenState multi-flow
+- `8d5baa9` test(driverhome): add DriverViewModelTest with 5 cases
 
 **Critères d'acceptation**
-- [ ] `grep -r "_loading: Boolean\|MutableStateFlow<Boolean>" presentation/` ⇒ 0 matches (sauf cas légitimes documentés)
-- [ ] Compose : tous les écrans gèrent les 4 états explicitement
-- [ ] 14 nouveaux tests VM passent
+- [x] Pattern défini + 1 VM single-flow + 1 VM multi-flow migrés
+- [ ] Vague B : 6 VM secondaires migrés
+- [ ] Vague C : MapViewModel + 4 controllers refactorés
+- [ ] `grep -r "_loading: Boolean\|MutableStateFlow<Boolean>" presentation/` → 0 matches après Vagues B+C
 - [ ] Couverture VM passe de ~7% à >50%
 
-**Vérification** : test manuel : forcer une erreur réseau ⇒ chaque écran affiche bien un état Error (pas blanc).
+**Vérification (Vague A)** : `./gradlew clean ktlintCheck detekt :app:compileDebugKotlin :app:testDebugUnitTest` → BUILD SUCCESSFUL ; pre-commit hooks verts sur les 6 commits.
 
 **Risques & Rollback**
-- Risque : régression UI (états oubliés). **Mitigation** : refactor VM par VM avec PR séparée par vague.
+- Vague A : aucun régression connue. Le polling de DriverViewModel reste fonctionnellement identique (Loaded silencieux sur cycles ultérieurs).
+- Vague C : MapViewModel a 9 domaines + 4 controllers. Mitigation : refactor par domaine indépendant + tests par flow.
 
 ---
 
