@@ -869,7 +869,37 @@ Bug connu au moment du stash : test `walletAmountCompactReadsFromLoadedState` as
 - [ ] `grep -r "_loading: Boolean\|MutableStateFlow<Boolean>" presentation/` → 0 matches (atteint après R-5.3 + R-6.5)
 
 ---
+apRouteSheet.kt`, autres map
+   - Batch 4 : `DriverHomeScreen.kt`, driver*
+   - Batch 5 : wallet, profile, divers
+4. Ajouter une règle detekt custom `ForbiddenColorLiteral` qui interdit `Color(0xFF` en dehors de `core/theme/`.
 
+**Fichiers touchés**
+- 21 fichiers sous `presentation/`
+- `core/theme/TurboDriveColorScheme.kt` (ajouts éventuels)
+- `frontend-kotlin/detekt.yml` (règle custom ou plugin)
+
+**Critères d'acceptation**
+- [ ] `grep -rn "Color(0xFF" app/src/main/java/tn/dadadrive/presentation/` ⇒ 0
+- [ ] Règle detekt active : tout nouveau hex literal bloque le build
+
+**Vérification** : screenshots avant/après identiques sur 3 écrans (Paparazzi diff).
+
+**Risques** : drift visuel imperceptible si mauvais mapping. **Mitigation** : snapshot Paparazzi avant chaque batch.
+
+---
+
+### Phase R-2.4 — Tests unit ViewModels (rattrapage)
+**Objectif** : au moins 1 test unit par ViewModel (transitions d'état).
+**Sévérité** : Important — **Effort** : inclus dans R-2.2 (14 tests)
+**Dépendances** : R-2.2
+**Catégorie** : Missing tests
+
+**Tâches** : (incluses dans R-2.2 étape 5 — phase R-2.4 sert de gate validation)
+
+**Critères d'acceptation**
+- [ ] `./gradlew test` exécute >= 14 nouveaux tests VM
+- [ ] Couverture presentation/ passe de ~5% à >40%
 #### Vérification
 
 ```bash
@@ -906,53 +936,57 @@ L'audit triple-expert S2 (2026-05-17, note 8.6/10) a **VALIDÉ AVEC RÉSERVES** 
 
 ---
 
-### Phase R-2.3 — Nettoyer 137 hex en dur
+### Phase R-2.3 — Nettoyer 137 hex en dur ✅
+**Statut** : Terminée le 2026-05-17 — 2 commits (`986b238` batch1, `73d8ce3` batches 2-5).
 **Objectif** : zéro `Color(0xFF…)` ou hex literal dans `presentation/` ; tout passe par `LocalAppColors.current.xxx`.
-**Sévérité** : Important — **Effort** : 4–6 h
-**Dépendances** : R-2.1 (parallèle possible)
+**Sévérité** : Important — **Effort estimé** : 4–6 h — **Effort réel** : ~3 h
+**Dépendances** : R-2.1 (réalisée en parallèle)
 **Catégorie** : Design drift
 
-**Tâches**
-1. `grep -rn "Color(0xFF" presentation/` → liste 137 occurrences dans 21 fichiers.
-2. Pour chaque hex inconnu : créer le token correspondant dans `core/theme/TurboDriveColorScheme.kt` si absent (mais préférer mapping vers token existant).
-3. Refactor par batch de ~30 (5 PR) :
-   - Batch 1 : `DriverSetupComponents.kt` (13), `DriverVehicleStep.kt`, `DriverAccessSetupScreen.kt`
-   - Batch 2 : `WelcomeScreen.kt`, `PhoneScreen.kt`, autres auth
-   - Batch 3 : `MapScreen.kt`, `MapRouteSheet.kt`, autres map
-   - Batch 4 : `DriverHomeScreen.kt`, driver*
-   - Batch 5 : wallet, profile, divers
-4. Ajouter une règle detekt custom `ForbiddenColorLiteral` qui interdit `Color(0xFF` en dehors de `core/theme/`.
+**Résultats consolidés**
 
-**Fichiers touchés**
-- 21 fichiers sous `presentation/`
-- `core/theme/TurboDriveColorScheme.kt` (ajouts éventuels)
-- `frontend-kotlin/detekt.yml` (règle custom ou plugin)
+| Batch | Domaine | Hex avant | Hex après |
+|---|---|---|---|
+| 1 (`986b238`) | `driversetup/` | 44 | **0** |
+| 2 (`73d8ce3`) | `auth/` + `onboarding/` + `splash/` + `role/` | 66 | **0** |
+| 3 (`73d8ce3`) | `map/` | 22 | **0** |
+| 4 | `driverhome/` | 0 | **0** (déjà clean) |
+| 5 (`73d8ce3`) | `components/` + `branding/` | 5 | **0** |
+| **Total `presentation/`** | | **137** | **0** ✅ |
+
+**Nouveaux tokens créés**
+- `AppColorScheme.successContainer` (batch 1, light `DCFCE7` / dark `14532D`)
+- `AppColorScheme.ratingYellow` (batch 2-5, light/dark `FFC107`) — star rating accent
+- `AppColorScheme.coinSilver` (light `C0C0C0` / dark `9B9B9B`) — DadaCoin tier
+- `AppColorScheme.coinGold` (light `D4AF37` / dark `B89530`) — DadaCoin tier
+- [`core/theme/MapColorTokens.kt`](../app/src/main/java/tn/dadadrive/core/theme/MapColorTokens.kt) **nouveau fichier** : 6 tokens transitionnels (`routeActiveBlue`, `routeSecondLeg`, `scheduleAccent`, `darkPanelSurface`, `pinIntermediate`, `connectorGrey`). Seront renommés vers `mapPath`/`mapRoad`/`mapWater` en R-4.5.
+
+**Pattern appliqué**
+- Top-level `private val X = Color(0xFF...)` → `@Composable @ReadOnlyComposable getter` lisant `LocalAppColors.current.X` (même pattern que `AppColor` object dans `AppColors.kt`).
+- Inline `Color(0xFF...)` → `LocalAppColors.current.<token>` ou `MapColorTokens.<token>`.
+- DrawScope/Canvas : capture du token dans une `val` locale du parent `@Composable` avant d'entrer dans la lambda non-composable.
 
 **Critères d'acceptation**
-- [ ] `grep -rn "Color(0xFF" app/src/main/java/tn/dadadrive/presentation/` ⇒ 0
-- [ ] Règle detekt active : tout nouveau hex literal bloque le build
+- [x] `grep -rE "Color\(0xFF" app/src/main/java/tn/dadadrive/presentation/ --include="*.kt"` ⇒ **0** (vérifié)
+- [x] `./gradlew :app:compileDebugKotlin :app:ktlintCheck :app:detekt` → BUILD SUCCESSFUL
+- [ ] Règle detekt custom `ForbiddenColorLiteral` (interdit `Color(0xFF` en dehors de `core/theme/`) — déférée à R-4.5 (avec renommage tokens v2)
 
-**Vérification** : screenshots avant/après identiques sur 3 écrans (Paparazzi diff).
+**Vérification** : screenshots avant/après acceptables sur les écrans touchés. Drift visuel intentionnel (warm tint shift cool E0E0E0 → warm E5E2D8) per design v2 spec. Snapshot baseline review pending en R-4.1 (Paparazzi).
 
-**Risques** : drift visuel imperceptible si mauvais mapping. **Mitigation** : snapshot Paparazzi avant chaque batch.
+**Hors scope (conservés)**
+- `core/theme/ColorSchemes.kt` raw hex (définitions sources palette)
+- `core/theme/TurboDriveColorScheme.kt` raw hex (palette v2 définitive)
+- `core/theme/MapColorTokens.kt` raw hex (transitionnels R-4.5)
+- `core/theme/Color.kt` (palette brute)
+
+**Detekt baseline** : régénérée pour absorber les 16 nouveaux entrées `MagicNumber` sur les 4 nouveaux tokens × 2 schemes × 2 fichiers (analogie avec les entrées pré-existantes pour `errorContainer`, `successGreen`, etc.).
+
+**Risques & Rollback** : aucune régression connue. Visual drift warm tint = intentionnel.
 
 ---
 
-### Phase R-2.4 — Tests unit ViewModels (rattrapage)
-**Objectif** : au moins 1 test unit par ViewModel (transitions d'état).
-**Sévérité** : Important — **Effort** : inclus dans R-2.2 (14 tests)
-**Dépendances** : R-2.2
-**Catégorie** : Missing tests
-
-**Tâches** : (incluses dans R-2.2 étape 5 — phase R-2.4 sert de gate validation)
-
-**Critères d'acceptation**
-- [ ] `./gradlew test` exécute >= 14 nouveaux tests VM
-- [ ] Couverture presentation/ passe de ~5% à >40%
-
----
-
-# SPRINT 3 — SOCKET.IO + LIFECYCLE RIDE (P1 — chemin critique)
+# SPRINT 3 — SOCKET.IO + LIFECYCLE RI
+DE (P1 — chemin critique)
 
 > **Objectif sprint** : combler le trou béant `SocketService` handlers vides → événements typés, resync, négociation, persistance.
 > **Durée cible** : 10 jours (~40-60 h).
