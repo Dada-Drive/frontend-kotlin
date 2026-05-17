@@ -106,3 +106,95 @@ private val _state = MutableStateFlow<ScreenState<UserProfile>>(ScreenState.Idle
 
 - [`ScreenStateTest`](../app/src/test/java/tn/dadadrive/presentation/common/ScreenStateTest.kt) — 5 cas : variance Idle/Loading, inférence Loaded, payload Error, exhaustiveness `when`
 - [`ScreenStateExtensionsTest`](../app/src/test/java/tn/dadadrive/presentation/common/ScreenStateExtensionsTest.kt) — 6 cas : `dataOrNull` / `errorOrNull` / booléens / `toScreenState` success+failure / `asScreenStateFlow` ordre `[Loading, Loaded, Error]`
+
+---
+
+## Migration des ViewModels vers `ScreenState<T>` (R-2.2)
+
+R-2.2 migre les ViewModels legacy `(loading: Boolean, error: String?, data: T?)` vers `StateFlow<ScreenState<T>>`. Vague A = 4 VM critiques. La table suivante reflète l'état après Vague A.
+
+### Inventaire
+
+| VM | Status | Stratégie |
+|---|---|---|
+| `AuthViewModel` | ✅ Conforme (jamais legacy) | Sealed maison `AuthState` + `OtpUiState` — voir section suivante |
+| `DriverSetupViewModel` | ✅ Migré (Vague A) | Single-flow `ScreenState<Unit>` |
+| `DriverViewModel` (driverhome) | ✅ Migré (Vague A) | Multi-flow par domaine |
+| `MapViewModel` | ⏸ Déféré (Vague C) | 1029 LOC / 47 StateFlow / 9 domaines — refactor en session dédiée |
+| 6 VMs secondaires | ⏸ Vague B | `Wallet`, `Profile`, `NameEntry`, `Language`, `Role`, `Session` |
+
+### `AuthViewModel` — Pattern sealed conforme antérieur à R-2.1
+
+`AuthViewModel` n'a jamais utilisé le trio legacy. Il expose deux sealed maison qui couvrent fonctionnellement le contrat `ScreenState` :
+
+```kotlin
+// app/src/main/java/tn/dadadrive/presentation/auth/AuthState.kt
+sealed class AuthState {
+    object Idle : AuthState()
+    object Loading : AuthState()
+    data class Success(val user: User) : AuthState()
+    data class Error(val message: String) : AuthState()
+}
+
+// app/src/main/java/tn/dadadrive/presentation/auth/AuthViewModel.kt
+sealed class OtpUiState {
+    object Idle : OtpUiState()
+    object SendingOtp : OtpUiState()
+    data class OtpSent(val phone: String) : OtpUiState()
+    data class VerifyingOtp(val phone: String) : OtpUiState()
+    data class Success(val token: String) : OtpUiState()
+    data class Error(val message: String) : OtpUiState()
+}
+```
+
+**Pourquoi ne pas l'aligner mécaniquement sur `ScreenState<User>` ?**
+- `OtpUiState` porte des transitions métier spécifiques au flow OTP (`SendingOtp` / `OtpSent` / `VerifyingOtp`) qui n'existent pas dans `ScreenState<T>` générique. Forcer un sous-cas `Loaded<OtpStep>` perdrait l'exhaustivité du `when` sur chaque étape.
+- `AuthState.Error(val message: String)` utilise un `String` brut au lieu d'un `PresentableError`. La migration vers `PresentableError` est intentionnellement déférée jusqu'à ce que les flows Auth aient besoin d'i18n granulaire (S5).
+
+**Statut** : conforme au pattern par construction. Aucun refactor de fond requis. Re-évalué si :
+- Les écrans Auth doivent consommer un message localisé par code backend (`BackendErrorCode`) → migrer `AuthState.Error` vers `PresentableError`.
+- Le wizard OTP s'enrichit de nouvelles étapes (R-3.x post-Socket integration).
+
+### Stratégies de migration — Vague A
+
+**A.1 — `DriverSetupViewModel` : single-flow `ScreenState<Unit>`**
+
+VM simple (wizard 3 steps → 1 submit). Une seule opération `submitDriverSetup` → un seul `_state: MutableStateFlow<ScreenState<Unit>>`. La valeur métier (`Vehicle`) est passée au callback `onComplete`, pas portée par le state. Voir [`DriverSetupViewModel.kt`](../app/src/main/java/tn/dadadrive/presentation/driversetup/DriverSetupViewModel.kt).
+
+**A.2 — `DriverViewModel` : multi-flow par domaine**
+
+VM complexe (toggle online + liste available rides + active ride + polling). Trois `ScreenState` flows indépendants :
+
+```kotlin
+val onlineState: StateFlow<ScreenState<Boolean>>            // toggle data + loading + error
+val availableRidesState: StateFlow<ScreenState<List<AvailableRide>>>
+val activeRideState: StateFlow<ScreenState<ActiveRide>>     // Idle = pas de course active
+```
+
+**Stratégie d'erreur par domaine** : chaque flow porte sa propre `ScreenState.Error`. Pas de flow global `errorMessage`. Le screen consume les 3 et applique une priorité d'affichage (active ride > online > available).
+
+```kotlin
+val errorMsg: String? =
+    when (val s = activeRideState) {
+        is ScreenState.Error -> s.error.message
+        ScreenState.Idle, ScreenState.Loading, is ScreenState.Loaded ->
+            onlineState.errorOrNull()?.message ?: availableRidesState.errorOrNull()?.message
+    }
+```
+
+**UI transient state non migré** (`showAvailableRides`, `showActiveRide`, `completeResult`, `showCompleteResult`) : reste en `StateFlow<Boolean>` / `StateFlow<T?>` brut — ce sont des toggles UI, pas des cycles de données.
+
+**Polling-aware Loading** : `fetchAvailableRides` n'émet `Loading` que si la liste est vide. Le polling périodique met à jour silencieusement la `Loaded(list)` pour éviter le flicker.
+
+**Trade-off `ScreenState.Error` perd la donnée** : transition `Loaded(x) → Error` efface `x`. Pour les opérations qui doivent préserver l'état affiché (ex : start/cancel sur une ride active visible), le consommateur peut cacher la dernière valeur via `remember { mutableStateOf(...) }`. Voir [`DriverHomeScreen.kt`](../app/src/main/java/tn/dadadrive/presentation/driverhome/DriverHomeScreen.kt) (variante simplifiée actuelle : la sheet disparaît brièvement durant Error — acceptable, l'erreur reste visible en snackbar).
+
+### Helpers réutilisés
+
+- `state.dataOrNull()` / `state.errorOrNull()` — extraction sûre
+- `state.isLoading` — booléen Compose-friendly pour conditionner un spinner
+- `mapper.fromThrowable(e)` puis `ScreenState.Error(presentable)` — ou directement `result.toScreenState(mapper)`
+
+### Tests Vague A
+
+- [`DriverSetupViewModelTest`](../app/src/test/java/tn/dadadrive/presentation/driversetup/DriverSetupViewModelTest.kt) — 5 cas (initial Idle, submit success, vehicle failure, profile+vehicle failure avec override message, dismissError)
+- [`DriverViewModelTest`](../app/src/test/java/tn/dadadrive/presentation/driverhome/DriverViewModelTest.kt) — 5 cas (initial state, toggle online success/failure, toggle online→offline clears, startRide failure isolé par domaine)
