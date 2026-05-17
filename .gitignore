@@ -1,7 +1,5 @@
-# Gradle wrapper (generated files - should not be tracked)
-gradlew
-gradlew.bat
-gradle/wrapper/
+# Gradle build outputs (wrapper files ARE tracked per Gradle convention)
+gradle/wrapper/dists/
 
 # Android / Kotlin
 *.iml
@@ -11,7 +9,17 @@ gradle/wrapper/
 .DS_Store
 /build/
 *.apk
+
+# AAR files: ignored EXCEPT vendor libraries in app/libs/
 *.aar
+!app/libs/*.aar
+
+# Decompressed/extracted AAR contents (build artifacts, never tracked)
+app/libs/_tmp_here/
+app/libs/_extracted/
+app/libs/hereunz_out/
+app/libs/hereunz.zip
+
 /captures/
 .externalNativeBuild/
 .cxx/
@@ -28,10 +36,9 @@ client_secret_*.json
 *.jks
 *.key
 
-# Kotlin
+# Kotlin / JVM build outputs (vendor jars in app/libs/ ARE tracked)
 .kotlin/
 *.class
-*.jar
 *.war
 *.ear
 
