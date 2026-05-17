@@ -50,6 +50,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dadadrive.R
 import tn.dadadrive.core.validation.DateParseResult
+import tn.dadadrive.presentation.common.ScreenState
 
 @Composable
 fun DriverSetupScreen(
@@ -64,8 +65,17 @@ fun DriverSetupScreen(
     val vPad = if (isCompact) 12.dp else 16.dp
     val titleFontSize = if (isCompact) 24.sp else 28.sp
 
-    val loading by viewModel.loading.collectAsState()
-    val vmError by viewModel.error.collectAsState()
+    val state by viewModel.state.collectAsState()
+    val loading: Boolean =
+        when (state) {
+            ScreenState.Loading -> true
+            ScreenState.Idle, is ScreenState.Loaded, is ScreenState.Error -> false
+        }
+    val vmError: String? =
+        when (val s = state) {
+            is ScreenState.Error -> s.error.message
+            ScreenState.Idle, ScreenState.Loading, is ScreenState.Loaded -> null
+        }
 
     var step by remember { mutableStateOf(SetupStep.Personal) }
 
