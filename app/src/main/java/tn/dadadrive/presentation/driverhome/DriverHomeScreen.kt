@@ -11,7 +11,6 @@ import android.os.VibratorManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -19,35 +18,33 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.PowerSettingsNew
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ModalBottomSheet
@@ -66,35 +63,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import coil.compose.AsyncImage
-import androidx.compose.ui.layout.ContentScale
-import java.util.Locale
-import com.dadadrive.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import coil.compose.AsyncImage
+import com.dadadrive.R
+import com.here.sdk.core.GeoCoordinates
+import com.here.sdk.mapview.MapMeasure
 import dagger.hilt.android.EntryPointAccessors
+import kotlinx.coroutines.delay
 import tn.dadadrive.app.AppProcessLifecycleEntryPoint
+import tn.dadadrive.core.theme.LocalAppColors
 import tn.dadadrive.domain.models.ActiveRide
 import tn.dadadrive.domain.models.AvailableRide
 import tn.dadadrive.domain.models.RideStatus
-import tn.dadadrive.presentation.map.HereMapViewComposable
+import tn.dadadrive.presentation.common.ScreenState
+import tn.dadadrive.presentation.common.dataOrNull
+import tn.dadadrive.presentation.common.errorOrNull
+import tn.dadadrive.presentation.common.isLoading
 import tn.dadadrive.presentation.map.AppMapDisplayMode
+import tn.dadadrive.presentation.map.HereMapViewComposable
 import tn.dadadrive.presentation.map.MapFloatingControlsRow
 import tn.dadadrive.presentation.map.MapViewModel
 import tn.dadadrive.presentation.profile.ProfileViewModel
-import tn.dadadrive.core.theme.LocalAppColors
 import tn.dadadrive.presentation.wallet.WalletViewModel
-import com.here.sdk.core.GeoCoordinates
-import com.here.sdk.mapview.MapMeasure
-import kotlinx.coroutines.delay
+import java.util.Locale
 import com.here.sdk.mapview.MapView as HereMapView
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,22 +108,31 @@ fun DriverHomeScreen(
     onLogout: () -> Unit,
     mapViewModel: MapViewModel = hiltViewModel(),
     driverViewModel: DriverViewModel = hiltViewModel(),
-    walletViewModel: WalletViewModel = hiltViewModel()
+    walletViewModel: WalletViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val user by profileViewModel.user.collectAsState()
     val currentLocation by mapViewModel.currentLocation.collectAsState()
     val locationHeadingDegrees by mapViewModel.locationHeadingDegrees.collectAsState()
-    val isOnline by driverViewModel.isOnline.collectAsState()
-    val isToggling by driverViewModel.isTogglingOnline.collectAsState()
-    val availableRides by driverViewModel.availableRides.collectAsState()
-    val isLoadingRides by driverViewModel.isLoadingRides.collectAsState()
+    val onlineState by driverViewModel.onlineState.collectAsState()
+    val availableRidesState by driverViewModel.availableRidesState.collectAsState()
+    val activeRideState by driverViewModel.activeRideState.collectAsState()
+    val isOnline = onlineState.dataOrNull() == true
+    val isToggling = onlineState.isLoading
+    val availableRides = availableRidesState.dataOrNull().orEmpty()
+    val activeRide = activeRideState.dataOrNull()
     val showAvailable by driverViewModel.showAvailableRides.collectAsState()
-    val activeRide by driverViewModel.activeRide.collectAsState()
     val showActive by driverViewModel.showActiveRide.collectAsState()
     val completeResult by driverViewModel.completeResult.collectAsState()
     val showCompleteToast by driverViewModel.showCompleteResult.collectAsState()
-    val errorMsg by driverViewModel.errorMessage.collectAsState()
+    // Merge per-domain errors. activeRide ops take priority (visible bottom sheet),
+    // then online toggle (top-level affordance), then list fetch (background polling).
+    val errorMsg: String? =
+        when (val s = activeRideState) {
+            is ScreenState.Error -> s.error.message
+            ScreenState.Idle, ScreenState.Loading, is ScreenState.Loaded ->
+                onlineState.errorOrNull()?.message ?: availableRidesState.errorOrNull()?.message
+        }
     val driverPreviewRoutes by mapViewModel.driverPreviewRouteGeometries.collectAsState()
     val wallet by walletViewModel.wallet.collectAsState()
     val walletLoading by walletViewModel.isLoading.collectAsState()
@@ -136,52 +146,57 @@ fun DriverHomeScreen(
     var locationGranted by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED
+                PackageManager.PERMISSION_GRANTED,
         )
     }
-    val permLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { r ->
-        locationGranted = r[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-            r[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        if (locationGranted) mapViewModel.startLocationUpdates()
-    }
+    val permLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions(),
+        ) { r ->
+            locationGranted = r[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                r[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            if (locationGranted) mapViewModel.startLocationUpdates()
+        }
     LaunchedEffect(Unit) {
-        if (locationGranted) mapViewModel.startLocationUpdates()
-        else {
+        if (locationGranted) {
+            mapViewModel.startLocationUpdates()
+        } else {
             permLauncher.launch(
                 arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                ),
             )
         }
     }
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
-        val obs = LifecycleEventObserver { _, e ->
-            when (e) {
-                Lifecycle.Event.ON_RESUME -> {
-                    profileViewModel.refresh()
-                    if (locationGranted) mapViewModel.startLocationUpdates()
+        val obs =
+            LifecycleEventObserver { _, e ->
+                when (e) {
+                    Lifecycle.Event.ON_RESUME -> {
+                        profileViewModel.refresh()
+                        if (locationGranted) mapViewModel.startLocationUpdates()
+                    }
+                    Lifecycle.Event.ON_PAUSE -> mapViewModel.stopLocationUpdates()
+                    else -> {}
                 }
-                Lifecycle.Event.ON_PAUSE -> mapViewModel.stopLocationUpdates()
-                else -> {}
             }
-        }
         lifecycleOwner.lifecycle.addObserver(obs)
         onDispose { lifecycleOwner.lifecycle.removeObserver(obs) }
     }
 
     DisposableEffect(mapViewModel, driverViewModel, context.applicationContext) {
-        val bridge = EntryPointAccessors.fromApplication(
-            context.applicationContext,
-            AppProcessLifecycleEntryPoint::class.java,
-        ).appProcessLifecycleBridge()
-        val remove = bridge.register {
-            driverViewModel.persistActiveRideDraftForBackground()
-            mapViewModel.persistOnProcessLifecycleStop()
-        }
+        val bridge =
+            EntryPointAccessors.fromApplication(
+                context.applicationContext,
+                AppProcessLifecycleEntryPoint::class.java,
+            ).appProcessLifecycleBridge()
+        val remove =
+            bridge.register {
+                driverViewModel.persistActiveRideDraftForBackground()
+                mapViewModel.persistOnProcessLifecycleStop()
+            }
         onDispose { remove() }
     }
 
@@ -227,14 +242,15 @@ fun DriverHomeScreen(
     var showMapTypePicker by remember { mutableStateOf(false) }
 
     val avatarUrl = user?.profilePictureUri
-    val initials = remember(user?.fullName) {
-        val p = (user?.fullName ?: "").trim().split(" ").filter { it.isNotBlank() }
-        when {
-            p.size >= 2 -> "${p[0].first().uppercaseChar()}${p[1].first().uppercaseChar()}"
-            p.size == 1 -> p[0].take(2).uppercase()
-            else -> "?"
+    val initials =
+        remember(user?.fullName) {
+            val p = (user?.fullName ?: "").trim().split(" ").filter { it.isNotBlank() }
+            when {
+                p.size >= 2 -> "${p[0].first().uppercaseChar()}${p[1].first().uppercaseChar()}"
+                p.size == 1 -> p[0].take(2).uppercase()
+                else -> "?"
+            }
         }
-    }
     val pickupPoint = activeRide?.let { GeoCoordinates(it.pickupLat, it.pickupLng) }
     val dropoffPoint = activeRide?.let { GeoCoordinates(it.dropoffLat, it.dropoffLng) }
 
@@ -254,7 +270,7 @@ fun DriverHomeScreen(
             userMarkerHeadingDegrees = locationHeadingDegrees,
             destinationPinColor = LocalAppColors.current.primary,
             onPickTargetUpdated = null,
-            mapViewRef = mapViewRef
+            mapViewRef = mapViewRef,
         )
 
         DriverTopOverlay(
@@ -264,7 +280,7 @@ fun DriverHomeScreen(
             onToggleOnline = { driverViewModel.toggleOnlineStatus() },
             onMenuClick = { showDriverMenu = true },
             onWalletClick = onNavigateToWallet,
-            modifier = Modifier.align(Alignment.TopCenter)
+            modifier = Modifier.align(Alignment.TopCenter),
         )
         MapFloatingControlsRow(
             showMapTypePicker = showMapTypePicker,
@@ -277,36 +293,39 @@ fun DriverHomeScreen(
                 }
             },
             recenterIconTint = LocalAppColors.current.textPrimary,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 12.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 12.dp),
             compact = true,
             anchorUnderStatusBar = false,
-            rowVerticalAlignment = Alignment.CenterVertically
+            rowVerticalAlignment = Alignment.CenterVertically,
         )
 
         DriverHomeBottomPanel(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(horizontal = 14.dp, vertical = 8.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
             isOnline = isOnline,
             availableCount = availableRides.size,
             onOpenRides = { driverViewModel.setShowAvailableRides(true) },
             onOpenWallet = onNavigateToWallet,
             onOpenStatistics = { showStatisticsSheet = true },
             onOpenSettings = onNavigateToColorSettings,
-            earningsText = "0 DADA"
+            earningsText = "0 DADA",
         )
 
         errorMsg?.let { msg ->
             Surface(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 108.dp)
-                    .padding(horizontal = 24.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 108.dp)
+                        .padding(horizontal = 24.dp),
                 color = LocalAppColors.current.errorRed.copy(alpha = 0.9f),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
             ) {
                 Text(msg, color = LocalAppColors.current.onPrimary, modifier = Modifier.padding(12.dp), fontSize = 13.sp)
             }
@@ -316,7 +335,7 @@ fun DriverHomeScreen(
             CompleteResultOverlay(
                 result = completeResult!!,
                 onDismiss = { driverViewModel.dismissCompleteToast() },
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp)
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
             )
         }
 
@@ -351,20 +370,20 @@ fun DriverHomeScreen(
                 onLogout = {
                     showDriverMenu = false
                     profileViewModel.logout(onFinished = onLogout)
-                }
+                },
             )
         }
 
         if (showAvailable) {
             ModalBottomSheet(
                 onDismissRequest = { driverViewModel.setShowAvailableRides(false) },
-                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             ) {
                 AvailableRidesList(
                     rides = availableRides,
                     onAccept = { driverViewModel.acceptRide(it) },
                     onRefuse = { driverViewModel.refuseRide(it) },
-                    onClose = { driverViewModel.setShowAvailableRides(false) }
+                    onClose = { driverViewModel.setShowAvailableRides(false) },
                 )
             }
         }
@@ -372,13 +391,13 @@ fun DriverHomeScreen(
         if (showActive && activeRide != null) {
             ModalBottomSheet(
                 onDismissRequest = { },
-                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             ) {
                 ActiveRideSheetContent(
                     ride = activeRide!!,
                     onStart = { driverViewModel.startRide() },
                     onComplete = { driverViewModel.completeRide() },
-                    onCancel = { driverViewModel.cancelRide() }
+                    onCancel = { driverViewModel.cancelRide() },
                 )
             }
         }
@@ -402,19 +421,19 @@ fun DriverHomeScreen(
                 onTimeout = {
                     dismissedRideId = ride.id
                     incomingRidePopup = null
-                }
+                },
             )
         }
 
         if (showStatisticsSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showStatisticsSheet = false },
-                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             ) {
                 DriverStatisticsSheet(
                     totalRides = user?.let { activeRide?.let { 1 } ?: 0 } ?: 0,
                     walletBalance = wallet?.balance ?: 0.0,
-                    onClose = { showStatisticsSheet = false }
+                    onClose = { showStatisticsSheet = false },
                 )
             }
         }
@@ -451,7 +470,7 @@ private fun IncomingRidePopup(
     onAccept: () -> Unit,
     onRefuse: () -> Unit,
     onClose: () -> Unit,
-    onTimeout: () -> Unit
+    onTimeout: () -> Unit,
 ) {
     val c = LocalAppColors.current
     val timeoutSeconds = 10
@@ -465,70 +484,73 @@ private fun IncomingRidePopup(
     }
     val progress = (secondsLeft.toFloat() / timeoutSeconds.toFloat()).coerceIn(0f, 1f)
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.55f))
-            .clickable(onClick = onClose),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.55f))
+                .clickable(onClick = onClose),
+        contentAlignment = Alignment.Center,
     ) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .clickable(enabled = false) {},
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .clickable(enabled = false) {},
             shape = RoundedCornerShape(20.dp),
             color = c.surfaceElevated,
-            shadowElevation = 12.dp
+            shadowElevation = 12.dp,
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(
                     text = stringResource(R.string.driver_incoming_ride_title),
                     color = c.textPrimary,
                     fontSize = 22.sp,
-                    fontWeight = FontWeight.Black
+                    fontWeight = FontWeight.Black,
                 )
                 Text(
                     text = stringResource(R.string.driver_pickup_line, ride.pickupAddress),
                     color = c.textPrimary,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Text(
                     text = stringResource(R.string.driver_dropoff_line, ride.dropoffAddress),
-                    color = c.textSecondary
+                    color = c.textSecondary,
                 )
-                val riderInfo = listOfNotNull(
-                    ride.riderName?.takeIf { it.isNotBlank() },
-                    ride.riderPhone?.takeIf { it.isNotBlank() }
-                ).joinToString(" ┬À ")
+                val riderInfo =
+                    listOfNotNull(
+                        ride.riderName?.takeIf { it.isNotBlank() },
+                        ride.riderPhone?.takeIf { it.isNotBlank() },
+                    ).joinToString(" ┬À ")
                 if (riderInfo.isNotBlank()) {
                     Text(
                         text = stringResource(R.string.driver_passenger_info, riderInfo),
                         color = c.textSecondary,
-                        fontSize = 13.sp
+                        fontSize = 13.sp,
                     )
                 }
                 Text(
                     text = stringResource(R.string.driver_fare_amount, ride.calculatedFare),
                     color = c.primary,
                     fontWeight = FontWeight.Black,
-                    fontSize = 28.sp
+                    fontSize = 28.sp,
                 )
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
                     color = c.primary,
-                    trackColor = c.surfaceMuted
+                    trackColor = c.surfaceMuted,
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     TextButton(
                         onClick = onRefuse,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text(stringResource(R.string.driver_refuse), color = c.errorRed, fontWeight = FontWeight.SemiBold)
                     }
@@ -536,12 +558,12 @@ private fun IncomingRidePopup(
                         onClick = onAccept,
                         modifier = Modifier.weight(1f),
                         enabled = secondsLeft > 0,
-                        colors = ButtonDefaults.buttonColors(containerColor = c.primary)
+                        colors = ButtonDefaults.buttonColors(containerColor = c.primary),
                     ) {
                         Text(
                             stringResource(R.string.driver_accept) + " (${secondsLeft}s)",
                             color = c.onPrimary,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                     }
                 }
@@ -558,46 +580,55 @@ private fun DriverTopOverlay(
     onToggleOnline: () -> Unit,
     onMenuClick: () -> Unit,
     onWalletClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val c = LocalAppColors.current
     Column(
-        modifier = modifier
-            .statusBarsPadding()
-            .fillMaxWidth()
+        modifier =
+            modifier
+                .statusBarsPadding()
+                .fillMaxWidth(),
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = c.surfaceElevated,
-            shadowElevation = 2.dp
+            shadowElevation = 2.dp,
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 8.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
             ) {
                 Surface(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .align(Alignment.CenterStart)
-                        .clickable(onClick = onMenuClick),
+                    modifier =
+                        Modifier
+                            .size(36.dp)
+                            .align(Alignment.CenterStart)
+                            .clickable(onClick = onMenuClick),
                     shape = CircleShape,
-                    color = c.surfaceMuted
+                    color = c.surfaceMuted,
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.cd_open_menu), tint = c.textPrimary, modifier = Modifier.size(18.dp))
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = stringResource(R.string.cd_open_menu),
+                            tint = c.textPrimary,
+                            modifier = Modifier.size(18.dp),
+                        )
                     }
                 }
                 Row(
                     modifier = Modifier.align(Alignment.Center),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .background(c.primary, RoundedCornerShape(8.dp)),
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .size(24.dp)
+                                .background(c.primary, RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center,
                     ) {
                         Text("D", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 13.sp)
                     }
@@ -607,36 +638,37 @@ private fun DriverTopOverlay(
         }
         Column(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Surface(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(999.dp),
                     color = c.surfaceElevated.copy(alpha = 0.95f),
-                    shadowElevation = 2.dp
+                    shadowElevation = 2.dp,
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Box(Modifier.size(10.dp).background(c.primary, CircleShape))
                         Text(stringResource(R.string.driver_online_short), color = c.textPrimary, fontWeight = FontWeight.SemiBold)
                         Surface(
-                            modifier = Modifier
-                                .size(width = 50.dp, height = 28.dp)
-                                .clickable(enabled = !isToggling, onClick = onToggleOnline),
+                            modifier =
+                                Modifier
+                                    .size(width = 50.dp, height = 28.dp)
+                                    .clickable(enabled = !isToggling, onClick = onToggleOnline),
                             shape = RoundedCornerShape(999.dp),
-                            color = if (isOnline) c.primary else c.surfaceMuted
+                            color = if (isOnline) c.primary else c.surfaceMuted,
                         ) {
                             Box(
                                 modifier = Modifier.fillMaxSize().padding(3.dp),
-                                contentAlignment = if (isOnline) Alignment.CenterEnd else Alignment.CenterStart
+                                contentAlignment = if (isOnline) Alignment.CenterEnd else Alignment.CenterStart,
                             ) {
                                 Box(Modifier.size(22.dp).background(Color.White, CircleShape))
                             }
@@ -647,12 +679,12 @@ private fun DriverTopOverlay(
                     modifier = Modifier.clickable(onClick = onWalletClick),
                     shape = RoundedCornerShape(999.dp),
                     color = c.surfaceElevated.copy(alpha = 0.95f),
-                    shadowElevation = 2.dp
+                    shadowElevation = 2.dp,
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         Icon(Icons.Default.AccountBalanceWallet, null, tint = c.primary, modifier = Modifier.size(16.dp))
                         Text("$walletAmountText DADA", color = c.textPrimary, fontWeight = FontWeight.Bold)
@@ -673,19 +705,19 @@ private fun DriverHomeBottomPanel(
     onOpenWallet: () -> Unit,
     onOpenStatistics: () -> Unit,
     onOpenSettings: () -> Unit,
-    earningsText: String
+    earningsText: String,
 ) {
     val c = LocalAppColors.current
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
         color = c.surfaceElevated,
-        shadowElevation = 10.dp
+        shadowElevation = 10.dp,
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 DriverQuickAction(Icons.Default.DirectionsCar, stringResource(R.string.driver_menu_my_rides), onClick = onOpenRides)
                 DriverQuickAction(Icons.Default.AccountBalanceWallet, stringResource(R.string.wallet_title), onClick = onOpenWallet)
@@ -695,19 +727,31 @@ private fun DriverHomeBottomPanel(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                color = c.surface
+                color = c.surface,
             ) {
                 Column(Modifier.padding(12.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Text(stringResource(R.string.driver_todays_earnings), color = c.textPrimary, fontWeight = FontWeight.SemiBold)
                         Text(stringResource(R.string.driver_see_all), color = c.primary, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(earningsText, color = c.primary, fontWeight = FontWeight.Black, fontSize = 34.sp)
                     Text(
-                        text = if (isOnline) stringResource(R.string.driver_rides_count, availableCount) else stringResource(R.string.driver_offline),
+                        text =
+                            if (isOnline) {
+                                stringResource(
+                                    R.string.driver_rides_count,
+                                    availableCount,
+                                )
+                            } else {
+                                stringResource(R.string.driver_offline)
+                            },
                         color = c.textSecondary,
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
                     )
                 }
             }
@@ -716,17 +760,21 @@ private fun DriverHomeBottomPanel(
 }
 
 @Composable
-private fun DriverQuickAction(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
+private fun DriverQuickAction(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit,
+) {
     val c = LocalAppColors.current
     Column(
         modifier = Modifier.clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Surface(
             shape = RoundedCornerShape(12.dp),
             color = c.surfaceMuted,
-            modifier = Modifier.size(52.dp)
+            modifier = Modifier.size(52.dp),
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Icon(icon, null, tint = c.primary, modifier = Modifier.size(22.dp))
@@ -752,23 +800,24 @@ private fun DriverSideMenuOverlay(
     onLanguage: () -> Unit,
     onHelp: () -> Unit,
     onTerms: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
 ) {
     val c = LocalAppColors.current
     Box(Modifier.fillMaxSize()) {
         Box(
-            modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.35f)).clickable(onClick = onDismiss)
+            modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.35f)).clickable(onClick = onDismiss),
         )
         Surface(
-            modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(0.85f)
-                .statusBarsPadding(),
-            color = c.background
+            modifier =
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(0.85f)
+                    .statusBarsPadding(),
+            color = c.background,
         ) {
             Column(
                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Surface(color = c.primary, modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -776,7 +825,12 @@ private fun DriverSideMenuOverlay(
                             Surface(shape = CircleShape, color = c.surface, modifier = Modifier.size(44.dp)) {
                                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                     if (!avatarUrl.isNullOrBlank()) {
-                                        AsyncImage(model = avatarUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                                        AsyncImage(
+                                            model = avatarUrl,
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop,
+                                        )
                                     } else {
                                         Text(initials, color = c.textPrimary, fontWeight = FontWeight.Bold)
                                     }
@@ -786,14 +840,22 @@ private fun DriverSideMenuOverlay(
                                 Text(userName, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                                 Text(phone, color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
                             }
-                            Surface(shape = CircleShape, color = Color.White.copy(alpha = 0.25f), modifier = Modifier.size(26.dp).clickable(onClick = onDismiss)) {
+                            Surface(
+                                shape = CircleShape,
+                                color = Color.White.copy(alpha = 0.25f),
+                                modifier = Modifier.size(26.dp).clickable(onClick = onDismiss),
+                            ) {
                                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                     Icon(Icons.Default.Close, null, tint = Color.White, modifier = Modifier.size(14.dp))
                                 }
                             }
                         }
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                            Text(stringResource(R.string.driver_side_menu_wallet_line, walletAmountText), color = Color.White, fontSize = 12.sp)
+                            Text(
+                                stringResource(R.string.driver_side_menu_wallet_line, walletAmountText),
+                                color = Color.White,
+                                fontSize = 12.sp,
+                            )
                             Text(stringResource(R.string.driver_side_menu_rides_line, ridesCount), color = Color.White, fontSize = 12.sp)
                         }
                     }
@@ -802,14 +864,35 @@ private fun DriverSideMenuOverlay(
                 DriverMenuTile(Icons.Default.DirectionsCar, stringResource(R.string.driver_menu_my_rides), onMyRides)
                 DriverMenuTile(Icons.Default.AccountBalanceWallet, stringResource(R.string.wallet_title), onWallet)
                 DriverMenuTile(Icons.Default.BarChart, stringResource(R.string.driver_menu_statistics), onStatistics)
-                Text(stringResource(R.string.driver_menu_account), color = c.textHint, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 16.dp))
+                Text(
+                    stringResource(R.string.driver_menu_account),
+                    color = c.textHint,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
                 DriverMenuTile(Icons.Default.Person, stringResource(R.string.menu_edit_profile), onEditProfile)
                 DriverMenuTile(Icons.Default.Settings, stringResource(R.string.menu_language), onLanguage, trailing = "English")
-                Text(stringResource(R.string.driver_menu_info), color = c.textHint, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 16.dp))
+                Text(
+                    stringResource(R.string.driver_menu_info),
+                    color = c.textHint,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
                 DriverMenuTile(Icons.Default.List, stringResource(R.string.menu_help_support), onHelp)
                 DriverMenuTile(Icons.Default.List, stringResource(R.string.menu_terms_of_service), onTerms)
-                DriverMenuTile(Icons.Default.PowerSettingsNew, stringResource(R.string.menu_log_out), onLogout, tint = c.errorRed, showChevron = false)
-                Text(stringResource(R.string.app_version_label), color = c.textHint, fontSize = 11.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                DriverMenuTile(
+                    Icons.Default.PowerSettingsNew,
+                    stringResource(R.string.menu_log_out),
+                    onLogout,
+                    tint = c.errorRed,
+                    showChevron = false,
+                )
+                Text(
+                    stringResource(R.string.app_version_label),
+                    color = c.textHint,
+                    fontSize = 11.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
             }
         }
     }
@@ -822,12 +905,12 @@ private fun DriverMenuTile(
     onClick: () -> Unit,
     trailing: String? = null,
     tint: Color? = null,
-    showChevron: Boolean = true
+    showChevron: Boolean = true,
 ) {
     val c = LocalAppColors.current
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Surface(shape = RoundedCornerShape(8.dp), color = c.surfaceMuted, modifier = Modifier.size(30.dp)) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -842,11 +925,15 @@ private fun DriverMenuTile(
 }
 
 @Composable
-private fun DriverStatisticsSheet(totalRides: Int, walletBalance: Double, onClose: () -> Unit) {
+private fun DriverStatisticsSheet(
+    totalRides: Int,
+    walletBalance: Double,
+    onClose: () -> Unit,
+) {
     val c = LocalAppColors.current
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.driver_stats_title), color = c.textPrimary, fontWeight = FontWeight.Bold, fontSize = 24.sp)
@@ -858,7 +945,12 @@ private fun DriverStatisticsSheet(totalRides: Int, walletBalance: Double, onClos
                     Icon(Icons.Default.Bolt, null, tint = c.primary, modifier = Modifier.size(14.dp))
                     Text(stringResource(R.string.driver_stats_session), color = c.textPrimary, fontWeight = FontWeight.SemiBold)
                     Surface(shape = RoundedCornerShape(999.dp), color = c.primary.copy(alpha = 0.15f)) {
-                        Text(stringResource(R.string.driver_stats_since, "13:09"), color = c.primary, fontSize = 11.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+                        Text(
+                            stringResource(R.string.driver_stats_since, "13:09"),
+                            color = c.primary,
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        )
                     }
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -870,7 +962,10 @@ private fun DriverStatisticsSheet(totalRides: Int, walletBalance: Double, onClos
                     DriverStatCard("34:06", stringResource(R.string.driver_stats_online_time), "", modifier = Modifier.weight(1f))
                 }
                 Surface(shape = RoundedCornerShape(10.dp), color = c.surfaceMuted) {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
                         Text(stringResource(R.string.driver_stats_avg_fare), color = c.textSecondary)
                         Text("ÔÇö", color = c.textPrimary, fontWeight = FontWeight.SemiBold)
                         Text(stringResource(R.string.driver_stats_commission_paid), color = c.textSecondary)
@@ -883,7 +978,12 @@ private fun DriverStatisticsSheet(totalRides: Int, walletBalance: Double, onClos
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             DriverStatCard(totalRides.toString(), stringResource(R.string.driver_stats_total_rides), "", modifier = Modifier.weight(1f))
             DriverStatCard("ÔÇö", stringResource(R.string.driver_stats_rating), "", modifier = Modifier.weight(1f))
-            DriverStatCard(String.format(Locale.US, "%.0f", walletBalance), stringResource(R.string.driver_stats_wallet_balance), "", modifier = Modifier.weight(1f))
+            DriverStatCard(
+                String.format(Locale.US, "%.0f", walletBalance),
+                stringResource(R.string.driver_stats_wallet_balance),
+                "",
+                modifier = Modifier.weight(1f),
+            )
         }
         Text(stringResource(R.string.driver_tips_title), color = c.textPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
         DriverTip(stringResource(R.string.driver_tip_peak))
@@ -894,7 +994,12 @@ private fun DriverStatisticsSheet(totalRides: Int, walletBalance: Double, onClos
 }
 
 @Composable
-private fun DriverStatCard(value: String, label: String, suffix: String, modifier: Modifier = Modifier) {
+private fun DriverStatCard(
+    value: String,
+    label: String,
+    suffix: String,
+    modifier: Modifier = Modifier,
+) {
     val c = LocalAppColors.current
     Surface(modifier = modifier, shape = RoundedCornerShape(12.dp), color = c.surface) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -914,7 +1019,7 @@ private fun DriverTip(text: String) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Box(Modifier.size(6.dp).background(c.primary, CircleShape))
             Text(text, color = c.textPrimary, fontSize = 13.sp)
@@ -927,36 +1032,51 @@ private fun AvailableRidesList(
     rides: List<AvailableRide>,
     onAccept: (AvailableRide) -> Unit,
     onRefuse: (AvailableRide) -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
     val c = LocalAppColors.current
     Column(Modifier.fillMaxWidth().padding(16.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(R.string.driver_available_rides), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = c.textPrimary)
-            Text(stringResource(R.string.driver_close), color = c.primary, modifier = Modifier.clickable { onClose() }, fontWeight = FontWeight.SemiBold)
+            Text(
+                stringResource(R.string.driver_close),
+                color = c.primary,
+                modifier =
+                    Modifier.clickable {
+                        onClose()
+                    },
+                fontWeight = FontWeight.SemiBold,
+            )
         }
         Spacer(Modifier.height(12.dp))
         rides.forEach { ride ->
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 6.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = c.surfaceMuted
+                color = c.surfaceMuted,
             ) {
                 Column(Modifier.padding(12.dp)) {
                     Text(ride.pickupAddress, color = c.textPrimary, fontWeight = FontWeight.SemiBold, maxLines = 2)
-                    Text(stringResource(R.string.driver_dropoff_arrow, ride.dropoffAddress), color = c.textSecondary, fontSize = 12.sp, maxLines = 2)
-                    val bookerContact = listOfNotNull(
-                        ride.riderName?.takeIf { it.isNotBlank() },
-                        ride.riderPhone?.takeIf { it.isNotBlank() }
-                    ).joinToString(" ┬À ")
+                    Text(
+                        stringResource(R.string.driver_dropoff_arrow, ride.dropoffAddress),
+                        color = c.textSecondary,
+                        fontSize = 12.sp,
+                        maxLines = 2,
+                    )
+                    val bookerContact =
+                        listOfNotNull(
+                            ride.riderName?.takeIf { it.isNotBlank() },
+                            ride.riderPhone?.takeIf { it.isNotBlank() },
+                        ).joinToString(" ┬À ")
                     if (bookerContact.isNotEmpty()) {
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = stringResource(R.string.driver_booker_info, bookerContact),
                             color = c.textSecondary,
-                            fontSize = 11.sp
+                            fontSize = 11.sp,
                         )
                     }
                     if (ride.pickupForOther) {
@@ -965,18 +1085,19 @@ private fun AvailableRidesList(
                             stringResource(R.string.driver_pickup_for_other_hint),
                             color = c.textSecondary,
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
                         )
-                        val contact = listOfNotNull(
-                            ride.passengerName?.takeIf { it.isNotBlank() },
-                            ride.passengerPhone?.takeIf { it.isNotBlank() }
-                        ).joinToString(" ┬À ")
+                        val contact =
+                            listOfNotNull(
+                                ride.passengerName?.takeIf { it.isNotBlank() },
+                                ride.passengerPhone?.takeIf { it.isNotBlank() },
+                            ).joinToString(" ┬À ")
                         if (contact.isNotEmpty()) {
                             Text(
                                 text = stringResource(R.string.driver_passenger_info, contact),
                                 color = c.textPrimary,
                                 fontSize = 12.sp,
-                                maxLines = 2
+                                maxLines = 2,
                             )
                         }
                     }
@@ -1000,34 +1121,36 @@ private fun ActiveRideSheetContent(
     ride: ActiveRide,
     onStart: () -> Unit,
     onComplete: () -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     val c = LocalAppColors.current
     Column(Modifier.fillMaxWidth().padding(20.dp)) {
         Text(stringResource(R.string.driver_active_ride), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = c.textPrimary)
         Spacer(Modifier.height(12.dp))
-        val bookerContact = listOfNotNull(
-            ride.riderName?.takeIf { it.isNotBlank() },
-            ride.riderPhone?.takeIf { it.isNotBlank() }
-        ).joinToString(" ┬À ")
+        val bookerContact =
+            listOfNotNull(
+                ride.riderName?.takeIf { it.isNotBlank() },
+                ride.riderPhone?.takeIf { it.isNotBlank() },
+            ).joinToString(" ┬À ")
         if (bookerContact.isNotEmpty()) {
             Text(
                 text = stringResource(R.string.driver_booker_info, bookerContact),
                 color = c.textSecondary,
-                fontSize = 12.sp
+                fontSize = 12.sp,
             )
             Spacer(Modifier.height(4.dp))
         }
         if (ride.pickupForOther) {
-            val passengerContact = listOfNotNull(
-                ride.passengerName?.takeIf { it.isNotBlank() },
-                ride.passengerPhone?.takeIf { it.isNotBlank() }
-            ).joinToString(" ┬À ")
+            val passengerContact =
+                listOfNotNull(
+                    ride.passengerName?.takeIf { it.isNotBlank() },
+                    ride.passengerPhone?.takeIf { it.isNotBlank() },
+                ).joinToString(" ┬À ")
             if (passengerContact.isNotEmpty()) {
                 Text(
                     text = stringResource(R.string.driver_passenger_info, passengerContact),
                     color = c.textSecondary,
-                    fontSize = 12.sp
+                    fontSize = 12.sp,
                 )
                 Spacer(Modifier.height(4.dp))
             }
@@ -1038,12 +1161,16 @@ private fun ActiveRideSheetContent(
             stringResource(R.string.driver_fare_line, ride.finalFare ?: ride.calculatedFare),
             color = c.primary,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 8.dp)
+            modifier = Modifier.padding(top = 8.dp),
         )
         Spacer(Modifier.height(16.dp))
         when (ride.status) {
             RideStatus.Accepted -> {
-                Button(onClick = onStart, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = c.primary)) {
+                Button(
+                    onClick = onStart,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = c.primary),
+                ) {
                     Text(stringResource(R.string.driver_start_ride), color = c.onPrimary)
                 }
                 Spacer(Modifier.height(8.dp))
@@ -1051,11 +1178,15 @@ private fun ActiveRideSheetContent(
                     stringResource(R.string.driver_cancel_ride),
                     color = c.errorRed,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.fillMaxWidth().clickable { onCancel() }.padding(12.dp)
+                    modifier = Modifier.fillMaxWidth().clickable { onCancel() }.padding(12.dp),
                 )
             }
             RideStatus.InProgress -> {
-                Button(onClick = onComplete, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = c.primary)) {
+                Button(
+                    onClick = onComplete,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = c.primary),
+                ) {
                     Text(stringResource(R.string.driver_complete_ride), color = c.onPrimary)
                 }
             }
@@ -1068,16 +1199,17 @@ private fun ActiveRideSheetContent(
 private fun CompleteResultOverlay(
     result: tn.dadadrive.domain.models.CompleteRideResult,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val c = LocalAppColors.current
     Surface(
-        modifier = modifier
-            .padding(horizontal = 24.dp)
-            .clickable { onDismiss() },
+        modifier =
+            modifier
+                .padding(horizontal = 24.dp)
+                .clickable { onDismiss() },
         shape = RoundedCornerShape(16.dp),
         color = c.surfaceElevated,
-        shadowElevation = 8.dp
+        shadowElevation = 8.dp,
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(stringResource(R.string.driver_ride_completed), fontWeight = FontWeight.Bold, color = c.textPrimary)
