@@ -664,9 +664,23 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 
 ---
 
-### Phase R-1.3 — Idempotency-key automatique
+### Phase R-1.3 — Idempotency-key automatique ✅
+**Statut** : Terminée le 2026-05-17 — 4 commits push sur `origin/main`.
+- `60532b7` feat(network) — @Idempotent annotation marker
+- `980e210` feat(network) — IdempotencyKeyInterceptor reusing IdempotencyKeyGenerator
+- `fa436a2` test(network) — IdempotencyKeyInterceptorTest (5 cas MockWebServer)
+- `13fff2f` refactor(network) — wire interceptor + annotate 4 endpoints
+
+**Métriques finales**
+- 4 endpoints annotés `@Idempotent` : `RidesApiService.requestRide`, `pickRideOffer`, `submitRideRating` + `DriverApiService.acceptRide`
+- Interceptor wiré **avant** `RetryInterceptor` → clé stable across retries (preuve : test "pre-existing header preserved")
+- Réutilisation `IdempotencyKeyGenerator` existant (zéro doublon UUID logic)
+- Header lowercase `idempotency-key` aligné avec `ApiClient.kt:46` legacy
+- 5 tests verts dans `IdempotencyKeyInterceptorTest`
+- `WalletApiService` pas annoté (pas de POST en R-1.x ; `top-up confirm` arrivera en R-6.5)
+
 **Objectif** : header `idempotency-key` injecté automatiquement sur ride create / ride accept / wallet topup confirm.
-**Sévérité** : Important — **Effort** : 3–4 h
+**Sévérité** : Important — **Effort estimé** : 3–4 h — **Effort réel** : ~1.5h
 **Dépendances** : R-1.1
 **Catégorie** : Bug latent (doublons)
 
@@ -682,18 +696,27 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 - Modifiés : 3 services Retrofit (annotations), `NetworkModule.kt` (ajout interceptor)
 
 **Critères d'acceptation**
-- [ ] Annotation `@Idempotent` reconnue par interceptor
-- [ ] UUID v4 généré + injecté
-- [ ] Retry interne préserve la même clé
-- [ ] 3 tests passent
+- [x] Annotation `@Idempotent` reconnue par interceptor via `retrofit2.Invocation` tag
+- [x] UUID v4 généré + injecté (regex-validé dans le test)
+- [x] Retry interne préserve la même clé (interceptor wiré avant RetryInterceptor + check `header != null`)
+- [x] 5 tests passent (cas annoté / non-annoté / replay / 2 successifs uniques / Invocation null)
 
 **Vérification** : log requête `requestRide` ⇒ `idempotency-key: uuid` présent.
 
 ---
 
-### Phase R-1.4 — Tests parsing/error mapping
+### Phase R-1.4 — Tests parsing/error mapping ✅
+**Statut** : Terminée le 2026-05-17 — 1 commit push sur `origin/main`.
+- `ff6349f` test(network) — extend ApiCallTest + PresentableErrorMapperTest coverage
+
+**Métriques finales**
+- `ApiCallTest` : +3 cas (8 total) — Unit branch ambigu, success=false sur HTTP 200, HTTP 500 empty body
+- `PresentableErrorMapperTest` : +3 cas (11 total) — parseErrorCodeFromBody via HttpException, retryAfterSeconds 429 avec et sans Retry-After
+- Couverture `data/network/envelope/` + `data/network/error/` désormais ~85 % visuel (lookup table exhaustive + cas edge)
+- Sprint S1 (R-1.1 → R-1.4) **complet et push**
+
 **Objectif** : harnais de tests pour la couche réseau (ApiResponse, error mapping, idempotency).
-**Sévérité** : Important — **Effort** : 3–6 h
+**Sévérité** : Important — **Effort estimé** : 3–6 h — **Effort réel** : ~30min (additif sur tests existants)
 **Dépendances** : R-1.1, R-1.2, R-1.3
 **Catégorie** : Missing tests
 
