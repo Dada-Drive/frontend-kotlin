@@ -605,9 +605,31 @@ L'audit S0 a relevé 6 `!!` subsistant hors `DriverSetupScreen` (refactorisé en
 
 ---
 
-### Phase R-1.2 — Mapping codes erreur localisés
+### Phase R-1.2 — Mapping codes erreur localisés ✅
+**Statut** : Terminée le 2026-05-17 — 7 commits push sur `origin/main`.
+- `75ca270` feat(domain) — BackendErrorCode enum (34 codes + UNKNOWN fallback)
+- `c44f791` test(domain) — BackendErrorCodeTest (6 cas)
+- `a5d0d49` refactor(error) — wire BackendErrorCode + plug BackendException in PresentableErrorMapper
+- `60dc1da` test(error) — PresentableErrorMapperTest (8 cas MockK-based)
+- `c71bcf0` test(presentation) — ErrorSnackbar Paparazzi (FR LTR + AR RTL)
+- `5eaaec9` chore(test) — re-record SplashScreen baseline (pré-existing drift)
+- (ce commit) docs(plan) — mark R-1.2 ✅
+
+**Métriques finales**
+- 34 codes typés dans `BackendErrorCode` enum + `UNKNOWN` fallback
+- `when (BackendErrorCode)` exhaustif → ajouter un code force une erreur compilation côté mapper
+- `BackendException` (R-1.1 envelope) câblé dans `fromThrowable()` → repos R-1.1 reçoivent maintenant messages localisés
+- `PresentableError` enrichi avec `code: BackendErrorCode?` optionnel (back-compat strict, default null)
+- **0 nouvelle string ajoutée** : les 37 entrées `error_*` étaient déjà synchrones dans values/values-fr/values-ar (validé par grep diff)
+- 14 tests verts (6 BackendErrorCode + 8 PresentableErrorMapper)
+- 2 snapshots Paparazzi (FR LTR + AR RTL `DesignSnackbar`)
+- `TOKEN_EXPIRED` / `TOKEN_INVALID` skip préservé (délégation TokenAuthenticator)
+
+**Approche révisée vs plan initial**
+Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, mapping existant 34 codes via `when (String)`). R-1.2 a donc consisté à **refactor en type-safe** plutôt qu'en création from scratch.
+
 **Objectif** : codes backend (`VALIDATION_ERROR`, `UNAUTHORIZED`, `RIDE_NOT_FOUND`, etc.) traduits en messages utilisateur localisés (ar/fr/en).
-**Sévérité** : Critique — **Effort** : 4–6 h
+**Sévérité** : Critique — **Effort estimé** : 4–6 h — **Effort réel** : ~1.5h
 **Dépendances** : R-1.1
 **Catégorie** : Missing feature
 
@@ -625,15 +647,20 @@ L'audit S0 a relevé 6 `!!` subsistant hors `DriverSetupScreen` (refactorisé en
 - `domain/models/PresentableError.kt` (déjà existant, à enrichir)
 
 **Critères d'acceptation**
-- [ ] 30 codes mappés
-- [ ] 3 locales (ar/fr/en) complètes
-- [ ] Test unit sur 5 codes au hasard
-- [ ] Snapshot Paparazzi d'une snackbar avec un message d'erreur localisé
+- [x] 34 codes mappés (vs 30 attendus) via enum `BackendErrorCode` type-safe
+- [x] 3 locales (ar/fr/en) complètes (37 entrées `error_*` synchrones, validé par grep diff)
+- [x] Tests unit sur ≥ 5 codes (6 dans BackendErrorCodeTest + 8 dans PresentableErrorMapperTest)
+- [x] Snapshot Paparazzi snackbar (FR LTR + AR RTL = 2 snapshots)
+- [x] `BackendException` (R-1.1) câblé dans `PresentableErrorMapper.fromThrowable()`
+- [x] `PresentableError` enrichi avec `code: BackendErrorCode?` optionnel
 
 **Vérification**
 - Provoquer une 422 → snackbar affiche le texte traduit selon device locale.
+- `./gradlew clean ktlintCheck detekt :app:compileDebugKotlin :app:testDebugUnitTest :app:verifyPaparazziDebug` → BUILD SUCCESSFUL
 
 **Risques** : codes manquants ⇒ fallback `error_unknown`.
+
+> **Note** : `TOKEN_EXPIRED` / `TOKEN_INVALID` volontairement absents de l'enum — gérés par `TokenAuthenticator` (refresh-and-retry flow upstream), pas par le mapper user-facing.
 
 ---
 
