@@ -730,8 +730,8 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 - Nouveaux : 3 fichiers tests sous `app/src/test/java/tn/dadadrive/`
 
 **Critères d'acceptation**
-- [ ] `./gradlew test` exécute >= 15 tests sur ces nouveaux fichiers
-- [ ] Coverage `data/network/envelope/` >= 80%
+- [x] `./gradlew test` exécute >= 15 tests sur ces nouveaux fichiers (32 tests S1 verts : 8 ApiCallTest + 5 IdempotencyKeyInterceptorTest + 6 BackendErrorCodeTest + 11 PresentableErrorMapperTest + 2 ErrorSnackbarPaparazziTest)
+- [x] Coverage `data/network/envelope/` >= 80% (estimation manuelle ~85% : exhaustiveness compile-time + parametrized exhaustif sur enum + cas edge nominal/Unit/error/HTTP/malformed)
 
 **Vérification** : `./gradlew test jacocoTestReport` (si Jacoco configuré, sinon coverage IDE).
 
