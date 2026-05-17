@@ -796,7 +796,7 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 
 ---
 
-### Phase R-2.2 — Refactor ViewModels vers ScreenState 🟡 (2/9 Vague A)
+### Phase R-2.2 — Refactor ViewModels vers ScreenState 🟡 (3/9 Vagues A+B partielles)
 **Objectif** : remplacer tous les `_loading: Boolean + _error: String?` par `MutableStateFlow<ScreenState<T>>`.
 **Sévérité** : Critique — **Effort** : 12–18 h
 **Dépendances** : R-2.1
@@ -808,6 +808,19 @@ Audit révèle que 80 % du travail était déjà fait (37 strings synchrones, ma
 - 🟢 `AuthViewModel` **déjà conforme** — sealed `AuthState` + `OtpUiState` propriétaires (jamais legacy). Documenté dans [`ARCHITECTURE.md`](ARCHITECTURE.md).
 - ⏸ `MapViewModel` déféré en **Vague C dédiée** (1029 LOC, 47 StateFlow, 9 domaines, controllers délégués — hors budget Vague A)
 - ⏸ Vague B : `WalletViewModel`, `ProfileViewModel`, `NameEntryViewModel`, `LanguageViewModel`, `RoleViewModel`, `SessionViewModel` (6 VM secondaires)
+
+**État après Vague B partielle (2026-05-17 soir)** : 3/9 VM migrés au total
+- ✅ B.1 `NameEntryViewModel` (single-flow `ScreenState<Unit>`) + 5 tests verts
+  - Commits : `5659c44`, `bca3447`, `3bb7a54` (footer `Refs R-2.2`)
+- ⏸️ B.2 `WalletViewModel` : refactor multi-flow démarré, **stash en local** pour reprise
+  - Stash msg : "WIP R-2.2 B.2 WalletViewModel multi-flow refactor (resume later)"
+  - Reprendre via : `git stash list` puis `git stash pop` (ou `apply` selon préférence)
+  - Bug connu au moment du stash : test `walletAmountCompactReadsFromLoadedState`
+    assertion ≠ (décalage formatage `%.0f` half-up sur 42.5 → "43" et non "42" — fix appliqué dans le stash)
+- ⏸️ B.3-B.6 (Profile, Language, Role, Session) : non démarrés
+  - Language (31 LOC, pas de async) : sera probablement skip (pas de ScreenState applicable)
+  - Role + Session : ont déjà leur sealed propriétaire (comme Auth) — doc-only à venir
+  - Profile : legacy trio, candidat single-flow simple
 
 **Inventaire corrigé** : 9 VM legacy (vs 14 plan initial — AuthViewModel exclu car déjà sealed).
 
