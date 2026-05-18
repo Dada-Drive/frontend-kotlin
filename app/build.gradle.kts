@@ -135,7 +135,44 @@ android {
                 }
         }
     }
-    packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a")
+            isUniversalApk = false
+        }
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+        resources {
+            excludes +=
+                setOf(
+                    "META-INF/AL2.0",
+                    "META-INF/LGPL2.1",
+                    "META-INF/DEPENDENCIES",
+                    "META-INF/LICENSE",
+                    "META-INF/LICENSE.txt",
+                    "META-INF/LICENSE.md",
+                    "META-INF/license.txt",
+                    "META-INF/NOTICE",
+                    "META-INF/NOTICE.txt",
+                    "META-INF/NOTICE.md",
+                    "META-INF/notice.txt",
+                    "META-INF/ASL2.0",
+                    "META-INF/*.kotlin_module",
+                    "META-INF/*.version",
+                    "META-INF/proguard/*",
+                    "META-INF/MANIFEST.MF",
+                    "META-INF/INDEX.LIST",
+                    "kotlin/**.kotlin_metadata",
+                    "kotlin-tooling-metadata.json",
+                    "DebugProbesKt.bin",
+                )
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

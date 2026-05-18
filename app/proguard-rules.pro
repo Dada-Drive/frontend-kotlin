@@ -47,3 +47,35 @@
 
 # Rétrofit
 -keep,allowobfuscation,allowshrinking interface tn.turbodrive.data.network.api.** { *; }
+-keepattributes Signature, InnerClasses, EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+-keepattributes AnnotationDefault
+-keep,allowobfuscation,allowshrinking interface retrofit2.Call
+-keep,allowobfuscation,allowshrinking class retrofit2.Response
+-keepclasseswithmembers,includedescriptorclasses class * {
+    @retrofit2.http.* <methods>;
+}
+
+# Hilt / Dagger
+-keep,allowobfuscation,allowshrinking @dagger.hilt.android.lifecycle.HiltViewModel class *
+-keep class dagger.hilt.** { *; }
+-dontwarn dagger.hilt.**
+
+# Kotlinx Serialization (the project uses the kotlin.serialization plugin)
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.AnnotationsKt
+-keepclasseswithmembers class * {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+-keep,includedescriptorclasses class tn.turbodrive.**$$serializer { *; }
+-keepclassmembers class tn.turbodrive.** {
+    *** Companion;
+}
+
+# Domain models + envelope (kept against reflection / serialization)
+-keep class tn.turbodrive.domain.models.** { *; }
+-keep class tn.turbodrive.data.network.envelope.** { *; }
+
+# Firebase / Crashlytics
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**

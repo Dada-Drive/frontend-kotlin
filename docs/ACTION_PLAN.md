@@ -1809,24 +1809,31 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 
 ---
 
-### Phase R-8.5 — P14 Release readiness
-**Objectif** : signing release, AAB bundle, Play Console config, mapping R8 uploadé.
-**Sévérité** : Important — **Effort** : 8–16 h
-**Dépendances** : R-0.8
-**Catégorie** : Release
+### Phase R-8.5 — P14 Release readiness 🟡 (partial — 35% complet)
 
-**Tâches**
-1. Configurer signing config release (keystore + secrets CI).
-2. Génération AAB `./gradlew bundleRelease`.
-3. Play Console : créer app, fiche listing, screenshots, privacy policy URL.
-4. R8 mapping upload Crashlytics + Play.
-5. Test interne sur Play Console (closed testing track).
-6. Checklist `docs/RELEASE.md`.
+**Effort plan** : 8-16h — **Effort réel restant** : ~5-10h
 
-**Critères d'acceptation**
-- [ ] AAB signé generé
-- [ ] Upload Play Console réussi (closed testing)
-- [ ] Mapping Crashlytics OK
+**Déjà fait (anticipé en sprint S4 entre R-4.5 et R-5.1)** :
+- ✅ ABI split arm64-v8a configuré (build.gradle.kts)
+- ✅ R8 minify + resource shrink actifs (release build)
+- ✅ R8 full mode (gradle.properties)
+- ✅ Packaging optim (excludes META-INF + jniLibs)
+- ✅ ProGuard rules pour Hilt + Retrofit + HERE Maps + Firebase + DadaDrive
+- ✅ Build release fonctionnel + installable + 55 MB validé (vs 219 MB debug, -75%)
+
+**Reste à faire** :
+- [ ] Configurer signing config release (keystore prod + secrets CI)
+- [ ] Génération AAB `./gradlew bundleRelease`
+- [ ] Play Console : créer app, fiche listing, screenshots
+- [ ] R8 mapping upload Crashlytics + Play
+- [ ] Test interne sur Play Console (closed testing track)
+- [ ] Checklist `docs/RELEASE.md`
+
+**Commits early** : [hash du commit build optim]
+
+**Risques tracés** :
+- Chaque nouveau sprint (S5+) doit tester en release pour éviter régression ProGuard
+- ABI split arm64-v8a limite à phones 2019+ (à valider avec target tunisien)
 
 ---
 
