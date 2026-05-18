@@ -35,14 +35,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -84,6 +76,7 @@ import androidx.compose.ui.unit.sp
 import com.turbodrive.R
 import tn.turbodrive.core.constants.Constants
 import tn.turbodrive.core.designsystem.spacing.AppSpacing
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.AppTypography
 import tn.turbodrive.core.theme.LocalAppColors
 
@@ -353,7 +346,7 @@ fun PhoneScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
+                                painter = painterResource(AppIcon.arrowLeft),
                                 contentDescription = stringResource(R.string.cd_back),
                                 tint = fg,
                                 modifier = Modifier.size(20.dp),
@@ -421,7 +414,7 @@ fun PhoneScreen(
                             )
                             Spacer(Modifier.width(4.dp))
                             Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
+                                painter = painterResource(AppIcon.chevronDown),
                                 contentDescription = stringResource(R.string.cd_change_country),
                                 tint = muted,
                                 modifier = Modifier.size(20.dp),
@@ -497,7 +490,7 @@ fun PhoneScreen(
                         verticalAlignment = Alignment.Top,
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Lock,
+                            painter = painterResource(AppIcon.lock),
                             contentDescription = null,
                             tint = appColors.successGreen,
                             modifier = Modifier.size(20.dp).padding(top = 2.dp),
@@ -539,7 +532,7 @@ fun PhoneScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
+                                painter = painterResource(AppIcon.arrowLeft),
                                 contentDescription = stringResource(R.string.cd_back),
                                 tint = fg,
                                 modifier = Modifier.size(20.dp),
@@ -877,7 +870,7 @@ private fun OtpNumericKeypad(
                         cell == "del" ->
                             OtpKeypadKey(onClick = onBackspace) {
                                 Icon(
-                                    Icons.AutoMirrored.Filled.Backspace,
+                                    painter = painterResource(AppIcon.arrowLeft),
                                     contentDescription = stringResource(R.string.cd_backspace),
                                     tint = Color.Black,
                                     modifier = Modifier.size(22.dp),
@@ -968,7 +961,7 @@ private fun CountryPickerSheetContent(
             )
             IconButton(onClick = onDismiss) {
                 Icon(
-                    Icons.Default.Close,
+                    painter = painterResource(AppIcon.close),
                     contentDescription = stringResource(R.string.cd_close),
                     tint = fg,
                 )
@@ -987,7 +980,7 @@ private fun CountryPickerSheetContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                Icons.Default.Search,
+                painter = painterResource(AppIcon.search),
                 contentDescription = null,
                 tint = c.textHint,
                 modifier = Modifier.size(18.dp),
@@ -1048,7 +1041,7 @@ private fun CountryPickerSheetContent(
                     if (country.isoCode == selected.isoCode) {
                         Spacer(Modifier.width(8.dp))
                         Icon(
-                            Icons.Default.Check,
+                            painter = painterResource(AppIcon.check),
                             contentDescription = stringResource(R.string.cd_selected),
                             tint = c.successGreen,
                             modifier = Modifier.size(22.dp),

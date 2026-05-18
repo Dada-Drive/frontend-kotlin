@@ -10,6 +10,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -31,17 +32,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PowerSettingsNew
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -65,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -81,6 +73,7 @@ import com.turbodrive.R
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.delay
 import tn.turbodrive.app.AppProcessLifecycleEntryPoint
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.domain.models.ActiveRide
 import tn.turbodrive.domain.models.AvailableRide
@@ -611,7 +604,7 @@ private fun DriverTopOverlay(
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Icon(
-                            Icons.Default.Menu,
+                            painter = painterResource(AppIcon.menu),
                             contentDescription = stringResource(R.string.cd_open_menu),
                             tint = c.textPrimary,
                             modifier = Modifier.size(18.dp),
@@ -686,9 +679,9 @@ private fun DriverTopOverlay(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
-                        Icon(Icons.Default.AccountBalanceWallet, null, tint = c.primary, modifier = Modifier.size(16.dp))
+                        Icon(painterResource(AppIcon.wallet), null, tint = c.primary, modifier = Modifier.size(16.dp))
                         Text("$walletAmountText DADA", color = c.textPrimary, fontWeight = FontWeight.Bold)
-                        Icon(Icons.Default.KeyboardArrowRight, null, tint = c.textHint)
+                        Icon(painterResource(AppIcon.chevronRight), null, tint = c.textHint)
                     }
                 }
             }
@@ -719,10 +712,11 @@ private fun DriverHomeBottomPanel(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                DriverQuickAction(Icons.Default.DirectionsCar, stringResource(R.string.driver_menu_my_rides), onClick = onOpenRides)
-                DriverQuickAction(Icons.Default.AccountBalanceWallet, stringResource(R.string.wallet_title), onClick = onOpenWallet)
+                DriverQuickAction(AppIcon.car, stringResource(R.string.driver_menu_my_rides), onClick = onOpenRides)
+                DriverQuickAction(AppIcon.wallet, stringResource(R.string.wallet_title), onClick = onOpenWallet)
+                // Justified: analytics chart glyph, no AppIcon equivalent
                 DriverQuickAction(Icons.Default.BarChart, stringResource(R.string.driver_menu_statistics), onClick = onOpenStatistics)
-                DriverQuickAction(Icons.Default.Settings, stringResource(R.string.common_settings), onClick = onOpenSettings)
+                DriverQuickAction(AppIcon.settings, stringResource(R.string.common_settings), onClick = onOpenSettings)
             }
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -761,7 +755,42 @@ private fun DriverHomeBottomPanel(
 
 @Composable
 private fun DriverQuickAction(
+    @DrawableRes icon: Int,
+    label: String,
+    onClick: () -> Unit,
+) {
+    DriverQuickActionBase(
+        iconContent = {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = LocalAppColors.current.primary,
+                modifier = Modifier.size(22.dp),
+            )
+        },
+        label = label,
+        onClick = onClick,
+    )
+}
+
+@Composable
+private fun DriverQuickAction(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit,
+) {
+    DriverQuickActionBase(
+        iconContent = {
+            Icon(icon, null, tint = LocalAppColors.current.primary, modifier = Modifier.size(22.dp))
+        },
+        label = label,
+        onClick = onClick,
+    )
+}
+
+@Composable
+private fun DriverQuickActionBase(
+    iconContent: @Composable () -> Unit,
     label: String,
     onClick: () -> Unit,
 ) {
@@ -777,7 +806,7 @@ private fun DriverQuickAction(
             modifier = Modifier.size(52.dp),
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Icon(icon, null, tint = c.primary, modifier = Modifier.size(22.dp))
+                iconContent()
             }
         }
         Text(label, color = c.textSecondary, fontSize = 12.sp, maxLines = 1)
@@ -846,7 +875,7 @@ private fun DriverSideMenuOverlay(
                                 modifier = Modifier.size(26.dp).clickable(onClick = onDismiss),
                             ) {
                                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Icon(Icons.Default.Close, null, tint = Color.White, modifier = Modifier.size(14.dp))
+                                    Icon(painterResource(AppIcon.close), null, tint = Color.White, modifier = Modifier.size(14.dp))
                                 }
                             }
                         }
@@ -861,8 +890,9 @@ private fun DriverSideMenuOverlay(
                     }
                 }
 
-                DriverMenuTile(Icons.Default.DirectionsCar, stringResource(R.string.driver_menu_my_rides), onMyRides)
-                DriverMenuTile(Icons.Default.AccountBalanceWallet, stringResource(R.string.wallet_title), onWallet)
+                DriverMenuTile(AppIcon.car, stringResource(R.string.driver_menu_my_rides), onMyRides)
+                DriverMenuTile(AppIcon.wallet, stringResource(R.string.wallet_title), onWallet)
+                // Justified: analytics chart glyph, no AppIcon equivalent
                 DriverMenuTile(Icons.Default.BarChart, stringResource(R.string.driver_menu_statistics), onStatistics)
                 Text(
                     stringResource(R.string.driver_menu_account),
@@ -870,18 +900,18 @@ private fun DriverSideMenuOverlay(
                     fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
-                DriverMenuTile(Icons.Default.Person, stringResource(R.string.menu_edit_profile), onEditProfile)
-                DriverMenuTile(Icons.Default.Settings, stringResource(R.string.menu_language), onLanguage, trailing = "English")
+                DriverMenuTile(AppIcon.user, stringResource(R.string.menu_edit_profile), onEditProfile)
+                DriverMenuTile(AppIcon.settings, stringResource(R.string.menu_language), onLanguage, trailing = "English")
                 Text(
                     stringResource(R.string.driver_menu_info),
                     color = c.textHint,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
-                DriverMenuTile(Icons.Default.List, stringResource(R.string.menu_help_support), onHelp)
-                DriverMenuTile(Icons.Default.List, stringResource(R.string.menu_terms_of_service), onTerms)
+                DriverMenuTile(AppIcon.list, stringResource(R.string.menu_help_support), onHelp)
+                DriverMenuTile(AppIcon.list, stringResource(R.string.menu_terms_of_service), onTerms)
                 DriverMenuTile(
-                    Icons.Default.PowerSettingsNew,
+                    AppIcon.logOut,
                     stringResource(R.string.menu_log_out),
                     onLogout,
                     tint = c.errorRed,
@@ -900,12 +930,59 @@ private fun DriverSideMenuOverlay(
 
 @Composable
 private fun DriverMenuTile(
+    @DrawableRes icon: Int,
+    label: String,
+    onClick: () -> Unit,
+    trailing: String? = null,
+    tint: Color? = null,
+    showChevron: Boolean = true,
+) {
+    DriverMenuTileBase(
+        iconContent = {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = tint ?: LocalAppColors.current.textSecondary,
+                modifier = Modifier.size(16.dp),
+            )
+        },
+        label = label,
+        onClick = onClick,
+        trailing = trailing,
+        tint = tint,
+        showChevron = showChevron,
+    )
+}
+
+@Composable
+private fun DriverMenuTile(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     onClick: () -> Unit,
     trailing: String? = null,
     tint: Color? = null,
     showChevron: Boolean = true,
+) {
+    DriverMenuTileBase(
+        iconContent = {
+            Icon(icon, null, tint = tint ?: LocalAppColors.current.textSecondary, modifier = Modifier.size(16.dp))
+        },
+        label = label,
+        onClick = onClick,
+        trailing = trailing,
+        tint = tint,
+        showChevron = showChevron,
+    )
+}
+
+@Composable
+private fun DriverMenuTileBase(
+    iconContent: @Composable () -> Unit,
+    label: String,
+    onClick: () -> Unit,
+    trailing: String?,
+    tint: Color?,
+    showChevron: Boolean,
 ) {
     val c = LocalAppColors.current
     Row(
@@ -914,13 +991,13 @@ private fun DriverMenuTile(
     ) {
         Surface(shape = RoundedCornerShape(8.dp), color = c.surfaceMuted, modifier = Modifier.size(30.dp)) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Icon(icon, null, tint = tint ?: c.textSecondary, modifier = Modifier.size(16.dp))
+                iconContent()
             }
         }
         Spacer(Modifier.size(12.dp))
         Text(label, color = tint ?: c.textPrimary, modifier = Modifier.weight(1f))
         if (trailing != null) Text(trailing, color = c.textHint, fontSize = 12.sp)
-        if (showChevron) Icon(Icons.Default.KeyboardArrowRight, null, tint = c.textHint)
+        if (showChevron) Icon(painterResource(AppIcon.chevronRight), null, tint = c.textHint)
     }
 }
 
@@ -937,12 +1014,12 @@ private fun DriverStatisticsSheet(
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.driver_stats_title), color = c.textPrimary, fontWeight = FontWeight.Bold, fontSize = 24.sp)
-            Icon(Icons.Default.Close, null, tint = c.textHint, modifier = Modifier.clickable(onClick = onClose))
+            Icon(painterResource(AppIcon.close), null, tint = c.textHint, modifier = Modifier.clickable(onClick = onClose))
         }
         Surface(shape = RoundedCornerShape(14.dp), color = c.surface) {
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Icon(Icons.Default.Bolt, null, tint = c.primary, modifier = Modifier.size(14.dp))
+                    Icon(painterResource(AppIcon.zap), null, tint = c.primary, modifier = Modifier.size(14.dp))
                     Text(stringResource(R.string.driver_stats_session), color = c.textPrimary, fontWeight = FontWeight.SemiBold)
                     Surface(shape = RoundedCornerShape(999.dp), color = c.primary.copy(alpha = 0.15f)) {
                         Text(

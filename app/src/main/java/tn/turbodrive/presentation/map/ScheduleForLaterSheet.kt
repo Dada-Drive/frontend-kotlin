@@ -19,10 +19,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,12 +38,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.turbodrive.R
 import kotlinx.coroutines.flow.distinctUntilChanged
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.core.theme.MapColorTokens
 import java.text.SimpleDateFormat
@@ -196,7 +194,7 @@ internal fun ScheduleForLaterSheet(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = Icons.Default.Schedule,
+                    painter = painterResource(AppIcon.clock),
                     contentDescription = null,
                     tint = accent,
                     modifier = Modifier.size(24.dp),
@@ -281,7 +279,7 @@ internal fun ScheduleForLaterSheet(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Icon(
-                    imageVector = Icons.Default.CalendarMonth,
+                    painter = painterResource(AppIcon.calendar),
                     contentDescription = null,
                     tint = accent,
                     modifier = Modifier.size(16.dp),
@@ -309,7 +307,7 @@ internal fun ScheduleForLaterSheet(
                 horizontalArrangement = Arrangement.Center,
             ) {
                 Icon(
-                    imageVector = Icons.Default.Check,
+                    painter = painterResource(AppIcon.check),
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(18.dp),

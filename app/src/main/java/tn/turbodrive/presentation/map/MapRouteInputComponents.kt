@@ -20,8 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -47,6 +45,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.core.theme.MapColorTokens
 import tn.turbodrive.presentation.components.BlackCloseIconButton
@@ -127,7 +126,7 @@ internal fun RouteTextField(
             }
         } else {
             Icon(
-                imageVector = Icons.Default.Search,
+                painter = painterResource(AppIcon.search),
                 contentDescription = null,
                 tint = searchIconColor,
                 modifier = Modifier.size(16.dp),
@@ -231,7 +230,7 @@ internal fun RouteSheetSuggestionBlock(
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Search,
+                                painter = painterResource(AppIcon.search),
                                 contentDescription = null,
                                 tint = iconTint,
                                 modifier = Modifier.size(15.dp),

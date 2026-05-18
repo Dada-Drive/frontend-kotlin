@@ -30,9 +30,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Public
@@ -53,6 +50,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.presentation.components.AnimatedDadaCoinIcon
 import tn.turbodrive.presentation.components.DadaCoinMetal
@@ -387,7 +386,7 @@ internal fun MapNotificationButton(modifier: Modifier = Modifier) {
     ) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Icon(
-                imageVector = Icons.Default.Notifications,
+                painter = painterResource(AppIcon.bell),
                 contentDescription = stringResource(R.string.cd_notifications),
                 tint = c.textPrimary,
                 modifier = Modifier.size(22.dp),
@@ -428,6 +427,7 @@ internal fun MapTypePickerPanel(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
+                        // Justified: factory returns ImageVector — Layers has no AppIcon equivalent
                         imageVector = mode.pickerIcon(),
                         contentDescription = null,
                         tint = if (picked) c.primary else c.textHint,
@@ -443,7 +443,7 @@ internal fun MapTypePickerPanel(
                     )
                     if (picked) {
                         Icon(
-                            Icons.Filled.Check,
+                            painter = painterResource(AppIcon.check),
                             contentDescription = null,
                             tint = c.primary,
                             modifier = Modifier.size(16.dp),
@@ -465,9 +465,9 @@ private val AppMapDisplayMode.labelRes: Int
 
 private fun AppMapDisplayMode.pickerIcon(): ImageVector =
     when (this) {
-        AppMapDisplayMode.NORMAL -> Icons.Outlined.Map
-        AppMapDisplayMode.SATELLITE -> Icons.Outlined.Public
-        AppMapDisplayMode.HYBRID -> Icons.Outlined.Layers
+        AppMapDisplayMode.NORMAL -> Icons.Outlined.Map // Justified: factory must return ImageVector to satisfy HYBRID (Layers)
+        AppMapDisplayMode.SATELLITE -> Icons.Outlined.Public // Justified: factory must return ImageVector to satisfy HYBRID (Layers)
+        AppMapDisplayMode.HYBRID -> Icons.Outlined.Layers // Justified: map layers control, no AppIcon equivalent
     }
 
 /**
@@ -567,7 +567,7 @@ internal fun MapSideFloatingControls(
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Icon(
-                    Icons.Outlined.Map,
+                    painter = painterResource(AppIcon.map),
                     contentDescription = stringResource(R.string.cd_map_type),
                     tint = typeIconTint,
                     modifier = Modifier.size(mapIcon),
@@ -585,7 +585,7 @@ internal fun MapSideFloatingControls(
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Icon(
-                    Icons.Default.LocationOn,
+                    painter = painterResource(AppIcon.mapPin),
                     contentDescription = null,
                     tint = recenterIconTint,
                     modifier = Modifier.size(locIcon),

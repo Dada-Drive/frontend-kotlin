@@ -24,9 +24,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -41,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.core.validation.DateParseResult
 import tn.turbodrive.presentation.common.ScreenState
@@ -358,7 +357,7 @@ fun DriverSetupScreen(
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
+                            painter = painterResource(AppIcon.arrowLeft),
                             contentDescription = stringResource(R.string.driver_back),
                             tint = Color.Black,
                             modifier = Modifier.size(20.dp),
@@ -384,7 +383,7 @@ fun DriverSetupScreen(
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            painter = painterResource(AppIcon.close),
                             contentDescription = stringResource(R.string.driver_close),
                             tint = Color.Black,
                             modifier = Modifier.size(20.dp),

@@ -1,6 +1,7 @@
 package tn.turbodrive.presentation.map
 
 import androidx.activity.compose.LocalActivity
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -21,16 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -48,8 +40,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -57,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.language.AppLanguage
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.presentation.components.BlackCloseIconButton
@@ -147,7 +140,7 @@ internal fun ProfileBottomSheet(
             Spacer(Modifier.height(24.dp))
             HorizontalDivider(color = c.dividerGrey)
             Spacer(Modifier.height(8.dp))
-            ProfileMenuItem(Icons.Default.Edit, stringResource(R.string.menu_edit_profile), onClick = onEditProfile)
+            ProfileMenuItem(AppIcon.edit, stringResource(R.string.menu_edit_profile), onClick = onEditProfile)
             Row(
                 modifier =
                     Modifier
@@ -156,7 +149,12 @@ internal fun ProfileBottomSheet(
                         .padding(vertical = 14.dp, horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Outlined.Language, stringResource(R.string.menu_language), tint = c.textPrimary, modifier = Modifier.size(20.dp))
+                Icon(
+                    painter = painterResource(AppIcon.globe),
+                    contentDescription = stringResource(R.string.menu_language),
+                    tint = c.textPrimary,
+                    modifier = Modifier.size(20.dp),
+                )
                 Spacer(Modifier.width(16.dp))
                 Text(stringResource(R.string.menu_language), color = c.textPrimary, fontSize = 15.sp, modifier = Modifier.weight(1f))
                 Text(
@@ -167,8 +165,8 @@ internal fun ProfileBottomSheet(
                 )
                 Spacer(Modifier.width(8.dp))
                 Icon(
-                    if (languagePickerExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    null,
+                    painter = painterResource(if (languagePickerExpanded) AppIcon.chevronUp else AppIcon.chevronDown),
+                    contentDescription = null,
                     tint = c.textHint,
                     modifier = Modifier.size(18.dp),
                 )
@@ -201,7 +199,12 @@ internal fun ProfileBottomSheet(
                             Spacer(Modifier.width(12.dp))
                             Text(lang.localizedDisplayName(), color = c.textPrimary, fontSize = 14.sp, modifier = Modifier.weight(1f))
                             if (selectedLang == lang) {
-                                Icon(Icons.Default.Check, contentDescription = null, tint = c.primary, modifier = Modifier.size(18.dp))
+                                Icon(
+                                    painter = painterResource(AppIcon.check),
+                                    contentDescription = null,
+                                    tint = c.primary,
+                                    modifier = Modifier.size(18.dp),
+                                )
                             }
                         }
                         if (!isLast) HorizontalDivider(color = c.dividerGrey, modifier = Modifier.padding(start = 40.dp))
@@ -227,13 +230,14 @@ internal fun ProfileBottomSheet(
                     }
                 }
             }
+            // Justified: color picker glyph, no AppIcon equivalent
             ProfileMenuItem(Icons.Default.Palette, stringResource(R.string.menu_appearance_colors), onClick = onColorSettings)
-            ProfileMenuItem(Icons.Default.Search, stringResource(R.string.menu_help_support), onClick = {})
-            ProfileMenuItem(Icons.Default.Info, stringResource(R.string.menu_terms_of_service), onClick = {})
+            ProfileMenuItem(AppIcon.search, stringResource(R.string.menu_help_support), onClick = {})
+            ProfileMenuItem(AppIcon.info, stringResource(R.string.menu_terms_of_service), onClick = {})
             Spacer(Modifier.height(4.dp))
             HorizontalDivider(color = c.dividerGrey)
             Spacer(Modifier.height(4.dp))
-            ProfileMenuItem(Icons.Default.ExitToApp, stringResource(R.string.menu_log_out), tint = c.errorRed, onClick = onLogout)
+            ProfileMenuItem(AppIcon.logOut, stringResource(R.string.menu_log_out), tint = c.errorRed, onClick = onLogout)
             Spacer(Modifier.height(12.dp))
             Text(stringResource(R.string.app_version_label), color = c.textTertiary, fontSize = 11.sp)
             Spacer(Modifier.height(24.dp))
@@ -243,9 +247,45 @@ internal fun ProfileBottomSheet(
 
 @Composable
 internal fun ProfileMenuItem(
-    icon: ImageVector,
+    @DrawableRes icon: Int,
     label: String,
     tint: Color? = null,
+    onClick: () -> Unit,
+) {
+    ProfileMenuItemBase(
+        iconContent = {
+            val resolved = tint ?: LocalAppColors.current.textPrimary
+            Icon(painterResource(icon), label, tint = resolved, modifier = Modifier.size(20.dp))
+        },
+        label = label,
+        tint = tint,
+        onClick = onClick,
+    )
+}
+
+@Composable
+internal fun ProfileMenuItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    tint: Color? = null,
+    onClick: () -> Unit,
+) {
+    ProfileMenuItemBase(
+        iconContent = {
+            val resolved = tint ?: LocalAppColors.current.textPrimary
+            Icon(icon, label, tint = resolved, modifier = Modifier.size(20.dp))
+        },
+        label = label,
+        tint = tint,
+        onClick = onClick,
+    )
+}
+
+@Composable
+private fun ProfileMenuItemBase(
+    iconContent: @Composable () -> Unit,
+    label: String,
+    tint: Color?,
     onClick: () -> Unit,
 ) {
     val resolved = tint ?: LocalAppColors.current.textPrimary
@@ -258,9 +298,9 @@ internal fun ProfileMenuItem(
                 .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, label, tint = resolved, modifier = Modifier.size(20.dp))
+        iconContent()
         Spacer(Modifier.width(16.dp))
         Text(label, color = resolved, fontSize = 15.sp, modifier = Modifier.weight(1f))
-        Icon(Icons.Default.KeyboardArrowRight, null, tint = chevron, modifier = Modifier.size(18.dp))
+        Icon(painterResource(AppIcon.chevronRight), null, tint = chevron, modifier = Modifier.size(18.dp))
     }
 }

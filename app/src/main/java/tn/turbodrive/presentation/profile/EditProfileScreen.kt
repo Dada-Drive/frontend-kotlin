@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -21,13 +22,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,8 +45,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -61,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.AppColor
 import tn.turbodrive.core.theme.AppRadius
 import tn.turbodrive.core.theme.AppSpacing
@@ -138,7 +133,7 @@ fun EditProfileScreen(
                 // Back button
                 IconButton(onClick = onBack) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
+                        painter = painterResource(AppIcon.arrowLeft),
                         contentDescription = stringResource(R.string.cd_back),
                         tint = AppColor.textPrimary,
                         modifier = Modifier.size(18.dp),
@@ -224,7 +219,7 @@ fun EditProfileScreen(
                     ) {
                         Icon(
                             // camera.fill equivalent
-                            imageVector = Icons.Default.Person,
+                            painter = painterResource(AppIcon.user),
                             contentDescription = stringResource(R.string.cd_change_photo),
                             tint = Color.Black,
                             modifier = Modifier.size(13.dp),
@@ -254,7 +249,7 @@ fun EditProfileScreen(
                 EditableField(
                     value = fullName,
                     onValueChange = { fullName = it },
-                    leadingIcon = Icons.Default.Person,
+                    leadingIcon = AppIcon.user,
                     placeholder = stringResource(R.string.profile_name_placeholder),
                 )
 
@@ -264,7 +259,7 @@ fun EditProfileScreen(
                 ProfileFieldLabel(stringResource(R.string.profile_email_label))
                 LockedField(
                     value = user?.email ?: stringResource(R.string.profile_no_email),
-                    leadingIcon = Icons.Default.Email,
+                    leadingIcon = AppIcon.mail,
                     isEmpty = user?.email == null,
                 )
 
@@ -274,7 +269,7 @@ fun EditProfileScreen(
                 ProfileFieldLabel(stringResource(R.string.profile_phone_label))
                 LockedField(
                     value = user?.phoneNumber ?: stringResource(R.string.profile_no_phone),
-                    leadingIcon = Icons.Default.Phone,
+                    leadingIcon = AppIcon.phone,
                     isEmpty = user?.phoneNumber == null,
                 )
 
@@ -287,7 +282,7 @@ fun EditProfileScreen(
                         stringResource(
                             if (user?.role == "driver") R.string.role_label_driver else R.string.role_label_passenger,
                         ),
-                    leadingIcon = Icons.Default.Place,
+                    leadingIcon = AppIcon.mapPin,
                     isEmpty = false,
                 )
 
@@ -375,7 +370,7 @@ private fun ProfileFieldLabel(label: String) {
 private fun EditableField(
     value: String,
     onValueChange: (String) -> Unit,
-    leadingIcon: ImageVector,
+    @DrawableRes leadingIcon: Int,
     placeholder: String,
 ) {
     OutlinedTextField(
@@ -383,7 +378,7 @@ private fun EditableField(
         onValueChange = onValueChange,
         modifier = Modifier.fillMaxWidth(),
         leadingIcon = {
-            Icon(leadingIcon, contentDescription = null, tint = AppColor.textHint)
+            Icon(painterResource(leadingIcon), contentDescription = null, tint = AppColor.textHint)
         },
         placeholder = {
             Text(placeholder, color = AppColor.textHint, style = AppTypography.bodyL)
@@ -403,7 +398,7 @@ private fun EditableField(
 @Composable
 private fun LockedField(
     value: String,
-    leadingIcon: ImageVector,
+    @DrawableRes leadingIcon: Int,
     isEmpty: Boolean = false,
 ) {
     OutlinedTextField(
@@ -411,11 +406,11 @@ private fun LockedField(
         onValueChange = {},
         modifier = Modifier.fillMaxWidth(),
         leadingIcon = {
-            Icon(leadingIcon, contentDescription = null, tint = AppColor.textHint)
+            Icon(painterResource(leadingIcon), contentDescription = null, tint = AppColor.textHint)
         },
         trailingIcon = {
             Icon(
-                Icons.Default.Lock,
+                painter = painterResource(AppIcon.lock),
                 contentDescription = stringResource(R.string.cd_locked),
                 tint = AppColor.textHint,
                 modifier = Modifier.size(12.dp),

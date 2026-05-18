@@ -1,5 +1,6 @@
 package tn.turbodrive.presentation.role
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,12 +19,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,7 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 
 private val ScreenBg: Color
@@ -111,7 +107,7 @@ fun RoleSelectionScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
+                    painter = painterResource(AppIcon.arrowLeft),
                     contentDescription = null,
                     tint = Color.Black,
                     modifier = Modifier.size(20.dp),
@@ -156,7 +152,7 @@ fun RoleSelectionScreen(
                 TurboRoleCard(
                     title = stringResource(R.string.role_passenger_title),
                     subtitle = stringResource(R.string.role_passenger_subtitle),
-                    icon = Icons.Default.Person,
+                    icon = AppIcon.user,
                     selected = selectedRole == "rider",
                     modifier = Modifier.weight(1f),
                     onClick = { selectedRole = "rider" },
@@ -164,7 +160,7 @@ fun RoleSelectionScreen(
                 TurboRoleCard(
                     title = stringResource(R.string.role_driver_title),
                     subtitle = stringResource(R.string.role_driver_subtitle),
-                    icon = Icons.Default.DirectionsCar,
+                    icon = AppIcon.car,
                     selected = selectedRole == "driver",
                     modifier = Modifier.weight(1f),
                     onClick = { selectedRole = "driver" },
@@ -181,7 +177,7 @@ fun RoleSelectionScreen(
                 verticalAlignment = Alignment.Top,
             ) {
                 Icon(
-                    Icons.Default.Info,
+                    painter = painterResource(AppIcon.info),
                     contentDescription = null,
                     tint = InfoGray,
                     modifier = Modifier.size(18.dp).padding(top = 2.dp),
@@ -248,7 +244,7 @@ fun RoleSelectionScreen(
 private fun TurboRoleCard(
     title: String,
     subtitle: String,
-    icon: ImageVector,
+    @DrawableRes icon: Int,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -282,7 +278,7 @@ private fun TurboRoleCard(
                         .background(iconBg),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(22.dp))
+                Icon(painterResource(icon), contentDescription = null, tint = iconTint, modifier = Modifier.size(22.dp))
             }
             if (selected) {
                 Box(
@@ -294,7 +290,7 @@ private fun TurboRoleCard(
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        Icons.Default.Check,
+                        painter = painterResource(AppIcon.check),
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(14.dp),

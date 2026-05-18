@@ -29,13 +29,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.DirectionsCar
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -51,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 
 @Composable
@@ -92,7 +88,7 @@ fun DriverAccessSetupScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                painter = painterResource(AppIcon.arrowLeft),
                 contentDescription = null,
                 modifier =
                     Modifier
@@ -113,7 +109,7 @@ fun DriverAccessSetupScreen(
         AccessStep(
             iconBg = LocalAppColors.current.successGreen,
             iconTint = Color.White,
-            icon = { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(17.dp)) },
+            icon = { Icon(painterResource(AppIcon.check), contentDescription = null, modifier = Modifier.size(17.dp)) },
             title = stringResource(R.string.driver_permission_step_done_title),
             description = stringResource(R.string.driver_permission_step_done_desc),
             showTail = true,
@@ -121,6 +117,7 @@ fun DriverAccessSetupScreen(
         AccessStep(
             iconBg = LocalAppColors.current.textPrimary,
             iconTint = Color.White,
+            // Justified: document/file glyph, no AppIcon equivalent
             icon = { Icon(Icons.Outlined.Description, contentDescription = null, modifier = Modifier.size(17.dp)) },
             title = stringResource(R.string.driver_permission_step_access_title),
             description = stringResource(R.string.driver_permission_step_access_desc),
@@ -129,7 +126,7 @@ fun DriverAccessSetupScreen(
         AccessStep(
             iconBg = LocalAppColors.current.surfaceMuted,
             iconTint = LocalAppColors.current.textPrimary,
-            icon = { Icon(Icons.Outlined.DirectionsCar, contentDescription = null, modifier = Modifier.size(17.dp)) },
+            icon = { Icon(painterResource(AppIcon.car), contentDescription = null, modifier = Modifier.size(17.dp)) },
             title = stringResource(R.string.driver_permission_step_wait_title),
             description = stringResource(R.string.driver_permission_step_wait_desc),
             showTail = false,
@@ -151,6 +148,7 @@ fun DriverAccessSetupScreen(
                     .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Justified: document/file glyph, no AppIcon equivalent
             Icon(
                 imageVector = Icons.Outlined.Description,
                 contentDescription = null,
@@ -164,7 +162,7 @@ fun DriverAccessSetupScreen(
                 modifier = Modifier.weight(1f),
             )
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                painter = painterResource(AppIcon.chevronRight),
                 contentDescription = null,
                 tint = LocalAppColors.current.textPrimary,
             )
@@ -259,7 +257,7 @@ fun DriverTaxiLicenseUploadScreen(
         Spacer(Modifier.height(12.dp))
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                painter = painterResource(AppIcon.arrowLeft),
                 contentDescription = null,
                 modifier = Modifier.size(22.dp).clickable(onClick = onBack),
                 tint = LocalAppColors.current.textPrimary,
@@ -476,7 +474,7 @@ fun DriverVerificationPendingScreen(
             ) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        painter = painterResource(AppIcon.close),
                         contentDescription = stringResource(R.string.driver_close),
                         tint = Color.Black,
                         modifier = Modifier.size(20.dp),
@@ -501,7 +499,7 @@ fun DriverVerificationPendingScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = Icons.Default.Check,
+                    painter = painterResource(AppIcon.check),
                     contentDescription = null,
                     tint = successGreen,
                     modifier = Modifier.size(44.dp),
@@ -543,7 +541,7 @@ fun DriverVerificationPendingScreen(
                     ) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Icon(
-                                imageVector = Icons.Outlined.Notifications,
+                                painter = painterResource(AppIcon.bell),
                                 contentDescription = null,
                                 tint = LocalAppColors.current.textHint,
                                 modifier = Modifier.size(22.dp),

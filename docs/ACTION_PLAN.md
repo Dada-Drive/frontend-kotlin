@@ -51,7 +51,7 @@
 | 21 | Crash recovery active ride flou | Bug latent | Important | R-3.5 | 4–6h |
 | 22 | Tests intégration ride 0 | Missing tests | Critique | R-3.6 | 6–10h |
 | 23 | `res/font/` absent (Inter) | Design missing | Bloquant D | R-4.2 | 2–3h |
-| 24 | 0 SVG du redesign (vs 91) | Design missing | Bloquant D | R-4.3 | 12–20h |
+| 24 | 0 SVG du redesign (vs 91) ✅ | Design missing | Bloquant D | R-4.3 | 12–20h |
 | 25 | 5 composants nouveaux manquants | Design missing | Bloquant D | R-4.4 | 12–20h |
 | 26 | Tokens v1 legacy (pas v2 sémantiques) | Design drift | Important | R-4.5 | 4–8h |
 | 27 | Room non chiffré (SQLCipher) | Sécurité | Important | R-7.4 | 6–8h |
@@ -1259,33 +1259,32 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 
 ---
 
-### Phase R-4.3 — D1 Port 91 SVG icônes
-**Objectif** : exporter 91 icônes du redesign en vector drawable Android ; refonte `AppIcon`.
-**Sévérité** : Bloquant D — **Effort** : 12–20 h
-**Dépendances** : R-0.7
+### Phase R-4.3 — D1 Port 91 SVG icônes ✅
+**Statut** : Terminée le 2026-05-18.
+**Objectif** : exporter les icônes du redesign en vector drawable Android ; refonte `AppIcon`.
+**Sévérité** : Bloquant D — **Effort estimé** : 12–20 h — **Effort réel** : ~4 h
+**Dépendances** : R-0.7, R-4.2
 **Catégorie** : Design missing
 
-**Tâches**
-1. Inventorier icônes dans `turbodrive_redesign/icons.jsx` (script Node ou manuel).
-2. Pour chaque icône : extraire SVG path, convertir en `<vector>` Android via Android Studio import ou script (svg-to-vector).
-3. Placer dans `app/src/main/res/drawable/ic_*.xml` (~91 fichiers).
-4. Refonte `core/designsystem/tokens/AppIcon.kt` :
-   - `object AppIcon { val arrowLeft = R.drawable.ic_arrow_left; val car = R.drawable.ic_car; ... }` (91 entrées).
-5. Mettre à jour tous les call sites (`Icon(Icons.Default.ArrowBack, ...)` → `Icon(painterResource(AppIcon.arrowLeft), ...)`).
-6. Tests Paparazzi sur un écran d'icônes (catalog).
+**Décision implémentation** : conversion mécanique des paths Lucide (`turbodrive_redesign/icons.jsx`) vers `<vector>` Android (24×24, stroke 2dp, round caps). 87 stroke icons + 6 brand icons (Google/Facebook/WhatsApp/Apple/Mastercard/Visa) = **93 drawables** (cible 91 dépassée), plus quelques alias supplémentaires.
 
-**Fichiers touchés**
-- Nouveaux : ~91 fichiers `res/drawable/ic_*.xml`
-- Modifiés : `core/designsystem/tokens/AppIcon.kt`, ~30 call sites
-- Nouveau : `test/presentation/IconCatalogPaparazziTest.kt`
+**Livrables**
+
+| Livrable | Statut |
+|---|---|
+| 94 fichiers `app/src/main/res/drawable/ic_*.xml` | ✅ |
+| [`core/designsystem/tokens/AppIcon.kt`](../app/src/main/java/tn/turbodrive/core/designsystem/tokens/AppIcon.kt) — registry typé avec 94 entrées `@DrawableRes val` en sections sémantiques | ✅ |
+| Refactor 27 fichiers `presentation/**/*.kt` : 64 `Icons.Material.*` remplacés par `painterResource(AppIcon.*)`, 23 conservés avec `// Justified: ...` (catégories de véhicules sans équivalent Lucide, glyphs document/maintenance/analytics) | ✅ |
+| [`test/.../snapshots/IconCatalogBaselineTest.kt`](../app/src/test/java/tn/turbodrive/presentation/snapshots/IconCatalogBaselineTest.kt) — grille Paparazzi de 15 icônes représentatives, light + dark | ✅ |
 
 **Critères d'acceptation**
-- [ ] ≥91 vector drawables présents
-- [ ] `AppIcon` expose ≥91 entrées
-- [ ] Plus aucun usage de `Icons.Default.*` Material (sauf justifié)
-- [ ] Snapshot icon catalog vert
+- [x] ≥91 vector drawables présents (94)
+- [x] `AppIcon` expose ≥91 entrées (94)
+- [x] Plus aucun usage non justifié de `Icons.Default.*` / `Icons.Filled.*` / `Icons.Outlined.*` / `Icons.AutoMirrored.*` Material
+- [x] Snapshot icon catalog vert (light + dark)
+- [x] `./gradlew compileDebugKotlin testDebugUnitTest ktlintCheck detekt` → BUILD SUCCESSFUL
 
-**Risques** : conversion SVG complexe (gradients, masks) échoue ⇒ fallback PNG. Mitigation : audit dossier avant tâche pour identifier les 5-10 cas durs.
+**Risques résolus** : aucun fallback PNG nécessaire — toutes les icônes du redesign sont stroke-based et convertibles 1:1. Les helpers composables (`ProfileMenuItem`, `DriverQuickAction`, `DriverMenuTile`, `TurboRoleCard`, `EditableField`, `LockedField`, `PhotoDialogRow`) ont été refactorés `ImageVector` → `@DrawableRes Int` avec surcharges `ImageVector` ajoutées pour 3 d'entre eux (call sites encore en Material justifié).
 
 ---
 

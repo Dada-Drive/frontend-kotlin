@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import tn.turbodrive.core.designsystem.spacing.AppSpacing
@@ -48,12 +49,12 @@ fun DesignSnackbar(
     val c = LocalAppColors.current
     val triple =
         when (variant) {
-            DesignSnackbarVariant.Error -> Triple(c.errorRed, AppIcon.errorOutline, c.errorContainer)
-            DesignSnackbarVariant.Success -> Triple(c.successGreen, AppIcon.checkCircle, c.surfaceMuted)
-            DesignSnackbarVariant.Warning -> Triple(c.warningOrange, AppIcon.warning, c.surfaceMuted)
+            DesignSnackbarVariant.Error -> Triple(c.errorRed, AppIcon.alertTriangle, c.errorContainer)
+            DesignSnackbarVariant.Success -> Triple(c.successGreen, AppIcon.circleCheck, c.surfaceMuted)
+            DesignSnackbarVariant.Warning -> Triple(c.warningOrange, AppIcon.alertTriangle, c.surfaceMuted)
             DesignSnackbarVariant.Info -> Triple(c.infoBlue, AppIcon.info, c.surfaceMuted)
             DesignSnackbarVariant.InsufficientBalance -> Triple(c.errorRed, AppIcon.wallet, c.errorContainer)
-            DesignSnackbarVariant.TooFar -> Triple(c.warningOrange, AppIcon.location, c.surfaceMuted)
+            DesignSnackbarVariant.TooFar -> Triple(c.warningOrange, AppIcon.mapPin, c.surfaceMuted)
             DesignSnackbarVariant.Network -> Triple(c.textSecondary, AppIcon.wifiOff, c.surfaceMuted)
         }
     val accent = triple.first
@@ -69,13 +70,13 @@ fun DesignSnackbar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AppSpacing.s),
     ) {
-        Icon(icon, contentDescription = null, tint = accent, modifier = Modifier.size(20.dp))
+        Icon(painterResource(icon), contentDescription = null, tint = accent, modifier = Modifier.size(20.dp))
         Column(Modifier.weight(1f)) {
             Text(title, style = AppTypography.labelL, color = accent)
             Text(message, style = AppTypography.bodyS, color = c.textSecondary)
         }
         IconButton(onClick = onDismiss) {
-            Icon(AppIcon.close, contentDescription = null, tint = c.textSecondary)
+            Icon(painterResource(AppIcon.close), contentDescription = null, tint = c.textSecondary)
         }
     }
 }

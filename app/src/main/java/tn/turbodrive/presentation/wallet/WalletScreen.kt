@@ -16,10 +16,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,12 +28,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.presentation.components.BlackCloseIconButton
 import java.util.Locale
@@ -83,7 +82,7 @@ fun WalletScreen(
                                 color = c.primary,
                             )
                         } else {
-                            Icon(Icons.Default.Refresh, contentDescription = null, tint = c.primary)
+                            Icon(painterResource(AppIcon.refresh), contentDescription = null, tint = c.primary)
                         }
                     }
                 }
@@ -109,7 +108,7 @@ fun WalletScreen(
                         ) {
                             Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
                                 Icon(
-                                    Icons.Default.AccountBalanceWallet,
+                                    painter = painterResource(AppIcon.wallet),
                                     contentDescription = null,
                                     tint = c.primary,
                                     modifier = Modifier.size(18.dp),
@@ -164,7 +163,7 @@ fun WalletScreen(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Error,
+                                painter = painterResource(AppIcon.alertTriangle),
                                 contentDescription = null,
                                 tint = c.errorRed,
                                 modifier = Modifier.size(14.dp),
@@ -210,6 +209,7 @@ fun WalletScreen(
                                 .padding(vertical = 18.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
+                        // Justified: package/inventory glyph, no AppIcon equivalent
                         Icon(
                             Icons.Default.Inventory2,
                             contentDescription = null,

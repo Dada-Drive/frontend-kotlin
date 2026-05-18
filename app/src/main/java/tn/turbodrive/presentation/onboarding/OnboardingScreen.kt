@@ -26,8 +26,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -52,6 +50,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.turbodrive.R
 import kotlinx.coroutines.launch
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.AppTypography
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.presentation.branding.TurboBrandMarkSmall
@@ -361,7 +361,7 @@ private fun OnboardingIllustrationSpeed() {
                 drawCircle(accentGreen, wheelR, center = Offset(left + carW * 0.72f, top + carH))
             }
             Icon(
-                imageVector = Icons.Default.Bolt,
+                painter = painterResource(AppIcon.zap),
                 contentDescription = null,
                 tint = accentGreen,
                 modifier =

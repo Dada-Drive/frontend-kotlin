@@ -20,10 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -50,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.presentation.common.ScreenState
 
@@ -110,7 +108,7 @@ fun NameEntryScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
+                    painter = painterResource(AppIcon.arrowLeft),
                     contentDescription = null,
                     tint = Color.Black,
                     modifier = Modifier.size(20.dp),
@@ -161,7 +159,7 @@ fun NameEntryScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 leadingIcon = {
-                    Icon(Icons.Outlined.Person, null, tint = Muted)
+                    Icon(painterResource(AppIcon.user), null, tint = Muted)
                 },
                 shape = RoundedCornerShape(14.dp),
                 colors =
@@ -190,7 +188,7 @@ fun NameEntryScreen(
                 singleLine = true,
                 placeholder = { Text(stringResource(R.string.name_email_placeholder), color = c.outlineLight) },
                 leadingIcon = {
-                    Icon(Icons.Outlined.Email, null, tint = Muted)
+                    Icon(painterResource(AppIcon.mail), null, tint = Muted)
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(14.dp),

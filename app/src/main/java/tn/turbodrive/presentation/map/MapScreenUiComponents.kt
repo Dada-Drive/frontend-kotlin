@@ -27,8 +27,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -56,6 +54,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,6 +65,7 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.here.sdk.core.Point2D
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import kotlin.math.roundToInt
 import com.here.sdk.mapview.MapView as HereMapView
@@ -561,7 +561,7 @@ internal fun PickupCenterHintOverlay(
                     )
                 }
                 Icon(
-                    Icons.Default.KeyboardArrowRight,
+                    painter = painterResource(AppIcon.chevronRight),
                     contentDescription = null,
                     tint = c.textPrimary,
                     modifier = Modifier.size(18.dp),

@@ -21,8 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -45,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,6 +59,7 @@ import com.turbodrive.R
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.delay
 import tn.turbodrive.app.AppProcessLifecycleEntryPoint
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.core.theme.MapColorTokens
 import tn.turbodrive.core.utils.playCoinSoundEffect
@@ -537,7 +537,7 @@ fun MapScreen(
                         modifier = Modifier.size(40.dp),
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            painter = painterResource(AppIcon.arrowLeft),
                             contentDescription = stringResource(R.string.cd_back),
                             tint = c.textPrimary,
                             modifier = Modifier.size(22.dp),

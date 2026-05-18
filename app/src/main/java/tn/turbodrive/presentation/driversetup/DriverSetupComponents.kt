@@ -32,14 +32,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AirportShuttle
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.DirectionsBus
@@ -82,6 +75,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -89,6 +83,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.core.validation.DateParseResult
 import tn.turbodrive.presentation.components.BlackCloseIconButton
@@ -154,19 +149,20 @@ internal fun DriverVehiclePreset.categoryImageAssetName(): String? =
 
 internal fun DriverVehiclePreset.categoryIcon(): ImageVector =
     when (this) {
-        DriverVehiclePreset.Citadine -> Icons.Outlined.ElectricCar
-        DriverVehiclePreset.Compacte -> Icons.Outlined.DirectionsCar
-        DriverVehiclePreset.Berline -> Icons.Outlined.TimeToLeave
-        DriverVehiclePreset.Suv -> Icons.Outlined.Terrain
-        DriverVehiclePreset.Coupe -> Icons.Outlined.SportsMotorsports
-        DriverVehiclePreset.Monospace -> Icons.Outlined.AirportShuttle
-        DriverVehiclePreset.Utilitaire -> Icons.Outlined.LocalShipping
-        DriverVehiclePreset.PickUp -> Icons.Outlined.Build
-        DriverVehiclePreset.Cabriolet -> Icons.Outlined.DirectionsCar
-        DriverVehiclePreset.Van -> Icons.Outlined.AirportShuttle
-        DriverVehiclePreset.Bus -> Icons.Outlined.DirectionsBus
-        DriverVehiclePreset.Minibus -> Icons.Outlined.AirportShuttle
-        DriverVehiclePreset.Remorquage -> Icons.Outlined.Build
+        DriverVehiclePreset.Citadine -> Icons.Outlined.ElectricCar // Justified: ride-category electric vehicle, no AppIcon equivalent
+        DriverVehiclePreset.Compacte -> Icons.Outlined.DirectionsCar // Justified: ride-category vehicle, factory must return ImageVector
+        DriverVehiclePreset.Berline -> Icons.Outlined.TimeToLeave // Justified: ride-category vehicle, factory must return ImageVector
+        DriverVehiclePreset.Suv -> Icons.Outlined.Terrain // Justified: ride-category off-road/SUV, no AppIcon equivalent
+        DriverVehiclePreset.Coupe -> Icons.Outlined.SportsMotorsports // Justified: ride-category motorcycle helmet, no AppIcon equivalent
+        DriverVehiclePreset.Monospace -> Icons.Outlined.AirportShuttle // Justified: ride-category shuttle vehicle, no AppIcon equivalent
+        DriverVehiclePreset.Utilitaire -> Icons.Outlined.LocalShipping // Justified: ride-category truck, no AppIcon equivalent
+        DriverVehiclePreset.PickUp -> Icons.Outlined.Build // Justified: maintenance/build glyph, no AppIcon equivalent
+        DriverVehiclePreset.Cabriolet -> Icons.Outlined.DirectionsCar // Justified: ride-category vehicle, factory must return ImageVector
+        DriverVehiclePreset.Van -> Icons.Outlined.AirportShuttle // Justified: ride-category shuttle vehicle, no AppIcon equivalent
+        DriverVehiclePreset.Bus -> Icons.Outlined.DirectionsBus // Justified: ride-category bus, no AppIcon equivalent
+        DriverVehiclePreset.Minibus -> Icons.Outlined.AirportShuttle // Justified: ride-category shuttle vehicle, no AppIcon equivalent
+        DriverVehiclePreset.Remorquage -> Icons.Outlined.Build // Justified: maintenance/build glyph, no AppIcon equivalent
+        // Justified: factory must return ImageVector (Edit is mappable but mixed with non-mappable entries)
         DriverVehiclePreset.Other -> Icons.Filled.Edit
     }
 
@@ -315,8 +311,8 @@ internal fun OnboardingPickerField(
                 placeholder = { Text(placeholder, color = OnboardingLabel.copy(alpha = 0.65f)) },
                 trailingIcon = {
                     Icon(
-                        Icons.Default.ArrowDropDown,
-                        null,
+                        painter = painterResource(AppIcon.chevronDown),
+                        contentDescription = null,
                         tint = if (enabled) OnboardingLabel else OnboardingLabel.copy(alpha = 0.4f),
                     )
                 },
@@ -438,7 +434,7 @@ internal fun UploadPlaceholderCard(
                                 .background(TurboSetupSuccessGreen),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Filled.Check, null, tint = Color.White, modifier = Modifier.size(22.dp))
+                        Icon(painterResource(AppIcon.check), null, tint = Color.White, modifier = Modifier.size(22.dp))
                     }
                     Spacer(Modifier.height(6.dp))
                     Text(
@@ -451,7 +447,7 @@ internal fun UploadPlaceholderCard(
             } else {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
-                        imageVector = Icons.Filled.CameraAlt,
+                        painter = painterResource(AppIcon.camera),
                         contentDescription = stringResource(R.string.driver_photo_take),
                         modifier = Modifier.size(30.dp),
                         tint = OnboardingLabel,
@@ -562,7 +558,7 @@ internal fun StepBottomBar(
                     ),
                 border = BorderStroke(1.dp, LocalAppColors.current.outlineLight),
             ) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, null, modifier = Modifier.size(18.dp))
+                Icon(painterResource(AppIcon.chevronLeft), null, modifier = Modifier.size(18.dp))
             }
         }
         Button(
@@ -583,7 +579,7 @@ internal fun StepBottomBar(
             } else {
                 Text(stringResource(R.string.driver_next), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Spacer(Modifier.size(4.dp))
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, modifier = Modifier.size(18.dp))
+                Icon(painterResource(AppIcon.chevronRight), null, modifier = Modifier.size(18.dp))
             }
         }
     }
@@ -664,7 +660,7 @@ private fun StepperColumn(
             contentAlignment = Alignment.Center,
         ) {
             if (isComplete) {
-                Icon(Icons.Default.Check, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                Icon(painterResource(AppIcon.check), null, tint = Color.White, modifier = Modifier.size(20.dp))
             } else {
                 Text(
                     "$stepIndex",
@@ -705,8 +701,8 @@ internal fun PhotoSourcePickerDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                PhotoDialogRow(Icons.Default.CameraAlt, stringResource(R.string.driver_photo_take), onCamera)
-                PhotoDialogRow(Icons.Default.PhotoLibrary, stringResource(R.string.driver_photo_gallery), onGallery)
+                PhotoDialogRow(AppIcon.camera, stringResource(R.string.driver_photo_take), onCamera)
+                PhotoDialogRow(AppIcon.image, stringResource(R.string.driver_photo_gallery), onGallery)
             }
         },
         confirmButton = {},
@@ -722,7 +718,7 @@ internal fun PhotoSourcePickerDialog(
 
 @Composable
 private fun PhotoDialogRow(
-    icon: ImageVector,
+    @androidx.annotation.DrawableRes icon: Int,
     label: String,
     onClick: () -> Unit,
 ) {
@@ -738,7 +734,7 @@ private fun PhotoDialogRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, null, tint = OnboardingTitle, modifier = Modifier.size(22.dp))
+        Icon(painterResource(icon), null, tint = OnboardingTitle, modifier = Modifier.size(22.dp))
         Text(label, color = OnboardingTitle, fontSize = 14.sp, fontWeight = FontWeight.Medium)
     }
 }
@@ -904,7 +900,7 @@ internal fun VehiclePickerSheet(
                 placeholder = { Text(stringResource(R.string.vehicle_search_hint), color = OnboardingLabel.copy(alpha = 0.65f)) },
                 modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                leadingIcon = { Icon(Icons.Default.Search, null, tint = OnboardingLabel) },
+                leadingIcon = { Icon(painterResource(AppIcon.search), null, tint = OnboardingLabel) },
                 singleLine = true,
                 colors = onboardingFieldColors(),
             )

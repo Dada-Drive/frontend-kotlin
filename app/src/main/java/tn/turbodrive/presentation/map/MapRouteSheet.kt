@@ -20,14 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -64,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.turbodrive.R
 import kotlinx.coroutines.delay
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.core.theme.MapColorTokens
 import tn.turbodrive.presentation.components.BlackCloseIconButton
@@ -600,7 +593,7 @@ private fun PassengerInfoFields(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Icon(
-                imageVector = Icons.Filled.Person,
+                painter = painterResource(AppIcon.user),
                 contentDescription = null,
                 tint = iconTint,
                 modifier = Modifier.size(iconSize),
@@ -630,7 +623,7 @@ private fun PassengerInfoFields(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Icon(
-                imageVector = Icons.Filled.Phone,
+                painter = painterResource(AppIcon.phone),
                 contentDescription = null,
                 tint = iconTint,
                 modifier = Modifier.size(iconSize),
@@ -902,7 +895,7 @@ private fun RouteSheetFieldBackBar(onBack: () -> Unit) {
             modifier = Modifier.size(40.dp),
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                painter = painterResource(AppIcon.arrowLeft),
                 contentDescription = stringResource(R.string.cd_back),
                 tint = c.textPrimary,
                 modifier = Modifier.size(22.dp),
@@ -927,7 +920,7 @@ private fun AddStopButton(onClick: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Icon(
-            imageVector = Icons.Default.Add,
+            painter = painterResource(AppIcon.plus),
             contentDescription = null,
             tint = c.textPrimary,
             modifier = Modifier.size(18.dp),
@@ -1008,7 +1001,7 @@ private fun ScheduleForLaterButton(
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = Icons.Default.Schedule,
+                painter = painterResource(AppIcon.clock),
                 contentDescription = null,
                 tint = iconTint,
                 modifier = Modifier.size(18.dp),
@@ -1037,7 +1030,7 @@ private fun ScheduleForLaterButton(
             )
         }
         Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
+            painter = painterResource(AppIcon.chevronRight),
             contentDescription = null,
             tint = chevronTint,
             modifier = Modifier.size(22.dp),

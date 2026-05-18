@@ -23,10 +23,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -55,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.pricing.FareConfidence
 import tn.turbodrive.core.pricing.RiderFareEstimate
 import tn.turbodrive.core.theme.LocalAppColors
@@ -536,7 +534,7 @@ internal fun RiderDestinationConfirmedBar(
                             ) {
                                 (1..5).forEach { score ->
                                     Icon(
-                                        imageVector = Icons.Filled.Star,
+                                        painter = painterResource(AppIcon.star),
                                         contentDescription = null,
                                         tint = if (score <= selectedScore) c.ratingYellow else c.surfaceMuted,
                                         modifier =
@@ -796,7 +794,7 @@ private fun MatchedDriverCompactPanel(
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
-                                    imageVector = Icons.Filled.Call,
+                                    painter = painterResource(AppIcon.phone),
                                     contentDescription = stringResource(R.string.map_contact_driver),
                                     tint = c.surface,
                                     modifier = Modifier.size(18.dp),
@@ -905,7 +903,7 @@ private fun PassengerRouteTimeline(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Add,
+                        painter = painterResource(AppIcon.plus),
                         contentDescription = null,
                         tint = c.ratingYellow,
                         modifier = Modifier.size(13.dp),

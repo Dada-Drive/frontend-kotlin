@@ -35,9 +35,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -61,6 +58,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -75,6 +73,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import tn.turbodrive.core.designsystem.spacing.AppRadius
 import tn.turbodrive.core.designsystem.spacing.AppSpacing
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.AppTypography
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.core.theme.MapColorTokens
@@ -418,7 +417,7 @@ private fun PickupAddressBubble(
                 )
             }
             Icon(
-                imageVector = Icons.Filled.KeyboardArrowRight,
+                painter = painterResource(AppIcon.chevronRight),
                 contentDescription = null,
                 tint = if (isEmpty && !isLoading) colors.textSecondary.copy(alpha = 0.3f) else arrowTint,
                 modifier = Modifier.size(16.dp),
@@ -635,7 +634,7 @@ private fun PickupConfirmButton(
             ) {
                 if (isOutOfBounds) {
                     Icon(
-                        imageVector = Icons.Filled.Warning,
+                        painter = painterResource(AppIcon.alertTriangle),
                         contentDescription = null,
                         tint = fgColor,
                         modifier = Modifier.size(14.dp),

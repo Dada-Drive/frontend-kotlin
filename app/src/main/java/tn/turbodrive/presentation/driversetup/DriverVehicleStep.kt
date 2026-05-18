@@ -19,9 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
@@ -49,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.turbodrive.R
+import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.presentation.components.BlackCloseIconButton
 
@@ -249,7 +248,7 @@ internal fun DriverVehicleStep(
                                         .background(MonoPrimary, CircleShape),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Icon(Icons.Default.Check, null, tint = MonoOnPrimary, modifier = Modifier.size(11.dp))
+                                Icon(painterResource(AppIcon.check), null, tint = MonoOnPrimary, modifier = Modifier.size(11.dp))
                             }
                         }
                     }
@@ -388,7 +387,7 @@ private fun VehicleColorPickerSheet(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Edit,
+                            painter = painterResource(AppIcon.edit),
                             contentDescription = null,
                             tint = if (otherSelected) MonoPrimary else OnboardingLabel,
                             modifier = Modifier.size(18.dp),
