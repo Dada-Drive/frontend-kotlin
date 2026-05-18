@@ -56,12 +56,12 @@ private val ScreenBg: Color
 private val AccentGreen: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalAppColors.current.successGreen
+    get() = LocalAppColors.current.accent
 
 private val InfoGray: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalAppColors.current.textHint
+    get() = LocalAppColors.current.textSubtle
 
 @Composable
 fun RoleSelectionScreen(
@@ -172,7 +172,7 @@ fun RoleSelectionScreen(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(c.surfaceMuted)
+                        .background(c.surfaceAlt)
                         .padding(14.dp),
                 verticalAlignment = Alignment.Top,
             ) {
@@ -195,7 +195,7 @@ fun RoleSelectionScreen(
         if (state is RoleViewModel.RoleState.Error) {
             Text(
                 text = (state as RoleViewModel.RoleState.Error).message,
-                color = c.errorRed,
+                color = c.error,
                 fontSize = 13.sp,
                 textAlign = TextAlign.Center,
                 modifier =
@@ -224,7 +224,7 @@ fun RoleSelectionScreen(
                     containerColor = Color.Black,
                     contentColor = Color.White,
                     disabledContainerColor = c.border,
-                    disabledContentColor = c.textHint,
+                    disabledContentColor = c.textSubtle,
                 ),
         ) {
             if (isLoading) {
@@ -253,7 +253,7 @@ private fun TurboRoleCard(
     val titleColor = if (selected) Color.White else Color.Black
     val c = LocalAppColors.current
     val subColor = if (selected) Color.White.copy(alpha = 0.85f) else c.textSecondary
-    val iconBg = if (selected) c.textPrimary else c.surfaceMuted
+    val iconBg = if (selected) c.textPrimary else c.surfaceAlt
     val iconTint = if (selected) Color.White else Color.Black
     Column(
         modifier =

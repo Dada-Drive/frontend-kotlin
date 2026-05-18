@@ -87,9 +87,9 @@ fun LinearProgressTimer(
     val barColor: Color by animateColorAsState(
         targetValue =
             when {
-                fillRatio >= 0.4f -> c.successGreen
-                fillRatio >= 0.2f -> c.warningOrange
-                else -> c.errorRed
+                fillRatio >= 0.4f -> c.accent
+                fillRatio >= 0.2f -> c.warning
+                else -> c.error
             },
         animationSpec = tween(durationMillis = AppMotion.DURATION_NORMAL_MS),
         label = "timerBarColor",
@@ -107,7 +107,7 @@ fun LinearProgressTimer(
                 Modifier
                     .weight(1f)
                     .height(BarHeight)
-                    .background(c.surfaceMuted, RoundedCornerShape(AppRadius.full)),
+                    .background(c.surfaceAlt, RoundedCornerShape(AppRadius.full)),
         ) {
             Box(
                 modifier =

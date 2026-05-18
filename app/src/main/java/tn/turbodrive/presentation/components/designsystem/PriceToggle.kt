@@ -72,7 +72,7 @@ fun <T> PriceToggle(
                 .height(ToggleHeight)
                 .alpha(if (enabled) 1f else 0.4f)
                 .clip(RoundedCornerShape(AppRadius.full))
-                .background(c.surfaceMuted),
+                .background(c.surfaceAlt),
         optionContent = { index, option ->
             val isActive = index == selectedIndex
             Box(
@@ -93,7 +93,7 @@ fun <T> PriceToggle(
                 Text(
                     text = optionLabel(option),
                     style = AppTypography.labelM,
-                    color = if (isActive) c.onPrimary else c.textHint,
+                    color = if (isActive) c.onPrimary else c.textSubtle,
                 )
             }
         },

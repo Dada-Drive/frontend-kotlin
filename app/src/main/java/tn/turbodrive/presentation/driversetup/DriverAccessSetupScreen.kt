@@ -107,7 +107,7 @@ fun DriverAccessSetupScreen(
         Spacer(Modifier.height(18.dp))
 
         AccessStep(
-            iconBg = LocalAppColors.current.successGreen,
+            iconBg = LocalAppColors.current.accent,
             iconTint = Color.White,
             icon = { Icon(painterResource(AppIcon.check), contentDescription = null, modifier = Modifier.size(17.dp)) },
             title = stringResource(R.string.driver_permission_step_done_title),
@@ -124,7 +124,7 @@ fun DriverAccessSetupScreen(
             showTail = true,
         )
         AccessStep(
-            iconBg = LocalAppColors.current.surfaceMuted,
+            iconBg = LocalAppColors.current.surfaceAlt,
             iconTint = LocalAppColors.current.textPrimary,
             icon = { Icon(painterResource(AppIcon.car), contentDescription = null, modifier = Modifier.size(17.dp)) },
             title = stringResource(R.string.driver_permission_step_wait_title),
@@ -328,7 +328,7 @@ private fun AccessStep(
                         Modifier
                             .padding(vertical = 4.dp)
                             .size(width = 2.dp, height = 44.dp)
-                            .background(LocalAppColors.current.outlineLight),
+                            .background(LocalAppColors.current.borderStrong),
                 )
             }
         }
@@ -447,8 +447,8 @@ fun DriverVerificationPendingScreen(
 ) {
     val colors = LocalAppColors.current
     val pageBg = colors.background
-    val successGreen = colors.successGreen
-    val successBg = colors.successContainer
+    val accent = colors.accent
+    val successBg = colors.accentSoft
     Column(
         modifier =
             Modifier
@@ -501,7 +501,7 @@ fun DriverVerificationPendingScreen(
                 Icon(
                     painter = painterResource(AppIcon.check),
                     contentDescription = null,
-                    tint = successGreen,
+                    tint = accent,
                     modifier = Modifier.size(44.dp),
                 )
             }
@@ -537,13 +537,13 @@ fun DriverVerificationPendingScreen(
                     Surface(
                         modifier = Modifier.size(44.dp),
                         shape = RoundedCornerShape(12.dp),
-                        color = LocalAppColors.current.surfaceMuted,
+                        color = LocalAppColors.current.surfaceAlt,
                     ) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Icon(
                                 painter = painterResource(AppIcon.bell),
                                 contentDescription = null,
-                                tint = LocalAppColors.current.textHint,
+                                tint = LocalAppColors.current.textSubtle,
                                 modifier = Modifier.size(22.dp),
                             )
                         }
@@ -615,7 +615,7 @@ private fun PermissionRow(
             Modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp)
-                .background(LocalAppColors.current.surfaceMuted, RoundedCornerShape(14.dp))
+                .background(LocalAppColors.current.surfaceAlt, RoundedCornerShape(14.dp))
                 .clickable(onClick = onClick)
                 .padding(horizontal = 14.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,

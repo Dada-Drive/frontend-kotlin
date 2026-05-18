@@ -111,7 +111,7 @@ internal fun PassengerOfferCard(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        color = c.surfaceMuted,
+        color = c.surfaceAlt,
     ) {
         Column(Modifier.padding(10.dp)) {
             Text(

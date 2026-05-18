@@ -77,7 +77,7 @@ internal fun RouteTextField(
     disableShadow: Boolean = false,
 ) {
     val c = LocalAppColors.current
-    val accentColor = accentColorOverride ?: if (isOrigin) c.primary else c.errorRed
+    val accentColor = accentColorOverride ?: if (isOrigin) c.primary else c.error
     val borderColor by animateColorAsState(
         targetValue = if (isActive) accentColor.copy(alpha = 0.45f) else c.dividerGrey.copy(alpha = 0.55f),
         animationSpec = tween(220),
@@ -89,7 +89,7 @@ internal fun RouteTextField(
         label = "shadow_elev",
     )
     val searchIconColor by animateColorAsState(
-        targetValue = if (isActive) accentColor else c.textHint.copy(alpha = 0.7f),
+        targetValue = if (isActive) accentColor else c.textSubtle.copy(alpha = 0.7f),
         animationSpec = tween(180),
         label = "search_icon_color",
     )
@@ -190,10 +190,10 @@ internal fun RouteSheetSuggestionBlock(
     val panelBg = if (darkItineraryStyle) MapColorTokens.darkPanelSurface else c.surface
     val panelBorder = if (darkItineraryStyle) Color.White.copy(alpha = 0.18f) else c.dividerGrey.copy(alpha = 0.35f)
     val hitText = if (darkItineraryStyle) Color.White else c.textPrimary
-    val iconBg = if (darkItineraryStyle) Color.White.copy(alpha = 0.10f) else c.surfaceMuted
+    val iconBg = if (darkItineraryStyle) Color.White.copy(alpha = 0.10f) else c.surfaceAlt
     val iconTint = if (darkItineraryStyle) Color.White.copy(alpha = 0.72f) else c.textSecondary
     val dividerCol = if (darkItineraryStyle) Color.White.copy(alpha = 0.14f) else c.dividerGrey.copy(alpha = 0.35f)
-    val emptyBg = if (darkItineraryStyle) Color.White.copy(alpha = 0.08f) else c.surfaceMuted.copy(alpha = 0.5f)
+    val emptyBg = if (darkItineraryStyle) Color.White.copy(alpha = 0.08f) else c.surfaceAlt.copy(alpha = 0.5f)
     val emptyText = if (darkItineraryStyle) Color.White.copy(alpha = 0.62f) else c.textSecondary
     val progressTint = if (darkItineraryStyle) Color.White else c.primary
     when {

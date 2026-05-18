@@ -430,13 +430,13 @@ internal fun MapTypePickerPanel(
                         // Justified: factory returns ImageVector — Layers has no AppIcon equivalent
                         imageVector = mode.pickerIcon(),
                         contentDescription = null,
-                        tint = if (picked) c.primary else c.textHint,
+                        tint = if (picked) c.primary else c.textSubtle,
                         modifier = Modifier.size(20.dp),
                     )
                     Spacer(Modifier.width(10.dp))
                     Text(
                         text = stringResource(mode.labelRes),
-                        color = if (picked) c.textPrimary else c.textHint,
+                        color = if (picked) c.textPrimary else c.textSubtle,
                         fontWeight = if (picked) FontWeight.SemiBold else FontWeight.Normal,
                         fontSize = 14.sp,
                         modifier = Modifier.weight(1f),

@@ -385,7 +385,7 @@ fun PhoneScreen(
                     Spacer(Modifier.height(8.dp))
                     val phoneBorderColor =
                         when {
-                            phase1Error != null || showLocalPhoneError -> appColors.errorRed
+                            phase1Error != null || showLocalPhoneError -> appColors.error
                             else -> appColors.border
                         }
                     Row(
@@ -440,7 +440,7 @@ fun PhoneScreen(
                             singleLine = true,
                             textStyle =
                                 TextStyle(
-                                    color = if (showLocalPhoneError) appColors.errorRed else fg,
+                                    color = if (showLocalPhoneError) appColors.error else fg,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
                                 ),
@@ -451,7 +451,7 @@ fun PhoneScreen(
                                 if (rawDigits.isEmpty()) {
                                     Text(
                                         selectedCountry.placeholder,
-                                        color = appColors.outlineLight,
+                                        color = appColors.borderStrong,
                                         fontSize = 16.sp,
                                     )
                                 }
@@ -467,7 +467,7 @@ fun PhoneScreen(
                                     R.string.phone_invalid_digits,
                                     selectedCountry.maxDigits,
                                 ),
-                            color = appColors.errorRed,
+                            color = appColors.error,
                             fontSize = 13.sp,
                         )
                     }
@@ -475,7 +475,7 @@ fun PhoneScreen(
                         Spacer(Modifier.height(8.dp))
                         Text(
                             text = phase1Error,
-                            color = appColors.errorRed,
+                            color = appColors.error,
                             fontSize = 13.sp,
                         )
                     }
@@ -485,20 +485,20 @@ fun PhoneScreen(
                             Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(appColors.successContainer)
+                                .background(appColors.accentSoft)
                                 .padding(14.dp),
                         verticalAlignment = Alignment.Top,
                     ) {
                         Icon(
                             painter = painterResource(AppIcon.lock),
                             contentDescription = null,
-                            tint = appColors.successGreen,
+                            tint = appColors.accent,
                             modifier = Modifier.size(20.dp).padding(top = 2.dp),
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
                             text = stringResource(R.string.phone_privacy_note),
-                            color = appColors.successGreen,
+                            color = appColors.accent,
                             fontSize = 13.sp,
                             lineHeight = 19.sp,
                         )
@@ -571,7 +571,7 @@ fun PhoneScreen(
                         modifier =
                             Modifier
                                 .clip(RoundedCornerShape(999.dp))
-                                .background(appColors.successContainer)
+                                .background(appColors.accentSoft)
                                 .padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -583,7 +583,7 @@ fun PhoneScreen(
                         Spacer(Modifier.width(6.dp))
                         Text(
                             stringResource(R.string.otp_sent_via_whatsapp),
-                            color = appColors.successGreen,
+                            color = appColors.accent,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                         )
@@ -628,7 +628,7 @@ fun PhoneScreen(
                                 val isFilled = digit.isNotEmpty()
                                 val borderColor =
                                     when {
-                                        otpErr -> appColors.errorRed
+                                        otpErr -> appColors.error
                                         isFilled || isFocused -> Color.Black
                                         else -> appColors.border
                                     }
@@ -645,7 +645,7 @@ fun PhoneScreen(
                                     if (isFilled) {
                                         Text(
                                             text = digit,
-                                            color = if (otpErr) appColors.errorRed else fg,
+                                            color = if (otpErr) appColors.error else fg,
                                             style = AppTypography.monoM,
                                             textAlign = TextAlign.Center,
                                         )
@@ -668,16 +668,16 @@ fun PhoneScreen(
                                 Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(appColors.errorContainer)
-                                    .border(1.dp, appColors.errorContainer, RoundedCornerShape(12.dp))
+                                    .background(appColors.errorSoft)
+                                    .border(1.dp, appColors.errorSoft, RoundedCornerShape(12.dp))
                                     .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text("!", color = appColors.errorRed, fontWeight = FontWeight.Bold)
+                            Text("!", color = appColors.error, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.width(10.dp))
                             Text(
                                 text = phase2Error.orEmpty(),
-                                color = appColors.errorRed,
+                                color = appColors.error,
                                 fontSize = 13.sp,
                                 modifier = Modifier.weight(1f),
                             )
@@ -705,7 +705,7 @@ fun PhoneScreen(
                         ) {
                             Text(
                                 stringResource(R.string.otp_resend),
-                                color = appColors.successGreen,
+                                color = appColors.accent,
                                 fontWeight = FontWeight.SemiBold,
                             )
                         }
@@ -763,7 +763,7 @@ fun PhoneScreen(
                         ButtonDefaults.buttonColors(
                             containerColor = Color.Black,
                             contentColor = Color.White,
-                            disabledContainerColor = appColors.outlineLight,
+                            disabledContainerColor = appColors.borderStrong,
                             disabledContentColor = Color.White,
                         ),
                 ) {
@@ -821,7 +821,7 @@ fun PhoneScreen(
                             containerColor = Color.Black,
                             contentColor = Color.White,
                             disabledContainerColor = appColors.border,
-                            disabledContentColor = appColors.textHint,
+                            disabledContentColor = appColors.textSubtle,
                         ),
                 ) {
                     if (verifyingOtp) {
@@ -975,14 +975,14 @@ private fun CountryPickerSheetContent(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(AppSpacing.inputRadius))
-                    .background(c.surfaceMuted)
+                    .background(c.surfaceAlt)
                     .padding(horizontal = AppSpacing.m, vertical = AppSpacing.s),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 painter = painterResource(AppIcon.search),
                 contentDescription = null,
-                tint = c.textHint,
+                tint = c.textSubtle,
                 modifier = Modifier.size(18.dp),
             )
             Spacer(Modifier.width(AppSpacing.s))
@@ -997,7 +997,7 @@ private fun CountryPickerSheetContent(
                     if (searchQuery.isEmpty()) {
                         Text(
                             stringResource(R.string.country_picker_search_hint),
-                            color = c.textHint,
+                            color = c.textSubtle,
                             style = AppTypography.bodyM,
                         )
                     }
@@ -1043,7 +1043,7 @@ private fun CountryPickerSheetContent(
                         Icon(
                             painter = painterResource(AppIcon.check),
                             contentDescription = stringResource(R.string.cd_selected),
-                            tint = c.successGreen,
+                            tint = c.accent,
                             modifier = Modifier.size(22.dp),
                         )
                     }

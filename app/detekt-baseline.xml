@@ -223,7 +223,7 @@
     <ID>UnusedParameter:BootDiagnostics.kt$BootDiagnostics$application: Application</ID>
     <ID>UnusedParameter:DriverVehicleStep.kt$customColorText: String</ID>
     <ID>UnusedParameter:DriverVehicleStep.kt$onCustomColorChange: (String) -&gt; Unit</ID>
-    <ID>UnusedParameter:HereMapViewComposable.kt$destinationPinColor: Color = LocalAppColors.current.errorRed</ID>
+    <ID>UnusedParameter:HereMapViewComposable.kt$destinationPinColor: Color = LocalAppColors.current.error</ID>
     <ID>UnusedParameter:MapChrome.kt$onNotificationsClick: () -&gt; Unit = {}</ID>
     <ID>UnusedParameter:MapChrome.kt$onSearchClick: () -&gt; Unit = {}</ID>
     <ID>UnusedParameter:MapChrome.kt$showOfflineStatusBadge: Boolean = false</ID>

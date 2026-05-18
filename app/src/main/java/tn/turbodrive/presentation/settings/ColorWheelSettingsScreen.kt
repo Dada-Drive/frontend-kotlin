@@ -106,7 +106,7 @@ fun ColorWheelSettingsScreen(
                         )
                         Text(
                             text = stringResource(R.string.settings_color_subtitle),
-                            color = colors.textHint,
+                            color = colors.textSubtle,
                             fontSize = 13.sp,
                         )
                     }
@@ -127,7 +127,7 @@ fun ColorWheelSettingsScreen(
             item {
                 Text(
                     text = stringResource(R.string.settings_themes_available),
-                    color = colors.textHint,
+                    color = colors.textSubtle,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = 1.sp,
@@ -157,7 +157,7 @@ fun ColorWheelSettingsScreen(
             item {
                 Text(
                     text = stringResource(R.string.settings_all_colors_title, previewScheme.name.uppercase()),
-                    color = colors.textHint,
+                    color = colors.textSubtle,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = 1.sp,
@@ -191,7 +191,7 @@ private fun FontScaleSettingsRow(
     Column(modifier.padding(top = 8.dp)) {
         Text(
             text = stringResource(R.string.appearance_font_scale_title),
-            color = colors.textHint,
+            color = colors.textSubtle,
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = 1.sp,
@@ -400,7 +400,7 @@ private fun ThemeCard(
                 modifier =
                     Modifier
                         .size(20.dp)
-                        .border(1.5.dp, colors.textHint, CircleShape),
+                        .border(1.5.dp, colors.textSubtle, CircleShape),
             )
         }
     }
@@ -502,7 +502,7 @@ private fun SecondaryColorSection(
     Column(modifier) {
         Text(
             text = stringResource(R.string.settings_secondary_title).uppercase(),
-            color = c.textHint,
+            color = c.textSubtle,
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = 1.sp,

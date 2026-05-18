@@ -59,11 +59,11 @@ fun DesignChip(
     val c = LocalAppColors.current
     val bg =
         when {
-            accent && selected -> c.successGreen.copy(alpha = 0.2f)
-            selected -> c.surfaceMuted
+            accent && selected -> c.accent.copy(alpha = 0.2f)
+            selected -> c.surfaceAlt
             else -> c.surface
         }
-    val fg = if (accent && selected) c.successGreen else c.textPrimary
+    val fg = if (accent && selected) c.accent else c.textPrimary
     Surface(
         modifier =
             modifier
@@ -93,16 +93,16 @@ fun DesignToggle(
         if (onlineStyle) {
             SwitchDefaults.colors(
                 checkedThumbColor = c.onPrimary,
-                checkedTrackColor = c.successGreen,
+                checkedTrackColor = c.accent,
                 uncheckedThumbColor = c.textSecondary,
-                uncheckedTrackColor = c.surfaceMuted,
+                uncheckedTrackColor = c.surfaceAlt,
             )
         } else {
             SwitchDefaults.colors(
                 checkedThumbColor = c.onPrimary,
                 checkedTrackColor = c.primary,
                 uncheckedThumbColor = c.textSecondary,
-                uncheckedTrackColor = c.surfaceMuted,
+                uncheckedTrackColor = c.surfaceAlt,
             )
         }
     Switch(

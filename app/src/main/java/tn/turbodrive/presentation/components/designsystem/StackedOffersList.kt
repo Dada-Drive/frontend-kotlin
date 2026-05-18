@@ -109,7 +109,7 @@ private fun OfferCard(
                 Icon(
                     painter = painterResource(AppIcon.mapPin),
                     contentDescription = null,
-                    tint = c.successGreen,
+                    tint = c.accent,
                     modifier = Modifier.size(AppIconSize.m),
                 )
                 Column(modifier = Modifier.weight(1f)) {
@@ -127,7 +127,7 @@ private fun OfferCard(
                         Icon(
                             painter = painterResource(AppIcon.arrowDown),
                             contentDescription = null,
-                            tint = c.textHint,
+                            tint = c.textSubtle,
                             modifier = Modifier.size(12.dp),
                         )
                         Text(
@@ -152,25 +152,25 @@ private fun OfferCard(
                 Icon(
                     painter = painterResource(AppIcon.car),
                     contentDescription = null,
-                    tint = c.textHint,
+                    tint = c.textSubtle,
                     modifier = Modifier.size(AppIconSize.s),
                 )
                 Text(
                     text = "%.1f km".format(offer.distanceKm),
                     style = AppTypography.bodyS,
-                    color = c.textHint,
+                    color = c.textSubtle,
                 )
                 Spacer(Modifier.width(AppSpacing.s))
                 Icon(
                     painter = painterResource(AppIcon.clock),
                     contentDescription = null,
-                    tint = c.textHint,
+                    tint = c.textSubtle,
                     modifier = Modifier.size(AppIconSize.s),
                 )
                 Text(
                     text = "${offer.estimatedMinutes} min",
                     style = AppTypography.bodyS,
-                    color = c.textHint,
+                    color = c.textSubtle,
                 )
             }
 
@@ -227,13 +227,13 @@ internal fun DefaultOffersEmptyState() {
         Icon(
             painter = painterResource(AppIcon.car),
             contentDescription = null,
-            tint = c.textHint,
+            tint = c.textSubtle,
             modifier = Modifier.size(AppIconSize.xl),
         )
         Text(
             text = "Aucune offre disponible",
             style = AppTypography.bodyM,
-            color = c.textHint,
+            color = c.textSubtle,
         )
     }
 }

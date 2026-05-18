@@ -49,13 +49,13 @@ fun DesignSnackbar(
     val c = LocalAppColors.current
     val triple =
         when (variant) {
-            DesignSnackbarVariant.Error -> Triple(c.errorRed, AppIcon.alertTriangle, c.errorContainer)
-            DesignSnackbarVariant.Success -> Triple(c.successGreen, AppIcon.circleCheck, c.surfaceMuted)
-            DesignSnackbarVariant.Warning -> Triple(c.warningOrange, AppIcon.alertTriangle, c.surfaceMuted)
-            DesignSnackbarVariant.Info -> Triple(c.infoBlue, AppIcon.info, c.surfaceMuted)
-            DesignSnackbarVariant.InsufficientBalance -> Triple(c.errorRed, AppIcon.wallet, c.errorContainer)
-            DesignSnackbarVariant.TooFar -> Triple(c.warningOrange, AppIcon.mapPin, c.surfaceMuted)
-            DesignSnackbarVariant.Network -> Triple(c.textSecondary, AppIcon.wifiOff, c.surfaceMuted)
+            DesignSnackbarVariant.Error -> Triple(c.error, AppIcon.alertTriangle, c.errorSoft)
+            DesignSnackbarVariant.Success -> Triple(c.accent, AppIcon.circleCheck, c.surfaceAlt)
+            DesignSnackbarVariant.Warning -> Triple(c.warning, AppIcon.alertTriangle, c.surfaceAlt)
+            DesignSnackbarVariant.Info -> Triple(c.info, AppIcon.info, c.surfaceAlt)
+            DesignSnackbarVariant.InsufficientBalance -> Triple(c.error, AppIcon.wallet, c.errorSoft)
+            DesignSnackbarVariant.TooFar -> Triple(c.warning, AppIcon.mapPin, c.surfaceAlt)
+            DesignSnackbarVariant.Network -> Triple(c.textSecondary, AppIcon.wifiOff, c.surfaceAlt)
         }
     val accent = triple.first
     val icon = triple.second
@@ -94,7 +94,7 @@ fun DesignAvatar(
             modifier =
                 Modifier
                     .size(sizeDp)
-                    .background(c.surfaceMuted, CircleShape),
+                    .background(c.surfaceAlt, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -109,7 +109,7 @@ fun DesignAvatar(
                     Modifier
                         .align(Alignment.BottomEnd)
                         .size(12.dp)
-                        .background(c.successGreen, CircleShape),
+                        .background(c.accent, CircleShape),
             )
         }
     }
@@ -128,7 +128,7 @@ fun DesignMapPin(
     val size: Dp
     when (variant) {
         DesignMapPinVariant.User -> {
-            color = c.successGreen
+            color = c.accent
             size = 32.dp
         }
         DesignMapPinVariant.Pickup -> {
@@ -136,11 +136,11 @@ fun DesignMapPin(
             size = 48.dp
         }
         DesignMapPinVariant.Destination -> {
-            color = c.errorRed
+            color = c.error
             size = 40.dp
         }
         DesignMapPinVariant.Stop -> {
-            color = c.warningOrange
+            color = c.warning
             size = 24.dp
         }
     }
@@ -175,9 +175,9 @@ fun RouteRow(
     Column(modifier, verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
         Text(pickupLabel, style = AppTypography.bodyS, color = c.textSecondary)
         stops.forEach { s ->
-            Text("• $s", style = AppTypography.bodyS, color = c.warningOrange)
+            Text("• $s", style = AppTypography.bodyS, color = c.warning)
         }
-        Text(destinationLabel, style = AppTypography.bodyS, color = c.errorRed)
+        Text(destinationLabel, style = AppTypography.bodyS, color = c.error)
     }
 }
 
@@ -227,7 +227,7 @@ fun RideStatusPill(
     Row(
         modifier =
             modifier
-                .background(c.surfaceMuted, RoundedCornerShape(AppSpacing.buttonRadius))
+                .background(c.surfaceAlt, RoundedCornerShape(AppSpacing.buttonRadius))
                 .padding(horizontal = AppSpacing.m, vertical = AppSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AppSpacing.xs),

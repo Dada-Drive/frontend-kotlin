@@ -317,7 +317,7 @@ fun DriverHomeScreen(
                         .align(Alignment.TopCenter)
                         .padding(top = 108.dp)
                         .padding(horizontal = 24.dp),
-                color = LocalAppColors.current.errorRed.copy(alpha = 0.9f),
+                color = LocalAppColors.current.error.copy(alpha = 0.9f),
                 shape = RoundedCornerShape(12.dp),
             ) {
                 Text(msg, color = LocalAppColors.current.onPrimary, modifier = Modifier.padding(12.dp), fontSize = 13.sp)
@@ -535,7 +535,7 @@ private fun IncomingRidePopup(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
                     color = c.primary,
-                    trackColor = c.surfaceMuted,
+                    trackColor = c.surfaceAlt,
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -545,7 +545,7 @@ private fun IncomingRidePopup(
                         onClick = onRefuse,
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text(stringResource(R.string.driver_refuse), color = c.errorRed, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.driver_refuse), color = c.error, fontWeight = FontWeight.SemiBold)
                     }
                     Button(
                         onClick = onAccept,
@@ -600,7 +600,7 @@ private fun DriverTopOverlay(
                             .align(Alignment.CenterStart)
                             .clickable(onClick = onMenuClick),
                     shape = CircleShape,
-                    color = c.surfaceMuted,
+                    color = c.surfaceAlt,
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Icon(
@@ -657,7 +657,7 @@ private fun DriverTopOverlay(
                                     .size(width = 50.dp, height = 28.dp)
                                     .clickable(enabled = !isToggling, onClick = onToggleOnline),
                             shape = RoundedCornerShape(999.dp),
-                            color = if (isOnline) c.primary else c.surfaceMuted,
+                            color = if (isOnline) c.primary else c.surfaceAlt,
                         ) {
                             Box(
                                 modifier = Modifier.fillMaxSize().padding(3.dp),
@@ -681,7 +681,7 @@ private fun DriverTopOverlay(
                     ) {
                         Icon(painterResource(AppIcon.wallet), null, tint = c.primary, modifier = Modifier.size(16.dp))
                         Text("$walletAmountText DADA", color = c.textPrimary, fontWeight = FontWeight.Bold)
-                        Icon(painterResource(AppIcon.chevronRight), null, tint = c.textHint)
+                        Icon(painterResource(AppIcon.chevronRight), null, tint = c.textSubtle)
                     }
                 }
             }
@@ -802,7 +802,7 @@ private fun DriverQuickActionBase(
     ) {
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = c.surfaceMuted,
+            color = c.surfaceAlt,
             modifier = Modifier.size(52.dp),
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -896,7 +896,7 @@ private fun DriverSideMenuOverlay(
                 DriverMenuTile(Icons.Default.BarChart, stringResource(R.string.driver_menu_statistics), onStatistics)
                 Text(
                     stringResource(R.string.driver_menu_account),
-                    color = c.textHint,
+                    color = c.textSubtle,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
@@ -904,7 +904,7 @@ private fun DriverSideMenuOverlay(
                 DriverMenuTile(AppIcon.settings, stringResource(R.string.menu_language), onLanguage, trailing = "English")
                 Text(
                     stringResource(R.string.driver_menu_info),
-                    color = c.textHint,
+                    color = c.textSubtle,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
@@ -914,12 +914,12 @@ private fun DriverSideMenuOverlay(
                     AppIcon.logOut,
                     stringResource(R.string.menu_log_out),
                     onLogout,
-                    tint = c.errorRed,
+                    tint = c.error,
                     showChevron = false,
                 )
                 Text(
                     stringResource(R.string.app_version_label),
-                    color = c.textHint,
+                    color = c.textSubtle,
                     fontSize = 11.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
@@ -989,15 +989,15 @@ private fun DriverMenuTileBase(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Surface(shape = RoundedCornerShape(8.dp), color = c.surfaceMuted, modifier = Modifier.size(30.dp)) {
+        Surface(shape = RoundedCornerShape(8.dp), color = c.surfaceAlt, modifier = Modifier.size(30.dp)) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 iconContent()
             }
         }
         Spacer(Modifier.size(12.dp))
         Text(label, color = tint ?: c.textPrimary, modifier = Modifier.weight(1f))
-        if (trailing != null) Text(trailing, color = c.textHint, fontSize = 12.sp)
-        if (showChevron) Icon(painterResource(AppIcon.chevronRight), null, tint = c.textHint)
+        if (trailing != null) Text(trailing, color = c.textSubtle, fontSize = 12.sp)
+        if (showChevron) Icon(painterResource(AppIcon.chevronRight), null, tint = c.textSubtle)
     }
 }
 
@@ -1014,7 +1014,7 @@ private fun DriverStatisticsSheet(
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.driver_stats_title), color = c.textPrimary, fontWeight = FontWeight.Bold, fontSize = 24.sp)
-            Icon(painterResource(AppIcon.close), null, tint = c.textHint, modifier = Modifier.clickable(onClick = onClose))
+            Icon(painterResource(AppIcon.close), null, tint = c.textSubtle, modifier = Modifier.clickable(onClick = onClose))
         }
         Surface(shape = RoundedCornerShape(14.dp), color = c.surface) {
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1038,7 +1038,7 @@ private fun DriverStatisticsSheet(
                     DriverStatCard("0.0", stringResource(R.string.driver_stats_km_driven), "km", modifier = Modifier.weight(1f))
                     DriverStatCard("34:06", stringResource(R.string.driver_stats_online_time), "", modifier = Modifier.weight(1f))
                 }
-                Surface(shape = RoundedCornerShape(10.dp), color = c.surfaceMuted) {
+                Surface(shape = RoundedCornerShape(10.dp), color = c.surfaceAlt) {
                     Row(
                         Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -1133,7 +1133,7 @@ private fun AvailableRidesList(
                         .fillMaxWidth()
                         .padding(vertical = 6.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = c.surfaceMuted,
+                color = c.surfaceAlt,
             ) {
                 Column(Modifier.padding(12.dp)) {
                     Text(ride.pickupAddress, color = c.textPrimary, fontWeight = FontWeight.SemiBold, maxLines = 2)
@@ -1183,8 +1183,8 @@ private fun AvailableRidesList(
                         Button(onClick = { onAccept(ride) }, colors = ButtonDefaults.buttonColors(containerColor = c.primary)) {
                             Text(stringResource(R.string.driver_accept), color = c.onPrimary)
                         }
-                        Button(onClick = { onRefuse(ride) }, colors = ButtonDefaults.buttonColors(containerColor = c.surfaceMuted)) {
-                            Text(stringResource(R.string.driver_refuse), color = c.errorRed)
+                        Button(onClick = { onRefuse(ride) }, colors = ButtonDefaults.buttonColors(containerColor = c.surfaceAlt)) {
+                            Text(stringResource(R.string.driver_refuse), color = c.error)
                         }
                     }
                 }
@@ -1253,7 +1253,7 @@ private fun ActiveRideSheetContent(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     stringResource(R.string.driver_cancel_ride),
-                    color = c.errorRed,
+                    color = c.error,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.fillMaxWidth().clickable { onCancel() }.padding(12.dp),
                 )
@@ -1292,7 +1292,7 @@ private fun CompleteResultOverlay(
             Text(stringResource(R.string.driver_ride_completed), fontWeight = FontWeight.Bold, color = c.textPrimary)
             Text(stringResource(R.string.driver_commission, result.commissionAmount), color = c.textSecondary, fontSize = 13.sp)
             Text(stringResource(R.string.driver_new_balance, result.newBalance), color = c.primary, fontWeight = FontWeight.Bold)
-            result.warning?.let { Text(it, color = c.errorRed, fontSize = 12.sp) }
+            result.warning?.let { Text(it, color = c.error, fontSize = 12.sp) }
         }
     }
 }

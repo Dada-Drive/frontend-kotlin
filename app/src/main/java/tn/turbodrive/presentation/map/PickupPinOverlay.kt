@@ -114,7 +114,7 @@ fun PickupPinOverlay(
     val colors = LocalAppColors.current
     val pinColor =
         when {
-            isOutOfBounds -> colors.errorRed
+            isOutOfBounds -> colors.error
             isIntermediateStop -> Color(STOP_PIN_YELLOW_ARGB)
             else -> Color.Black
         }
@@ -345,7 +345,7 @@ private fun PickupAddressBubble(
     val labelTextColor = if (isLoading) Color.White else pinColor
     val bodyTextColor =
         when {
-            isOutOfBounds -> colors.errorRed
+            isOutOfBounds -> colors.error
             isLoading -> Color.White
             else -> colors.textPrimary
         }
@@ -577,14 +577,14 @@ private fun PickupConfirmButton(
 
     val bgColor =
         when {
-            isOutOfBounds -> colors.errorRed.copy(alpha = 0.12f)
+            isOutOfBounds -> colors.error.copy(alpha = 0.12f)
             isEmpty -> pinColor.copy(alpha = 0.4f)
             else -> pinColor
         }
 
     val fgColor =
         when {
-            isOutOfBounds -> colors.errorRed
+            isOutOfBounds -> colors.error
             disabled ->
                 when {
                     isIntermediateStop -> MapColorTokens.pinIntermediate.copy(alpha = 0.55f)

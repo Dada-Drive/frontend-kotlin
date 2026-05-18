@@ -105,7 +105,7 @@ internal fun ProfileBottomSheet(
                     }
                 }
             Box(
-                modifier = Modifier.size(72.dp).clip(CircleShape).background(c.surfaceMuted),
+                modifier = Modifier.size(72.dp).clip(CircleShape).background(c.surfaceAlt),
                 contentAlignment = Alignment.Center,
             ) {
                 if (!sheetAvatarUrl.isNullOrBlank()) {
@@ -159,7 +159,7 @@ internal fun ProfileBottomSheet(
                 Text(stringResource(R.string.menu_language), color = c.textPrimary, fontSize = 15.sp, modifier = Modifier.weight(1f))
                 Text(
                     "${selectedLang.flag} ${selectedLang.localizedDisplayName()}",
-                    color = c.textHint,
+                    color = c.textSubtle,
                     fontSize = 13.sp,
                     maxLines = 1,
                 )
@@ -167,7 +167,7 @@ internal fun ProfileBottomSheet(
                 Icon(
                     painter = painterResource(if (languagePickerExpanded) AppIcon.chevronUp else AppIcon.chevronDown),
                     contentDescription = null,
-                    tint = c.textHint,
+                    tint = c.textSubtle,
                     modifier = Modifier.size(18.dp),
                 )
             }
@@ -237,7 +237,7 @@ internal fun ProfileBottomSheet(
             Spacer(Modifier.height(4.dp))
             HorizontalDivider(color = c.dividerGrey)
             Spacer(Modifier.height(4.dp))
-            ProfileMenuItem(AppIcon.logOut, stringResource(R.string.menu_log_out), tint = c.errorRed, onClick = onLogout)
+            ProfileMenuItem(AppIcon.logOut, stringResource(R.string.menu_log_out), tint = c.error, onClick = onLogout)
             Spacer(Modifier.height(12.dp))
             Text(stringResource(R.string.app_version_label), color = c.textTertiary, fontSize = 11.sp)
             Spacer(Modifier.height(24.dp))

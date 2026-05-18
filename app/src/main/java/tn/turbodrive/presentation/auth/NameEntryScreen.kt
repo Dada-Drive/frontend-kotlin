@@ -186,7 +186,7 @@ fun NameEntryScreen(
                 onValueChange = { email = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text(stringResource(R.string.name_email_placeholder), color = c.outlineLight) },
+                placeholder = { Text(stringResource(R.string.name_email_placeholder), color = c.borderStrong) },
                 leadingIcon = {
                     Icon(painterResource(AppIcon.mail), null, tint = Muted)
                 },
@@ -211,7 +211,7 @@ fun NameEntryScreen(
             )
             error?.let {
                 Spacer(Modifier.height(10.dp))
-                Text(it, color = c.errorRed, fontSize = 13.sp)
+                Text(it, color = c.error, fontSize = 13.sp)
             }
             Spacer(Modifier.height(32.dp))
         }
@@ -229,7 +229,7 @@ fun NameEntryScreen(
                     containerColor = Color.Black,
                     contentColor = Color.White,
                     disabledContainerColor = c.border,
-                    disabledContentColor = c.textHint,
+                    disabledContentColor = c.textSubtle,
                 ),
         ) {
             if (loading) {

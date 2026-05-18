@@ -141,7 +141,7 @@ private fun StepperButton(
     onClick: () -> Unit,
 ) {
     val c = LocalAppColors.current
-    val containerColor = if (atBoundary) c.surfaceMuted else c.surface
+    val containerColor = if (atBoundary) c.surfaceAlt else c.surface
     val contentColor = if (atBoundary) c.textDisabled else c.textPrimary
     val borderColor = if (atBoundary) c.border else c.textPrimary
 
@@ -153,7 +153,7 @@ private fun StepperButton(
             ButtonDefaults.buttonColors(
                 containerColor = containerColor,
                 contentColor = contentColor,
-                disabledContainerColor = c.surfaceMuted,
+                disabledContainerColor = c.surfaceAlt,
                 disabledContentColor = c.textDisabled,
             ),
         modifier =

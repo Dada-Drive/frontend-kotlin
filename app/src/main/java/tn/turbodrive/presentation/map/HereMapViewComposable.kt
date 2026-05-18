@@ -116,7 +116,7 @@ internal fun HereMapViewComposable(
      */
     navigationFollow: Boolean = false,
     onUserLocationScreenPointUpdated: ((Point2D?) -> Unit)? = null,
-    destinationPinColor: Color = LocalAppColors.current.errorRed,
+    destinationPinColor: Color = LocalAppColors.current.error,
     mainRouteColor: Color = LocalAppColors.current.primary,
     /**
      * When true, [passengerRouteGeometries] are sequential legs of one trip (e.g. driver→pickup
@@ -906,7 +906,7 @@ internal fun MapLoadErrorContent(message: String) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(32.dp),
         ) {
-            Icon(painterResource(AppIcon.alertTriangle), null, tint = c.errorRed, modifier = Modifier.size(64.dp))
+            Icon(painterResource(AppIcon.alertTriangle), null, tint = c.error, modifier = Modifier.size(64.dp))
             Spacer(Modifier.height(16.dp))
             Text(
                 stringResource(R.string.map_load_error),

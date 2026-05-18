@@ -24,7 +24,7 @@ import tn.turbodrive.core.theme.LocalAppColors
 private val TurboAccentGreen: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalAppColors.current.successGreen
+    get() = LocalAppColors.current.accent
 
 /**
  * Logo carré noir, « T » blanc et accent vert (identité maquette TurboDrive).

@@ -371,7 +371,7 @@ private fun WheelRowContainer(
                     .fillMaxWidth()
                     .height(38.dp)
                     .align(Alignment.Center)
-                    .background(c.surfaceMuted.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+                    .background(c.surfaceAlt.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
                     .border(1.dp, accent.copy(alpha = 0.18f), RoundedCornerShape(10.dp)),
         )
     }

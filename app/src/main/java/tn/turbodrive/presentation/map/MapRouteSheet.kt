@@ -159,8 +159,8 @@ internal fun RouteItinerarySheetContent(
             focusedTextColor = c.textPrimary,
             unfocusedTextColor = c.textPrimary,
             cursorColor = c.primary,
-            focusedPlaceholderColor = c.textHint,
-            unfocusedPlaceholderColor = c.textHint,
+            focusedPlaceholderColor = c.textSubtle,
+            unfocusedPlaceholderColor = c.textSubtle,
         )
     val intermediateFieldColors =
         TextFieldDefaults.colors(
@@ -351,13 +351,13 @@ internal fun RouteItinerarySheetContent(
                     Spacer(Modifier.height(4.dp))
                     StopValidityHint(
                         text = stringResource(R.string.map_stop_off_route_warning),
-                        color = c.errorRed,
+                        color = c.error,
                     )
                 } else if (draft.validity == IntermediateStopValidity.OnRoute) {
                     Spacer(Modifier.height(4.dp))
                     StopValidityHint(
                         text = stringResource(R.string.map_stop_on_route_ok),
-                        color = c.successGreen,
+                        color = c.accent,
                     )
                 }
             }
@@ -375,7 +375,7 @@ internal fun RouteItinerarySheetContent(
             RouteSmallLabel(stringResource(R.string.map_route_to_label))
             Spacer(Modifier.height(4.dp))
             SwiftStyleRouteField(
-                dotColor = c.errorRed,
+                dotColor = c.error,
                 dotFilled = true,
                 value = finalDestination,
                 onValueChange = onFinalDestinationChange,
@@ -463,7 +463,7 @@ private fun ForMeForOtherSegmented(
                     if (darkItinerary) {
                         Color.White.copy(alpha = 0.08f)
                     } else {
-                        c.surfaceMuted.copy(alpha = 0.55f)
+                        c.surfaceAlt.copy(alpha = 0.55f)
                     },
                 )
                 .padding(4.dp),
@@ -683,7 +683,7 @@ internal fun RouteTimelineLegRow(
                 when (kind) {
                     RouteTimelineKind.Start -> Color.Black
                     RouteTimelineKind.Stop -> Color(STOP_PIN_YELLOW_ARGB)
-                    RouteTimelineKind.End -> c.errorRed
+                    RouteTimelineKind.End -> c.error
                 }
             Box(
                 modifier =
@@ -978,9 +978,9 @@ private fun ScheduleForLaterButton(
     val borderCol = if (darkItinerary) Color.White.copy(alpha = 0.20f) else c.dividerGrey.copy(alpha = 0.45f)
     val titleCol = if (darkItinerary) Color.White else c.textPrimary
     val subtitleCol = if (darkItinerary) Color.White.copy(alpha = 0.68f) else c.textSecondary
-    val iconCircle = if (darkItinerary) Color.White.copy(alpha = 0.10f) else c.surfaceMuted.copy(alpha = 0.55f)
+    val iconCircle = if (darkItinerary) Color.White.copy(alpha = 0.10f) else c.surfaceAlt.copy(alpha = 0.55f)
     val iconTint = if (darkItinerary) Color.White.copy(alpha = 0.72f) else c.textSecondary
-    val chevronTint = if (darkItinerary) Color.White.copy(alpha = 0.45f) else c.textHint
+    val chevronTint = if (darkItinerary) Color.White.copy(alpha = 0.45f) else c.textSubtle
     Row(
         modifier =
             Modifier

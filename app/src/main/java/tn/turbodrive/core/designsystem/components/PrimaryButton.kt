@@ -56,7 +56,7 @@ fun PrimaryButton(
 
     val bg =
         when {
-            isSuccess -> c.successGreen
+            isSuccess -> c.accent
             else -> containerColor ?: c.primary
         }
     val fg =

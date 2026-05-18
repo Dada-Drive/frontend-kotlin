@@ -71,7 +71,7 @@ private fun SkeletonBlock(
         Box(
             modifier =
                 modifier
-                    .background(c.surfaceMuted, shape)
+                    .background(c.surfaceAlt, shape)
                     .alpha(0.5f),
         )
     } else {
@@ -89,7 +89,7 @@ private fun SkeletonBlock(
         Box(
             modifier =
                 modifier
-                    .background(c.surfaceMuted, shape)
+                    .background(c.surfaceAlt, shape)
                     .alpha(alpha),
         )
     }

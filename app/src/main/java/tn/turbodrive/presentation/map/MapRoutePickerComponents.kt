@@ -144,7 +144,7 @@ internal fun RouteConnectorIcon(
 ) {
     val totalSegments = 1 + intermediateCount
     val connectorColor = MapColorTokens.connectorGrey
-    val finalDestColor = LocalAppColors.current.errorRed
+    val finalDestColor = LocalAppColors.current.error
     val iconHeight by animateDpAsState(
         targetValue = (56 * (1 + intermediateCount) + 8 * totalSegments).dp,
         animationSpec = tween(220),
@@ -211,12 +211,12 @@ internal fun FromOriginRingIcon(
 ) {
     val c = LocalAppColors.current
     val ringColor by animateColorAsState(
-        targetValue = if (active) c.primary else c.textHint.copy(alpha = 0.5f),
+        targetValue = if (active) c.primary else c.textSubtle.copy(alpha = 0.5f),
         animationSpec = spring(stiffness = 550f),
         label = "origin_ring_color",
     )
     val centerDotColor by animateColorAsState(
-        targetValue = if (active) c.primary else c.textHint.copy(alpha = 0.7f),
+        targetValue = if (active) c.primary else c.textSubtle.copy(alpha = 0.7f),
         animationSpec = spring(stiffness = 550f),
         label = "origin_dot_color",
     )
@@ -238,7 +238,7 @@ internal fun DestinationDotIcon(
 ) {
     val c = LocalAppColors.current
     val dotColor by animateColorAsState(
-        targetValue = if (active) c.errorRed else c.textHint.copy(alpha = 0.7f),
+        targetValue = if (active) c.error else c.textSubtle.copy(alpha = 0.7f),
         animationSpec = spring(stiffness = 550f),
         label = "destination_dot_color",
     )

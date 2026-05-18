@@ -64,7 +64,7 @@ fun DesignTextButton(
     val color =
         when {
             !enabled -> c.textDisabled
-            destructive -> c.errorRed
+            destructive -> c.error
             else -> c.primary
         }
     TextButton(

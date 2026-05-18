@@ -154,7 +154,7 @@ internal fun RiderDestinationConfirmedBar(
     val routeOnSurface = c.textPrimary
     val routeMuted = c.textSecondary
     val routePriceInk = c.textPrimary
-    val routeSoftPanel = c.surfaceMuted
+    val routeSoftPanel = c.surfaceAlt
     val routeChipBorder = c.border
     val pickupDisplay = remember(pickupTitle) { formatAddressForDisplay(pickupTitle) }
     val destinationDisplay = remember(destinationTitle) { formatAddressForDisplay(destinationTitle) }
@@ -328,7 +328,7 @@ internal fun RiderDestinationConfirmedBar(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(14.dp),
-                            color = c.surfaceMuted,
+                            color = c.surfaceAlt,
                             border = BorderStroke(1.dp, c.border),
                         ) {
                             Text(
@@ -439,7 +439,7 @@ internal fun RiderDestinationConfirmedBar(
                     ) {
                         Text(
                             text = stringResource(R.string.map_cancel_order),
-                            color = c.errorRed,
+                            color = c.error,
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
@@ -459,7 +459,7 @@ internal fun RiderDestinationConfirmedBar(
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(14.dp),
-                            color = c.surfaceMuted,
+                            color = c.surfaceAlt,
                         ) {
                             Row(
                                 modifier =
@@ -499,7 +499,7 @@ internal fun RiderDestinationConfirmedBar(
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
-                                color = c.surfaceMuted,
+                                color = c.surfaceAlt,
                             ) {
                                 Text(
                                     text = stringResource(R.string.map_rate_thanks),
@@ -536,7 +536,7 @@ internal fun RiderDestinationConfirmedBar(
                                     Icon(
                                         painter = painterResource(AppIcon.star),
                                         contentDescription = null,
-                                        tint = if (score <= selectedScore) c.ratingYellow else c.surfaceMuted,
+                                        tint = if (score <= selectedScore) c.ratingYellow else c.surfaceAlt,
                                         modifier =
                                             Modifier
                                                 .size(38.dp)
@@ -551,7 +551,7 @@ internal fun RiderDestinationConfirmedBar(
                                 placeholder = {
                                     Text(
                                         text = stringResource(R.string.map_rate_comment_placeholder),
-                                        color = c.textHint,
+                                        color = c.textSubtle,
                                     )
                                 },
                                 modifier =
@@ -561,9 +561,9 @@ internal fun RiderDestinationConfirmedBar(
                                 shape = RoundedCornerShape(12.dp),
                                 colors =
                                     TextFieldDefaults.colors(
-                                        focusedContainerColor = c.surfaceMuted,
-                                        unfocusedContainerColor = c.surfaceMuted,
-                                        disabledContainerColor = c.surfaceMuted,
+                                        focusedContainerColor = c.surfaceAlt,
+                                        unfocusedContainerColor = c.surfaceAlt,
+                                        disabledContainerColor = c.surfaceAlt,
                                         focusedIndicatorColor = Color.Transparent,
                                         unfocusedIndicatorColor = Color.Transparent,
                                         disabledIndicatorColor = Color.Transparent,
@@ -597,15 +597,15 @@ internal fun RiderDestinationConfirmedBar(
                                 Text(stringResource(R.string.welcome_skip), color = c.textSecondary, fontWeight = FontWeight.SemiBold)
                             }
                         }
-                        rideRatingError?.let { Text(it, color = c.errorRed, fontSize = 11.sp) }
-                        submitRideRatingError?.let { Text(it, color = c.errorRed, fontSize = 11.sp) }
+                        rideRatingError?.let { Text(it, color = c.error, fontSize = 11.sp) }
+                        submitRideRatingError?.let { Text(it, color = c.error, fontSize = 11.sp) }
                     }
                 }
             }
             requestError?.let {
                 Text(
                     text = it,
-                    color = c.errorRed,
+                    color = c.error,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                 )
@@ -703,7 +703,7 @@ private fun MatchedDriverCompactPanel(
             ) {
                 Surface(
                     shape = RoundedCornerShape(999.dp),
-                    color = c.surfaceMuted,
+                    color = c.surfaceAlt,
                 ) {
                     Text(
                         text = stringResource(R.string.driver_status_accepted),
@@ -724,7 +724,7 @@ private fun MatchedDriverCompactPanel(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                color = c.surfaceMuted.copy(alpha = 0.45f),
+                color = c.surfaceAlt.copy(alpha = 0.45f),
             ) {
                 Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
                     Row(
@@ -946,13 +946,13 @@ private fun PassengerRouteTimeline(
                 if (showDestinationChangeAction) {
                     Text(
                         text = stringResource(R.string.map_route_change),
-                        color = c.textHint,
+                        color = c.textSubtle,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp,
                         modifier =
                             Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(c.surfaceMuted)
+                                .background(c.surfaceAlt)
                                 .clickable(
                                     interactionSource = changeDestinationInteraction,
                                     indication = null,
@@ -1069,7 +1069,7 @@ private fun SearchingDriversPanel(
                     .padding(horizontal = 8.dp)
                     .clickable(onClick = onCancelRideRequest),
             shape = RoundedCornerShape(10.dp),
-            color = c.errorRed.copy(alpha = 0.10f),
+            color = c.error.copy(alpha = 0.10f),
         ) {
             Box(
                 modifier = Modifier.padding(vertical = 10.dp),
@@ -1077,7 +1077,7 @@ private fun SearchingDriversPanel(
             ) {
                 Text(
                     text = stringResource(R.string.map_cancel_ride),
-                    color = c.errorRed,
+                    color = c.error,
                     fontWeight = FontWeight.Medium,
                     fontSize = 16.sp,
                 )

@@ -178,12 +178,12 @@ internal val OnboardingPageBg: Color
 internal val TurboSetupSuccessGreen: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalAppColors.current.successGreen
+    get() = LocalAppColors.current.accent
 
 internal val TurboSetupSuccessBg: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalAppColors.current.successContainer
+    get() = LocalAppColors.current.accentSoft
 
 internal val OnboardingFieldBg = Color.White
 
@@ -218,7 +218,7 @@ internal val MonoOnPrimary = Color.White
 internal val MonoDisabled: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalAppColors.current.outlineLight
+    get() = LocalAppColors.current.borderStrong
 
 // ── TextField colors ─────────────────────────────────────────────────────────
 
@@ -402,7 +402,7 @@ internal fun UploadPlaceholderCard(
                     .background(if (bitmap != null) TurboSetupSuccessBg else Color.White)
                     .then(
                         if (bitmap == null) {
-                            Modifier.dashedPhotoPlaceholderBorder(1.5.dp, LocalAppColors.current.outlineLight, corner)
+                            Modifier.dashedPhotoPlaceholderBorder(1.5.dp, LocalAppColors.current.borderStrong, corner)
                         } else {
                             Modifier.border(2.dp, TurboSetupSuccessGreen, RoundedCornerShape(corner))
                         },
@@ -536,7 +536,7 @@ internal fun StepBottomBar(
                 Modifier
                     .weight(1f)
                     .height(4.dp)
-                    .background(LocalAppColors.current.outlineLight, RoundedCornerShape(8.dp)),
+                    .background(LocalAppColors.current.borderStrong, RoundedCornerShape(8.dp)),
         ) {
             Box(
                 modifier =
@@ -556,7 +556,7 @@ internal fun StepBottomBar(
                         containerColor = OnboardingFieldBg,
                         contentColor = OnboardingTitle,
                     ),
-                border = BorderStroke(1.dp, LocalAppColors.current.outlineLight),
+                border = BorderStroke(1.dp, LocalAppColors.current.borderStrong),
             ) {
                 Icon(painterResource(AppIcon.chevronLeft), null, modifier = Modifier.size(18.dp))
             }
@@ -928,7 +928,7 @@ internal fun VehiclePickerSheet(
                             color = OnboardingTitle,
                             fontSize = 15.sp,
                         )
-                        HorizontalDivider(color = LocalAppColors.current.surfaceMuted)
+                        HorizontalDivider(color = LocalAppColors.current.surfaceAlt)
                     }
                 }
             }

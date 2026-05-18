@@ -48,7 +48,7 @@ fun TurboDriveTheme(
                 surfaceVariant = appColors.darkInput,
                 onSurfaceVariant = appColors.textLabel,
                 outline = appColors.inputUnderline,
-                error = appColors.errorRed,
+                error = appColors.error,
                 onError = Color.White,
             )
         } else {
@@ -65,8 +65,8 @@ fun TurboDriveTheme(
                 onSurface = appColors.textPrimary,
                 surfaceVariant = appColors.lightInput,
                 onSurfaceVariant = appColors.textLabel,
-                outline = appColors.outlineLight,
-                error = appColors.errorRed,
+                outline = appColors.borderStrong,
+                error = appColors.error,
                 onError = Color.White,
             )
         }

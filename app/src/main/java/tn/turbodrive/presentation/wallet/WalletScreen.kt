@@ -73,7 +73,7 @@ fun WalletScreen(
                 fontWeight = FontWeight.Bold,
             )
             IconButton(onClick = viewModel::refresh, enabled = !isLoading) {
-                Surface(shape = CircleShape, color = c.surfaceMuted) {
+                Surface(shape = CircleShape, color = c.surfaceAlt) {
                     Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
                         if (isLoading) {
                             CircularProgressIndicator(
@@ -119,7 +119,7 @@ fun WalletScreen(
                     val isActive = wallet?.status.equals("active", ignoreCase = true)
                     Surface(
                         shape = RoundedCornerShape(999.dp),
-                        color = if (isActive) c.primary.copy(alpha = 0.16f) else c.errorRed.copy(alpha = 0.14f),
+                        color = if (isActive) c.primary.copy(alpha = 0.16f) else c.error.copy(alpha = 0.14f),
                     ) {
                         Text(
                             text =
@@ -130,7 +130,7 @@ fun WalletScreen(
                                 } else {
                                     stringResource(R.string.wallet_status_suspended)
                                 },
-                            color = if (isActive) c.primary else c.errorRed,
+                            color = if (isActive) c.primary else c.error,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 12.sp,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
@@ -165,7 +165,7 @@ fun WalletScreen(
                             Icon(
                                 painter = painterResource(AppIcon.alertTriangle),
                                 contentDescription = null,
-                                tint = c.errorRed,
+                                tint = c.error,
                                 modifier = Modifier.size(14.dp),
                             )
                             Spacer(Modifier.size(8.dp))
@@ -213,13 +213,13 @@ fun WalletScreen(
                         Icon(
                             Icons.Default.Inventory2,
                             contentDescription = null,
-                            tint = c.textHint.copy(alpha = 0.7f),
+                            tint = c.textSubtle.copy(alpha = 0.7f),
                             modifier = Modifier.size(26.dp),
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
                             text = stringResource(R.string.wallet_no_transactions),
-                            color = c.textHint,
+                            color = c.textSubtle,
                             fontSize = 13.sp,
                         )
                     }

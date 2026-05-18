@@ -27,7 +27,7 @@ fun DriverErrorSnackbar(
         modifier =
             modifier
                 .fillMaxWidth()
-                .background(c.errorRed.copy(alpha = 0.92f), RoundedCornerShape(12.dp))
+                .background(c.error.copy(alpha = 0.92f), RoundedCornerShape(12.dp))
                 .clickable(onClick = onDismiss)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
         contentAlignment = Alignment.CenterStart,

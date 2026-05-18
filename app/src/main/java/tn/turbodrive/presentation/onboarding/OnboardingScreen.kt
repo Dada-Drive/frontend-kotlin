@@ -79,7 +79,7 @@ private val CardIllustrationBg: Color
 private val AccentGreen: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalAppColors.current.successGreen
+    get() = LocalAppColors.current.accent
 
 private val TextGray: Color
     @Composable
@@ -89,7 +89,7 @@ private val TextGray: Color
 private val DotInactive: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalAppColors.current.outlineLight
+    get() = LocalAppColors.current.borderStrong
 
 @Composable
 fun OnboardingScreen(onCompleteIntro: () -> Unit) {
@@ -332,7 +332,7 @@ private fun IllustrationCard(
 @Composable
 private fun OnboardingIllustrationSpeed() {
     val accentGreen = AccentGreen
-    val hintColor = LocalAppColors.current.textHint
+    val hintColor = LocalAppColors.current.textSubtle
     IllustrationCard {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Canvas(Modifier.fillMaxSize()) {

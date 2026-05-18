@@ -65,7 +65,7 @@ private val HeroBlack: Color
 private val AccentGreen: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalAppColors.current.successGreen
+    get() = LocalAppColors.current.accent
 
 @Composable
 fun WelcomeScreen(
@@ -143,16 +143,16 @@ fun WelcomeScreen(
                             Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(c.errorContainer)
-                                .border(1.dp, c.errorContainer, RoundedCornerShape(12.dp))
+                                .background(c.errorSoft)
+                                .border(1.dp, c.errorSoft, RoundedCornerShape(12.dp))
                                 .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("!", color = c.errorRed, fontWeight = FontWeight.Bold)
+                        Text("!", color = c.error, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.width(10.dp))
                         Text(
                             text = error,
-                            color = c.errorRed,
+                            color = c.error,
                             fontSize = 14.sp,
                             modifier = Modifier.weight(1f),
                         )

@@ -28,12 +28,12 @@ data class AppColorScheme(
     val inputUnderline: Color,
     val textPrimary: Color,
     val textSecondary: Color,
-    val textHint: Color,
+    val textSubtle: Color,
     val textLabel: Color,
-    val errorRed: Color,
-    val successGreen: Color,
-    val warningOrange: Color,
-    val infoBlue: Color,
+    val error: Color,
+    val accent: Color,
+    val warning: Color,
+    val info: Color,
     val divider: Color,
     val border: Color,
     val buttonBackground: Color,
@@ -49,17 +49,17 @@ data class AppColorScheme(
     val greyHint: Color,
     val greyLabel: Color,
     val dividerGrey: Color,
-    val errorContainer: Color,
+    val errorSoft: Color,
     val onErrorContainer: Color,
-    val successContainer: Color,
+    val accentSoft: Color,
     val surfaceElevated: Color,
-    val surfaceMuted: Color,
+    val surfaceAlt: Color,
     val surfaceOverlaySemi: Color,
     val textTertiary: Color,
     val textDisabled: Color,
     val textCaption: Color,
     val dragHandle: Color,
-    val outlineLight: Color,
+    val borderStrong: Color,
     val ratingYellow: Color,
     val coinSilver: Color,
     val coinGold: Color,
@@ -87,7 +87,7 @@ object AppColor {
     val textHint: Color
         @Composable
         @ReadOnlyComposable
-        get() = LocalAppColors.current.textHint
+        get() = LocalAppColors.current.textSubtle
 
     val textOnGreen: Color
         @Composable
@@ -97,7 +97,7 @@ object AppColor {
     val green: Color
         @Composable
         @ReadOnlyComposable
-        get() = LocalAppColors.current.successGreen
+        get() = LocalAppColors.current.accent
 
     val greenDisabled: Color
         @Composable
@@ -107,12 +107,12 @@ object AppColor {
     val error: Color
         @Composable
         @ReadOnlyComposable
-        get() = LocalAppColors.current.errorRed
+        get() = LocalAppColors.current.error
 
     val destination: Color
         @Composable
         @ReadOnlyComposable
-        get() = LocalAppColors.current.errorRed
+        get() = LocalAppColors.current.error
 
     val background: Color
         @Composable

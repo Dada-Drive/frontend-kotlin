@@ -191,7 +191,7 @@ internal fun DriverVehicleStep(
                                 .background(if (selected) MonoPrimary.copy(alpha = 0.08f) else OnboardingFieldBg)
                                 .border(
                                     width = if (selected) 2.dp else 1.dp,
-                                    color = if (selected) MonoPrimary else LocalAppColors.current.outlineLight,
+                                    color = if (selected) MonoPrimary else LocalAppColors.current.borderStrong,
                                     shape = RoundedCornerShape(14.dp),
                                 )
                                 .clickable { onPresetChange(preset) }
@@ -375,7 +375,7 @@ private fun VehicleColorPickerSheet(
                             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                         )
                     }
-                    HorizontalDivider(color = LocalAppColors.current.surfaceMuted)
+                    HorizontalDivider(color = LocalAppColors.current.surfaceAlt)
                 }
                 item {
                     Row(
