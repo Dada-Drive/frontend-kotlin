@@ -35,10 +35,10 @@ object AppSpacing {
 }
 
 object AppRadius {
-    val s = 6.dp
+    val s = 8.dp
     val m = 12.dp
-    val l = 20.dp
-    val xl = 32.dp
+    val l = 16.dp
+    val xl = 24.dp
     val full = 999.dp
 }
 

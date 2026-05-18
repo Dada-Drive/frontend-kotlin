@@ -8,8 +8,8 @@ import androidx.compose.animation.core.spring
  * Motion tokens (design-system.md §9).
  */
 object AppMotion {
-    const val DURATION_FAST_MS = 150
-    const val DURATION_NORMAL_MS = 250
+    const val DURATION_FAST_MS = 120
+    const val DURATION_NORMAL_MS = 180
     const val DURATION_SLOW_MS = 400
 
     val springDefault: SpringSpec<Float> = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)
