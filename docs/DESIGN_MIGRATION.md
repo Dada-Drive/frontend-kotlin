@@ -119,42 +119,51 @@ Doublons / alias redondants avec d'autres tokens — supprimer pour éviter la c
 
 ---
 
-## 3. Typographie v1 → v2
+## 3. Typographie v1 → v2  ✅ (appliquée en R-4.2)
 
-Source : [`AppTypography.kt`](../app/src/main/java/tn/turbodrive/core/theme/AppTypography.kt) (13 styles, `FontFamily.Default`).
-Spec v2 : `design-system.md` §3 (14 styles, **Inter** font family).
+Source : [`AppTypography.kt`](../app/src/main/java/tn/turbodrive/core/theme/AppTypography.kt) (16 styles post-R-4.2, **Inter** variable font).
+Spec v2 : `design-system.md` §3.
 
-### Mapping
+> **Correction** : la première version de cette table (R-4.1) marquait à tort la majorité des sizes "keep". La vraie spec v2 réduit toutes les sizes de 1 à 4sp (sauf `monoM` qui augmente). Tableau ci-dessous corrigé et appliqué en commit R-4.2.
 
-| Style v1 | Size v1 | Weight v1 | Style v2 | Size v2 | Weight v2 | Delta |
+### Mapping (post-R-4.2)
+
+| Style | Size v1 | Size v2 | Weight | Line height | Letter spacing | Delta size |
 |---|---|---|---|---|---|---|
-| `displayLarge` | 36 | 700 | `displayL` | 36 | 700 | rename |
-| `displayMedium` | 30 | 700 | `displayM` | 30 | 700 | rename |
-| `headingL` | 26 | 600 | `headingL` | 26 | 600 | keep |
-| `headingM` | 20 | 600 | `headingM` | 20 | 600 | keep |
-| `headingS` | 18 | 600 | `headingS` | 18 | 600 | keep |
-| `bodyL` | 18 | 400 | `bodyL` | 18 | 400 | keep |
-| `bodyM` | 16 | 400 | `bodyM` | 16 | 400 | keep |
-| `bodyS` | 14 | 400 | `bodyS` | 14 | 400 | keep |
-| `labelL` | 16 | 500 | `labelL` | 16 | 500 | keep |
-| `labelM` | 14 | 500 | `labelM` | 14 | 500 | keep |
-| `labelS` | 12 | 500 | `labelS` | 12 | 500 | keep |
-| `monoL` | 28 | 700 | `monoL` | 28 | 700 | keep |
-| `monoM` | 20 | 500 | `monoM` | 20 | 500 | keep |
+| `displayLarge` | 36sp | **32sp** | 700 | 38.4sp (1.2) | -0.025em | -4sp |
+| `displayMedium` | 30sp | **28sp** | 700 | 33.6sp (1.2) | -0.02em | -2sp |
+| `headingL` | 26sp | **24sp** | 600 | 31.2sp (1.3) | -0.02em | -2sp |
+| `headingM` | 20sp | 20sp | 600 | 26sp (1.3) | -0.015em | keep |
+| `headingS` | 18sp | **17sp** | 600 | 22.1sp (1.3) | -0.01em | -1sp |
+| `bodyL` | 18sp | **17sp** | 400 | 25.5sp (1.5) | 0 | -1sp |
+| `bodyM` | 16sp | **15sp** | 400 | 22.5sp (1.5) | 0 | -1sp |
+| `bodyS` | 14sp | **13sp** | 400 | 19.5sp (1.5) | 0 | -1sp |
+| `labelL` | 16sp | **15sp** | 500 | 21sp (1.4) | 0 | -1sp |
+| `labelM` | 14sp | **13sp** | 500 | 18.2sp (1.4) | 0 | -1sp |
+| `labelS` | 12sp | **11sp** | 500 | 15.4sp (1.4) | 0 | -1sp |
+| `monoL` | 28sp | 28sp | 700 | 33.6sp (1.2) | 0 | keep (mono) |
+| `monoM` | 20sp | **22sp** | 500 | 26.4sp (1.2) | 0 | **+2sp** |
 
-### Styles v2 à créer
+### Nouveaux styles v2 (livrés en R-4.2)
 
-| Style v2 | Size | Weight | Usage |
-|---|---|---|---|
-| `button` | 16 | 600 | Texte des CTA (actuellement utilise `labelL`) |
-| `bodyStrong` | 16 | 600 | Body emphasized |
-| `smallStr` | 12 | 600 | Caption emphasized |
+| Style | Size | Weight | Line height | Letter spacing | Usage |
+|---|---|---|---|---|---|
+| **`button`** | 15sp | 600 | 21sp (1.4) | -0.005em | Texte des CTA (Material3 `labelLarge` slot) |
+| **`bodyStrong`** | 15sp | 600 | 22.5sp (1.5) | 0 | Body emphasized |
+| **`smallStr`** | 13sp | 600 | 19.5sp (1.5) | 0 | Caption emphasized |
 
-### Action transverse R-4.2 (Inter fonts)
+### Inter font family (livrée en R-4.2)
 
-- Ajouter `res/font/inter_regular.ttf`, `inter_medium.ttf`, `inter_semibold.ttf`, `inter_bold.ttf` (depuis `turbodrive_redesign/`)
-- Remplacer `FontFamily.Default` par `FontFamily(Font(R.font.inter_*, weight = X))` dans `AppTypography.kt`
-- Ajouter letter-spacing par token (spec v2 prescrit `-0.025em` pour `displayLarge`, etc.)
+- **Source** : variable font Google Fonts (`Inter[opsz,wght].ttf`, 856 KB)
+- **Fichier** : [`app/src/main/res/font/inter_variable.ttf`](../app/src/main/res/font/inter_variable.ttf)
+- **Bridge** : [`InterFontFamily.kt`](../app/src/main/java/tn/turbodrive/core/theme/InterFontFamily.kt) résout les 4 weights UI (400/500/600/700) via `FontVariation.weight(N)` (API expérimentale `ExperimentalTextApi`)
+- **Avantage** vs 4 statics : 856 KB vs ~1.2 MB, 1 source de vérité shape
+
+### Notes implémentation
+
+- `letterSpacing` exprimé en `em` (proportionnel à `fontSize`) → scale naturellement avec `TypographyScale.scaleSp()` sans modification.
+- `monoL` / `monoM` conservent `FontFamily.Monospace` (OTP, plaque immatriculation, indices techniques).
+- `Type.kt` : `labelLarge = AppTypography.button` (override M3 CTA semantic — était `labelL`).
 
 ---
 
@@ -266,8 +275,8 @@ Inventaire détaillé : voir R-4.3 (hors scope R-4.1).
 
 | Phase | Scope | Dépendances |
 |---|---|---|
-| **R-4.1** (cette phase) | Baseline snapshots + ce doc | R-2.3 (tokens nettoyés) |
-| **R-4.2** | Inter fonts → AppTypography | — |
+| **R-4.1** ✅ | Baseline snapshots + ce doc | R-2.3 (tokens nettoyés) |
+| **R-4.2** ✅ | Inter variable font → AppTypography (sizes v2 + letterSpacing + lineHeight + 3 nouveaux styles) | R-4.1 |
 | **R-4.3** | 91 SVG icons → AppIcon | turbodrive_redesign/ |
 | **R-4.4** | 5 nouveaux composants v2 + décomposer écrans complexes (Onboarding, Phone, etc.) en sous-Layouts snapshottables | R-4.2, R-4.3 |
 | **R-4.5** | Rename tokens v1 → v2 selon §2-7 ci-dessus + create AppShadow + dissoudre MapColorTokens | R-4.4 |

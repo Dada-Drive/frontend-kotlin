@@ -1213,33 +1213,49 @@ wc -l docs/DESIGN_MIGRATION.md                                   # → 302
 
 ---
 
-### Phase R-4.2 — D1 Inter fonts
-**Objectif** : police Inter 400/500/600/700 dans `res/font/` + `AppTypography` aligné spec.
-**Sévérité** : Bloquant D — **Effort** : 2–3 h
-**Dépendances** : R-0.7
+### Phase R-4.2 — D1 Inter fonts ✅
+**Statut** : Terminée le 2026-05-18.
+**Objectif** : police Inter 400/500/600/700 + `AppTypography` aligné `design-system.md` §3.
+**Sévérité** : Bloquant D — **Effort estimé** : 2–3 h — **Effort réel** : ~1 h
+**Dépendances** : R-4.1 (baseline snapshots disponibles)
 **Catégorie** : Design missing
 
-**Tâches**
-1. Télécharger Inter (Google Fonts ou rsms.me/inter) : 4 fichiers `.ttf`.
-2. Ajouter `app/src/main/res/font/inter_regular.ttf`, `inter_medium.ttf`, `inter_semibold.ttf`, `inter_bold.ttf`.
-3. Créer `core/theme/InterFontFamily.kt` : `val Inter = FontFamily(Font(R.font.inter_regular, FontWeight.Normal), ...)`.
-4. Refactor `AppTypography.kt` : remplacer `FontFamily.Default` par `Inter` partout.
-5. Aligner sur design-system.md §3 : `headingS=17sp` (vs 18), `displayMedium=28sp` (vs 30), ajouter `letterSpacing` et `lineHeight` par token.
-6. Ajouter nouveaux tokens : `button` (15/600), `bodyStrong` (15/600), `smallStr` (13/600).
-7. Snapshot diff pour vérifier l'impact visuel (10 écrans).
+**Décision implémentation** : variable font (1 fichier, 856 KB, axes `opsz` + `wght`) au lieu de 4 statics (~1.2 MB) — résolution des weights via `FontVariation.weight(N)` API Compose 1.5+.
 
-**Fichiers touchés**
-- Nouveaux : 4 `.ttf` dans `res/font/`, `core/theme/InterFontFamily.kt`
-- Modifiés : `core/theme/AppTypography.kt`, `core/theme/TypographyScale.kt`, `core/theme/Type.kt`
+**Livrables**
+
+| Livrable | Statut |
+|---|---|
+| `app/src/main/res/font/inter_variable.ttf` (856 KB, Google Fonts source) | ✅ |
+| [`core/theme/InterFontFamily.kt`](../app/src/main/java/tn/turbodrive/core/theme/InterFontFamily.kt) — `FontFamily` avec 4 entries (Normal/Medium/SemiBold/Bold) via `FontVariation` | ✅ |
+| [`core/theme/AppTypography.kt`](../app/src/main/java/tn/turbodrive/core/theme/AppTypography.kt) refactor : Inter partout (hors mono*), sizes spec §3, letterSpacing en em, lineHeight 1.2/1.3/1.4/1.5 | ✅ |
+| 3 nouveaux styles : `button` (15/600), `bodyStrong` (15/600), `smallStr` (13/600) | ✅ |
+| [`core/theme/Type.kt`](../app/src/main/java/tn/turbodrive/core/theme/Type.kt) : `Material3.labelLarge = AppTypography.button` | ✅ |
+| 10 PNG baseline Paparazzi re-recordés (drift visuel attendu) | ✅ |
+| [`docs/DESIGN_MIGRATION.md`](DESIGN_MIGRATION.md) §3 corrigé (vraies sizes v2) | ✅ |
+
+**Sizes appliquées (delta vs v1)** : displayLarge 36→**32**, displayMedium 30→**28**, headingL 26→**24**, headingS 18→**17**, bodyL 18→**17**, bodyM 16→**15**, bodyS 14→**13**, labelL 16→**15**, labelM 14→**13**, labelS 12→**11**, monoM 20→**22** (+2sp). headingM et monoL inchangés.
 
 **Critères d'acceptation**
-- [ ] 4 fichiers Inter présents
-- [ ] `AppTypography` utilise `Inter` uniquement
-- [ ] 3 nouveaux tokens (`button`, `bodyStrong`, `smallStr`) présents
-- [ ] Tailles alignées spec
-- [ ] Snapshot diff documenté
+- [x] Font Inter présent dans `res/font/` (variable, 856 KB)
+- [x] `AppTypography` utilise `InterFontFamily` (14 occurrences), `FontFamily.Default` éliminé (0 dans code, 2 occurrences uniquement dans commentaires)
+- [x] 3 nouveaux tokens (`button`, `bodyStrong`, `smallStr`) présents
+- [x] Tailles alignées spec §3
+- [x] `letterSpacing` (em) + `lineHeight` (sp) explicites sur tous les styles texte
+- [x] `./gradlew :app:compileDebugKotlin :app:ktlintCheck :app:detekt :app:verifyPaparazziDebug` BUILD SUCCESSFUL
+- [x] 10 PNG baseline re-recordés
 
-**Risques** : changement visuel global (tailles plus petites). Mitigation : faire diff snapshot par snapshot, PR distinct.
+**Vérification**
+```bash
+grep -rn "FontFamily.Default" app/src/main/java/tn/turbodrive/   # → 2 (commentaires seulement)
+grep -c "InterFontFamily" app/src/main/java/tn/turbodrive/core/theme/AppTypography.kt   # → 14
+ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
+./gradlew :app:verifyPaparazziDebug   # → BUILD SUCCESSFUL
+```
+
+**Risques résiduels**
+- Sizes réduites de 1-4sp = layouts serrés peuvent déborder (boutons fixed-width, badges). Review manuelle des 10 PNG recommandée mais drift acceptable per design v2.
+- 68 call sites `AppTypography.X` non modifiés (signatures inchangées) — la migration `labelL` CTA → `button` est différée à R-4.4 (refonte composants).
 
 ---
 
