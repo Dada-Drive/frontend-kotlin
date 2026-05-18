@@ -206,11 +206,13 @@ Spec v2 : `design-system.md` §5.
 
 | Token v1 | Value v1 | Token v2 | Value v2 | Delta |
 |---|---|---|---|---|
-| `s` | 6 | `rS` | 8 | **rename + bump +2dp** |
-| `m` | 12 | `rM` | 12 | rename |
-| `l` | 20 | `rL` | 20 | rename |
-| `xl` | 32 | `rXL` | 32 | rename |
-| `full` | 999 | `rFull` | 999 | rename |
+| `s` | 6 | `s` | 8 | **bump +2dp** (applied R-4.5) |
+| `m` | 12 | `m` | 12 | unchanged |
+| `l` | 20 | `l` | 16 | **bump −4dp** (applied R-4.5, source `radius.lg = 16px`) |
+| `xl` | 32 | `xl` | 24 | **bump −8dp** (applied R-4.5, source `radius.xl = 24px`) |
+| `full` | 999 | `full` | 999 | unchanged |
+
+> R-4.5 note : noms `s/m/l/xl/full` conservés (les noms `rS/rM/...` du brief initial ont été abandonnés au profit de la convention Kotlin existante). Seules les valeurs sont alignées sur la source `TD_SHARED.radius`.
 
 ---
 

@@ -53,7 +53,7 @@
 | 23 | `res/font/` absent (Inter) | Design missing | Bloquant D | R-4.2 | 2–3h |
 | 24 | 0 SVG du redesign (vs 91) ✅ | Design missing | Bloquant D | R-4.3 | 12–20h |
 | 25 | 5 composants nouveaux manquants ✅ | Design missing | Bloquant D | R-4.4 | 12–20h |
-| 26 | Tokens v1 legacy (pas v2 sémantiques) | Design drift | Important | R-4.5 | 4–8h |
+| 26 | Tokens v1 legacy (pas v2 sémantiques) ✅ | Design drift | Important | R-4.5 | 4–8h |
 | 27 | Room non chiffré (SQLCipher) | Sécurité | Important | R-7.4 | 6–8h |
 | 28 | 8 fichiers > 1000 LOC | Code quality | Important | R-5/R-6 | inclus |
 | 29 | DriverSetup OCR pas branché | Missing feature | Critique | R-5.2 | 12–20h |
@@ -1322,28 +1322,44 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 
 ---
 
-### Phase R-4.5 — D1 Renommage tokens v1→v2
-**Objectif** : tokens portent les noms sémantiques v2 (cf. R-4.1 table). Bridge typealias pour migration douce.
-**Sévérité** : Important — **Effort** : 4–8 h
-**Dépendances** : R-4.1
+### Phase R-4.5 — D1 Renommage tokens v1→v2 ✅
+**Statut** : Terminée le 2026-05-19.
+**Objectif** : tokens portent les noms sémantiques v2 (cf. spec source turbodrive_redesign).
+**Sévérité** : Important — **Effort estimé** : 4–8 h — **Effort réel** : ~2 h
+**Dépendances** : R-4.1 ✅
 **Catégorie** : Design drift
 
-**Tâches**
-1. Pour chaque entrée table mapping : ajouter alias `val accent get() = successGreen` dans `AppColorScheme` (bridge).
-2. Refactor call sites par batch : `successGreen` → `accent` (grep + replace).
-3. Ajouter tokens manquants spec v2 : `accentSoft`, `accentInk`, `textSubtle`, `textDisabled`, `surfaceAlt`, `surfaceDeep`, `borderStrong`, `inkSoft`, `inkSubtle`, `onInk`, `errorSoft`, `warningSoft`, `infoSoft`.
-4. Ajouter tokens carte : `mapLand`, `mapWater`, `mapRoad`, `mapPath`.
-5. Aligner `AppRadius` (rL=16 spec vs 20, rXL=24 vs 32) et `AppMotion` (0.12/0.18 spec vs 0.15/0.25).
-6. Supprimer noms legacy après refacto.
-7. Tests : snapshots inchangés (couleurs identiques, juste renommées).
+**Décisions prises durant la phase** :
+- Stratégie **RENAME pur** (pas de bridge typealias) : un seul nom v2 survit, refactor mécanique sur tout le codebase.
+- `primary` / `onPrimary` **conservés** (convention Kotlin/Material3, vs `ink`/`onInk` du source). La rename `successGreen` → `accent` règle le quiproquo sémantique principal.
+- `AppRadius` : valeurs ajustées (s=8, l=16, xl=24) — correction de `docs/DESIGN_MIGRATION.md §5` qui disait "rename only".
+- Noms `s/m/l/xl/full` conservés au lieu de `rS/rM/...` (le brief initial proposait un préfixe, abandonné au profit de la convention Kotlin existante).
 
-**Fichiers touchés**
-- Modifiés : `core/theme/TurboDriveColorScheme.kt`, `AppColors.kt`, `AppRadius.kt`, `AppMotion.kt`, ~50 call sites
+**Livrables**
+
+| Livrable | Détail |
+|---|---|
+| 9 tokens renommés v1 → v2 | `successGreen`→`accent`, `errorRed`→`error`, `warningOrange`→`warning`, `infoBlue`→`info`, `textHint`→`textSubtle`, `surfaceMuted`→`surfaceAlt`, `outlineLight`→`borderStrong`, `errorContainer`→`errorSoft`, `successContainer`→`accentSoft` |
+| 6 nouveaux tokens v2 | `accentInk`, `surfaceDeep`, `inkSoft`, `inkSubtle`, `warningSoft`, `infoSoft` |
+| 4 nouveaux tokens carte | `mapLand`, `mapWater`, `mapRoad`, `mapPath` |
+| `AppRadius` aligné spec | s : 6→8dp, l : 20→16dp, xl : 32→24dp |
+| `AppMotion` aligné spec | fast : 150→120ms, normal : 250→180ms |
+| Wrapper `AppColor` (textHint/green/error/destination) | Préservé pour compat consumer-facing, RHS pointe vers noms v2 |
+| Paparazzi snapshots | 14 baselines re-recorded (border-radius diff visible uniquement) |
+| Detekt baseline | 1 entrée mise à jour (UnusedParameter sur `HereMapViewComposable.destinationPinColor`) |
+
+**Métriques** :
+- 204 call-site replacements + 37 fichiers modifiés (3 schéma + 34 consumers)
+- `./gradlew clean compileDebugKotlin testDebugUnitTest ktlintCheck detekt` → BUILD SUCCESSFUL
 
 **Critères d'acceptation**
-- [ ] 14 nouveaux tokens v2 présents
-- [ ] Aucun usage legacy `successGreen` (sauf alias deprecated)
-- [ ] Snapshots Paparazzi inchangés
+- [x] 9 tokens v1 renommés en v2 (data class + schemas Light/Dark)
+- [x] 6 nouveaux tokens v2 + 4 map tokens présents
+- [x] 0 référence à v1 hors wrapper `AppColor.textHint` (consumer-facing)
+- [x] `AppRadius` et `AppMotion` alignés spec
+- [x] Snapshots Paparazzi : 14 re-recorded (radius), reste inchangés
+- [x] 3 commits atomiques `Refs R-4.5` + push
+- [x] `DESIGN_MIGRATION.md §5` corrigé
 
 ---
 
