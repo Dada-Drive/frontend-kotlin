@@ -52,7 +52,7 @@
 | 22 | Tests intégration ride 0 | Missing tests | Critique | R-3.6 | 6–10h |
 | 23 | `res/font/` absent (Inter) | Design missing | Bloquant D | R-4.2 | 2–3h |
 | 24 | 0 SVG du redesign (vs 91) ✅ | Design missing | Bloquant D | R-4.3 | 12–20h |
-| 25 | 5 composants nouveaux manquants | Design missing | Bloquant D | R-4.4 | 12–20h |
+| 25 | 5 composants nouveaux manquants ✅ | Design missing | Bloquant D | R-4.4 | 12–20h |
 | 26 | Tokens v1 legacy (pas v2 sémantiques) | Design drift | Important | R-4.5 | 4–8h |
 | 27 | Room non chiffré (SQLCipher) | Sécurité | Important | R-7.4 | 6–8h |
 | 28 | 8 fichiers > 1000 LOC | Code quality | Important | R-5/R-6 | inclus |
@@ -1288,28 +1288,37 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 
 ---
 
-### Phase R-4.4 — D1 5 composants nouveaux
-**Objectif** : créer `ServiceCategoryTile`, `StackedOffersList`, `PriceStepper`, `ProgressTimer`, `PriceToggle` avec snapshots.
-**Sévérité** : Bloquant D — **Effort** : 12–20 h
-**Dépendances** : R-4.2, R-4.3
+### Phase R-4.4 — D1 5 composants nouveaux ✅
+**Statut** : Terminée le 2026-05-18.
+**Objectif** : créer 5 composants réutilisables design system v2.
+**Sévérité** : Bloquant D — **Effort estimé** : 12–20 h — **Effort réel** : ~3 h
+**Dépendances** : R-4.2 ✅, R-4.3 ✅
 **Catégorie** : Design missing
 
-**Tâches**
-1. **ServiceCategoryTile** : tuile catégorie service (taxi, livraison, premium). API : `(icon, label, isSelected, onClick)`.
-2. **StackedOffersList** : pile de cartes d'offres chauffeur (avec animation de pile + swipe). API : `(offers: List<Offer>, onAccept, onReject)`.
-3. **PriceStepper** : input numérique avec +/- pour négociation. API : `(value, onValueChange, min, max, step)`.
-4. **ProgressTimer** : timer circulaire avec countdown. API : `(durationMs, onTick, onFinish)`.
-5. **PriceToggle** : segment toggle (TND/USD ou Cash/Wallet). API : `(options, selected, onSelect)`.
-6. Pour chaque : composable + Preview + 1 test Paparazzi (3 états : default/active/disabled).
-7. Documenter dans `docs/COMPONENTS.md`.
+**Décisions prises durant la phase** :
+- `ProgressTimer` → **`LinearProgressTimer`** (barre 4dp linéaire conforme à la source redesign). Le brief disait "circulaire" mais la source utilise des barres horizontales. Choix utilisateur validé.
+- `StackedOffersList` → **liste verticale scrollable** `LazyColumn` (conforme source redesign). Le brief décrivait une pile swipeable (Tinder-like) non présente dans la source. Choix utilisateur validé. Le nom "Stacked" est conservé pour traçabilité.
 
-**Fichiers touchés**
-- Nouveaux : 5 composables sous `presentation/components/designsystem/`, 5 tests Paparazzi, `docs/COMPONENTS.md`
+**Livrables**
+
+| Composant | Fichier source | Tests Paparazzi | Snapshots |
+|---|---|---|---|
+| `ServiceCategoryTile` | `presentation/components/designsystem/ServiceCategoryTile.kt` | `ServiceCategoryTileBaselineTest` | 6 PNG (3 états × 2 thèmes) |
+| `PriceToggle<T>` | `presentation/components/designsystem/PriceToggle.kt` | `PriceToggleBaselineTest` | 6 PNG |
+| `PriceStepper` | `presentation/components/designsystem/PriceStepper.kt` | `PriceStepperBaselineTest` | 8 PNG (4 états × 2 thèmes) |
+| `LinearProgressTimer` | `presentation/components/designsystem/LinearProgressTimer.kt` | `LinearProgressTimerBaselineTest` | 6 PNG (start/mid/end × 2 thèmes) |
+| `StackedOffersList` + `RideOffer` | `presentation/components/designsystem/StackedOffersList.kt` + `RideOffer.kt` | `StackedOffersListBaselineTest` | 8 PNG (empty/single/three/five × 2 thèmes) |
+| Documentation | [`docs/COMPONENTS.md`](COMPONENTS.md) | — | — |
+
+**Total** : 6 fichiers source + 1 data class + 5 tests Paparazzi + **34 PNG baselines** (> 15 critère).
 
 **Critères d'acceptation**
-- [ ] 5 composants compilent
-- [ ] 15+ snapshots Paparazzi
-- [ ] Documentation API
+- [x] 5 composants compilent dans `presentation/components/designsystem/`
+- [x] 34 snapshots Paparazzi (> 15 requis)
+- [x] Documentation API dans `docs/COMPONENTS.md`
+- [x] `./gradlew clean compileDebugKotlin testDebugUnitTest ktlintCheck detekt` → BUILD SUCCESSFUL
+- [x] 6 commits atomiques `Refs R-4.4`
+- [x] Push sur `origin/main`
 
 ---
 
