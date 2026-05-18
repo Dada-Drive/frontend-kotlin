@@ -63,6 +63,18 @@ data class AppColorScheme(
     val ratingYellow: Color,
     val coinSilver: Color,
     val coinGold: Color,
+    // ── R-4.5 v2 design tokens ──────────────────────────────────────────────
+    val accentInk: Color,
+    val surfaceDeep: Color,
+    val inkSoft: Color,
+    val inkSubtle: Color,
+    val warningSoft: Color,
+    val infoSoft: Color,
+    // ── R-4.5 map tokens ────────────────────────────────────────────────────
+    val mapLand: Color,
+    val mapWater: Color,
+    val mapRoad: Color,
+    val mapPath: Color,
 )
 
 val LocalAppColors = staticCompositionLocalOf<AppColorScheme> { TurboDriveSchemeLight }

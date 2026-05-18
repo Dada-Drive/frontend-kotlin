@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
  */
 internal fun buildTurboDriveColorScheme(isDark: Boolean): AppColorScheme = if (isDark) turboDriveDarkScheme() else turboDriveLightScheme()
 
+@Suppress("LongMethod", "MagicNumber")
 private fun turboDriveLightScheme(): AppColorScheme {
     val primary = Color(0xFF0A0A0A)
     val onPrimary = Color(0xFFFFFFFF)
@@ -65,9 +66,22 @@ private fun turboDriveLightScheme(): AppColorScheme {
         ratingYellow = Color(0xFFFFC107),
         coinSilver = Color(0xFFC0C0C0),
         coinGold = Color(0xFFD4AF37),
+        // R-4.5 v2 tokens (design-system.jsx)
+        accentInk = Color(0xFF15803D),
+        surfaceDeep = surfaceDeep,
+        inkSoft = Color(0xFF1F1F1F),
+        inkSubtle = Color(0xFF3D3D3D),
+        warningSoft = Color(0xFFFEF3C7),
+        infoSoft = Color(0xFFDBEAFE),
+        // R-4.5 map tokens (phone-frame.jsx)
+        mapLand = Color(0xFFEEEBE0),
+        mapWater = Color(0xFFD8DCE4),
+        mapRoad = Color(0xFFFFFFFF),
+        mapPath = Color(0xFFDDD7C5),
     )
 }
 
+@Suppress("LongMethod", "MagicNumber")
 private fun turboDriveDarkScheme(): AppColorScheme {
     val primary = Color(0xFFF4F4F0)
     val onPrimary = Color(0xFF0A0A0A)
@@ -125,5 +139,17 @@ private fun turboDriveDarkScheme(): AppColorScheme {
         ratingYellow = Color(0xFFFFC107),
         coinSilver = Color(0xFF9B9B9B),
         coinGold = Color(0xFFB89530),
+        // R-4.5 v2 tokens (design-system.jsx)
+        accentInk = Color(0xFF4ADE80),
+        surfaceDeep = surfaceDeep,
+        inkSoft = Color(0xFFE5E5E0),
+        inkSubtle = Color(0xFFB8B8B0),
+        warningSoft = Color(0xFF3A2A0A),
+        infoSoft = Color(0xFF0F1F3A),
+        // R-4.5 map tokens (phone-frame.jsx, dark variant)
+        mapLand = Color(0xFF1A1F2E),
+        mapWater = Color(0xFF0E1320),
+        mapRoad = Color(0xFF2A3142),
+        mapPath = Color(0xFF3A4358),
     )
 }

@@ -9,6 +9,7 @@ internal fun contentOnPrimary(primary: Color): Color = if (primary.luminance() >
 
 // ── Thème sombre (UI noir / gris foncé) ─────────────────────────────────────
 
+@Suppress("LongMethod", "MagicNumber")
 private fun buildDarkScheme(
     name: String,
     primary: Color,
@@ -68,11 +69,23 @@ private fun buildDarkScheme(
         ratingYellow = Color(0xFFFFC107),
         coinSilver = Color(0xFF9B9B9B),
         coinGold = Color(0xFFB89530),
+        // R-4.5 v2 tokens — fallback dark values for alternate themes
+        accentInk = Color(0xFF4ADE80),
+        surfaceDeep = Color(0xFF28282D),
+        inkSoft = Color(0xFFE5E5E0),
+        inkSubtle = Color(0xFFB8B8B0),
+        warningSoft = Color(0xFF3A2A0A),
+        infoSoft = Color(0xFF0F1F3A),
+        mapLand = Color(0xFF1A1F2E),
+        mapWater = Color(0xFF0E1320),
+        mapRoad = Color(0xFF2A3142),
+        mapPath = Color(0xFF3A4358),
     )
 }
 
 // ── Thème clair (UI blanc / gris clair) ─────────────────────────────────────
 
+@Suppress("LongMethod", "MagicNumber")
 private fun buildLightScheme(
     name: String,
     primary: Color,
@@ -132,6 +145,17 @@ private fun buildLightScheme(
         ratingYellow = Color(0xFFFFC107),
         coinSilver = Color(0xFFC0C0C0),
         coinGold = Color(0xFFD4AF37),
+        // R-4.5 v2 tokens — fallback light values for alternate themes
+        accentInk = Color(0xFF15803D),
+        surfaceDeep = Color(0xFFEAE7E0),
+        inkSoft = Color(0xFF1F1F1F),
+        inkSubtle = Color(0xFF3D3D3D),
+        warningSoft = Color(0xFFFEF3C7),
+        infoSoft = Color(0xFFDBEAFE),
+        mapLand = Color(0xFFEEEBE0),
+        mapWater = Color(0xFFD8DCE4),
+        mapRoad = Color(0xFFFFFFFF),
+        mapPath = Color(0xFFDDD7C5),
     )
 }
 
@@ -193,6 +217,7 @@ val GreenSchemeDark: AppColorScheme =
     AppTheme.GREEN.resolveScheme(isDark = true)
 
 /** Toutes les entrées couleur du schéma (aperçu réglages / debug). */
+@Suppress("LongMethod")
 fun AppColorScheme.allColorEntries(): List<Pair<String, Color>> =
     listOf(
         "primary" to primary,
@@ -246,4 +271,14 @@ fun AppColorScheme.allColorEntries(): List<Pair<String, Color>> =
         "ratingYellow" to ratingYellow,
         "coinSilver" to coinSilver,
         "coinGold" to coinGold,
+        "accentInk" to accentInk,
+        "surfaceDeep" to surfaceDeep,
+        "inkSoft" to inkSoft,
+        "inkSubtle" to inkSubtle,
+        "warningSoft" to warningSoft,
+        "infoSoft" to infoSoft,
+        "mapLand" to mapLand,
+        "mapWater" to mapWater,
+        "mapRoad" to mapRoad,
+        "mapPath" to mapPath,
     )
