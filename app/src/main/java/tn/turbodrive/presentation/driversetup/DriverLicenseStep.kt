@@ -26,7 +26,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.turbodrive.R
 import tn.turbodrive.core.theme.LocalAppColors
+import tn.turbodrive.domain.usecases.driver.OcrProgress
+import java.io.File
 
+/**
+ * R-5.2 — Driver setup step 2, "Permis de conduire".
+ *
+ * The license front slot uses [DocumentOcrCaptureSection] to capture the
+ * front side at full resolution and run OCR (numero, date_expiration,
+ * categories). The back slot stays on the legacy Bitmap-only path because
+ * the OCR endpoint only reads the front.
+ *
+ * Visual spec : `turbodrive_redesign/screens-setup.jsx:87-122` (Step2License).
+ */
 @Composable
 internal fun DriverLicenseStep(
     licenseFrontBmp: Bitmap?,
@@ -35,7 +47,9 @@ internal fun DriverLicenseStep(
     licenseIssueInput: String,
     licenseExpiryInput: String,
     licenseCategories: Set<Char>,
-    onLicenseFrontClick: () -> Unit,
+    permisOcrProgress: OcrProgress?,
+    onLicenseFrontFileCaptured: (File, Bitmap) -> Unit,
+    onLicenseFrontRetake: () -> Unit,
     onLicenseBackClick: () -> Unit,
     onSuffixChange: (String) -> Unit,
     onIssueChange: (String) -> Unit,
@@ -59,18 +73,24 @@ internal fun DriverLicenseStep(
     Spacer(Modifier.height(24.dp))
 
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        UploadPlaceholderCard(
-            label = stringResource(R.string.driver_license_front_label),
-            bitmap = licenseFrontBmp,
-            onClick = onLicenseFrontClick,
-            modifier = Modifier.weight(1f),
-        )
-        UploadPlaceholderCard(
-            label = stringResource(R.string.driver_license_back_label),
-            bitmap = licenseBackBmp,
-            onClick = onLicenseBackClick,
-            modifier = Modifier.weight(1f),
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            DocumentOcrCaptureSection(
+                label = stringResource(R.string.driver_license_front_label),
+                bitmap = licenseFrontBmp,
+                ocrProgress = permisOcrProgress,
+                onFileCaptured = onLicenseFrontFileCaptured,
+                onRetake = onLicenseFrontRetake,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            UploadPlaceholderCard(
+                label = stringResource(R.string.driver_license_back_label),
+                bitmap = licenseBackBmp,
+                onClick = onLicenseBackClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
     Spacer(Modifier.height(18.dp))
 

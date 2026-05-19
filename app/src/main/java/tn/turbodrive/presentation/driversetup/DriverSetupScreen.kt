@@ -70,6 +70,8 @@ fun DriverSetupScreen(
     val state by viewModel.state.collectAsState()
     val cinOcrProgress by viewModel.cinOcrProgress.collectAsState()
     val cinOcrFields by viewModel.cinOcrFields.collectAsState()
+    val permisOcrProgress by viewModel.permisOcrProgress.collectAsState()
+    val permisOcrFields by viewModel.permisOcrFields.collectAsState()
     val loading: Boolean =
         when (state) {
             ScreenState.Loading -> true
@@ -121,6 +123,30 @@ fun DriverSetupScreen(
             if (cinNumber.isBlank()) cinNumber = extracted.filter { ch -> ch.isDigit() }.take(8)
         }
         viewModel.consumeCinOcrFields()
+    }
+
+    LaunchedEffect(permisOcrFields) {
+        val fields = permisOcrFields ?: return@LaunchedEffect
+        fields.numero?.let { extracted ->
+            if (licenseSuffix.isBlank()) {
+                licenseSuffix = extracted.removePrefix("TN-").removePrefix("TN").trim()
+            }
+        }
+        fields.dateExpiration?.let { iso ->
+            if (licenseExpiryInput.isBlank()) {
+                licenseExpiryInput = isoToUnderscoreDate(iso) ?: licenseExpiryInput
+            }
+        }
+        fields.categories?.let { cats ->
+            val parsed =
+                cats
+                    .mapNotNull { c -> c.firstOrNull()?.uppercaseChar()?.takeIf { it in 'A'..'D' } }
+                    .toSet()
+            if (parsed.isNotEmpty() && licenseCategories == setOf('B')) {
+                licenseCategories = parsed + 'B'
+            }
+        }
+        viewModel.consumePermisOcrFields()
     }
 
     fun applyBitmap(bmp: Bitmap) =
@@ -445,7 +471,14 @@ fun DriverSetupScreen(
                             licenseIssueInput = licenseIssueInput,
                             licenseExpiryInput = licenseExpiryInput,
                             licenseCategories = licenseCategories,
-                            onLicenseFrontClick = { openPhotoFor(PhotoSlot.LicenseFront) },
+                            permisOcrProgress = permisOcrProgress,
+                            onLicenseFrontFileCaptured = { file, bmp ->
+                                licenseFrontBmp = bmp
+                                viewModel.uploadDocumentForOcr(file, OcrDocType.Permis)
+                            },
+                            onLicenseFrontRetake = {
+                                licenseFrontBmp = null
+                            },
                             onLicenseBackClick = { openPhotoFor(PhotoSlot.LicenseBack) },
                             onSuffixChange = { licenseSuffix = it },
                             onIssueChange = { licenseIssueInput = it },

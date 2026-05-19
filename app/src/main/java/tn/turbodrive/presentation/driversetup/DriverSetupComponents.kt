@@ -811,6 +811,17 @@ internal fun underscoreDateToIso(u: String): String? {
 internal fun parseUnderscoreDate(u: String): DateParseResult =
     underscoreDateToIso(u)?.let { DateParseResult.Valid(it) } ?: DateParseResult.Invalid
 
+/**
+ * R-5.2 — Reverse of [underscoreDateToIso] : ISO `YYYY-MM-DD` → `DDMMYYYY`
+ * digit string consumed by [UnderscoreDateTextField]. Returns null on any
+ * parse failure (OCR backends occasionally emit slashes / unknown formats).
+ */
+internal fun isoToUnderscoreDate(iso: String): String? =
+    runCatching {
+        val ld = LocalDate.parse(iso.trim())
+        String.format(Locale.US, "%02d%02d%04d", ld.dayOfMonth, ld.monthValue, ld.year)
+    }.getOrNull()
+
 private val IsoDatePattern = Regex("""^\d{4}-\d{2}-\d{2}$""")
 
 private fun resolveDateToIsoString(input: String): String? {
