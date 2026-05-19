@@ -635,5 +635,7 @@
     <string name="driver_ocr_poll_failed">Network error. Tap to retake.</string>
     <string name="driver_ocr_failed">Couldn\'t read the document. Fill in manually.</string>
     <string name="driver_ocr_timeout">Reading took too long. Fill in manually.</string>
+    <string name="ride_tracking_channel_name">Ride Tracking</string>
+    <string name="ride_tracking_notification_title">Ride in progress</string>
 </resources>
 

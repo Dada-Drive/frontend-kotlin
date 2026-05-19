@@ -1,6 +1,7 @@
 package tn.turbodrive.presentation.map
 
 import android.content.Context
+import android.content.Intent
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -36,6 +37,7 @@ import tn.turbodrive.domain.models.PassengerRideOffer
 import tn.turbodrive.domain.models.RideRating
 import tn.turbodrive.domain.models.RideStop
 import tn.turbodrive.domain.protocols.RidesRepository
+import tn.turbodrive.presentation.services.RideForegroundService
 import java.util.Locale
 import javax.inject.Inject
 
@@ -430,10 +432,14 @@ class MapViewModel
                 socketEventManager.events.collect(::handleSocketEvent)
             }
 
-            // Adaptive GPS: switch to HIGH accuracy during active ride, COARSE when idle.
+            // Adaptive GPS + foreground service: active during ride, idle otherwise.
             viewModelScope.launch {
                 _isRideMatched.collect { matched ->
                     locationController.applyGpsMode(if (matched) GpsMode.HIGH else GpsMode.COARSE)
+                    val action =
+                        if (matched) RideForegroundService.ACTION_START else RideForegroundService.ACTION_STOP
+                    val intent = Intent(context, RideForegroundService::class.java).setAction(action)
+                    if (matched) context.startForegroundService(intent) else context.startService(intent)
                 }
             }
 
