@@ -340,7 +340,7 @@ fun PhoneScreen(
                                     .align(Alignment.CenterStart)
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White)
+                                    .background(appColors.surface)
                                     .border(1.dp, appColors.border, CircleShape)
                                     .clickable { onBack() },
                             contentAlignment = Alignment.Center,
@@ -393,7 +393,7 @@ fun PhoneScreen(
                             Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(Color.White)
+                                .background(appColors.surface)
                                 .border(1.5.dp, phoneBorderColor, RoundedCornerShape(14.dp))
                                 .padding(horizontal = 14.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -523,7 +523,7 @@ fun PhoneScreen(
                                     .align(Alignment.CenterStart)
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White)
+                                    .background(appColors.surface)
                                     .border(1.dp, appColors.border, CircleShape)
                                     .clickable {
                                         otpCode = ""
@@ -638,7 +638,7 @@ fun PhoneScreen(
                                             .width(otpBoxWidth)
                                             .height(otpBoxHeight)
                                             .clip(RoundedCornerShape(14.dp))
-                                            .background(Color.White)
+                                            .background(appColors.surface)
                                             .border(1.5.dp, borderColor, RoundedCornerShape(14.dp)),
                                     contentAlignment = Alignment.Center,
                                 ) {
@@ -903,7 +903,7 @@ private fun OtpKeypadKey(
             Modifier
                 .size(width = 76.dp, height = 48.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color.White)
+                .background(appColors.surface)
                 .border(1.dp, appColors.border, RoundedCornerShape(12.dp))
                 .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
