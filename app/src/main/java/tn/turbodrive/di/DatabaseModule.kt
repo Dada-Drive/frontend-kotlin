@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import tn.turbodrive.data.local.AppDatabase
+import tn.turbodrive.data.local.migrations.AllMigrations
 import javax.inject.Singleton
 
 @Module
@@ -18,7 +19,10 @@ object DatabaseModule {
     fun provideAppDatabase(
         @ApplicationContext context: Context,
     ): AppDatabase =
+        @Suppress("SpreadOperator") // addMigrations() is a vararg API — spread is unavoidable here
         Room.databaseBuilder(context, AppDatabase::class.java, "turbodrive_cache.db")
-            .fallbackToDestructiveMigration()
+            // REMOVED: fallbackToDestructiveMigration() — destroys all local data on version bump.
+            // Explicit migrations required for every @Database version increment.
+            .addMigrations(*AllMigrations.ALL)
             .build()
 }

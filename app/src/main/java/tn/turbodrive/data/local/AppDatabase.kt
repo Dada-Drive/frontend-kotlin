@@ -19,7 +19,7 @@ import tn.turbodrive.data.local.entity.CachedWalletBalanceEntity
         CachedActiveRideEntity::class,
         CachedSavedPlaceEntity::class,
     ],
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun cachedUserProfileDao(): CachedUserProfileDao

@@ -189,6 +189,13 @@ android {
     }
 }
 
+ksp {
+    // Export Room schema to versioned JSON files committed to git.
+    // Required for MigrationTestHelper and schema audits.
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+}
+
 detekt {
     buildUponDefaultConfig = true
     allRules = false
