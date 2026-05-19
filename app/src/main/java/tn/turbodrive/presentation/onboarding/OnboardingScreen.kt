@@ -94,8 +94,6 @@ private val DotInactive: Color
 @Composable
 fun OnboardingScreen(onCompleteIntro: () -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { PAGE_COUNT })
     val locPermission = Manifest.permission.ACCESS_FINE_LOCATION
     var hasLocation by remember {
         mutableStateOf(
@@ -110,6 +108,26 @@ fun OnboardingScreen(onCompleteIntro: () -> Unit) {
             hasLocation = granted
             onCompleteIntro()
         }
+
+    OnboardingScreenContent(
+        onCompleteIntro = onCompleteIntro,
+        onLastPageContinue = {
+            if (hasLocation) {
+                onCompleteIntro()
+            } else {
+                locLauncher.launch(locPermission)
+            }
+        },
+    )
+}
+
+@Composable
+internal fun OnboardingScreenContent(
+    onCompleteIntro: () -> Unit,
+    onLastPageContinue: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(pageCount = { PAGE_COUNT })
 
     BackHandler(enabled = pagerState.currentPage > 0) {
         scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
@@ -202,11 +220,7 @@ fun OnboardingScreen(onCompleteIntro: () -> Unit) {
             Button(
                 onClick = {
                     if (isLast) {
-                        if (hasLocation) {
-                            onCompleteIntro()
-                        } else {
-                            locLauncher.launch(locPermission)
-                        }
+                        onLastPageContinue()
                     } else {
                         scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                     }
@@ -265,11 +279,11 @@ private fun TurboPagerDots(
             Box(
                 modifier =
                     Modifier
-                        .padding(horizontal = 4.dp)
+                        .padding(horizontal = 3.dp)
                         .then(
                             if (active) {
                                 Modifier
-                                    .width(28.dp)
+                                    .width(24.dp)
                                     .height(8.dp)
                                     .clip(RoundedCornerShape(999.dp))
                                     .background(Color.Black)
