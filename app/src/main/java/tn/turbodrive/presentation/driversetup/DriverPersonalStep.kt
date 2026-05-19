@@ -2,6 +2,7 @@ package tn.turbodrive.presentation.driversetup
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,14 +19,28 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.turbodrive.R
+import tn.turbodrive.domain.usecases.driver.OcrProgress
+import java.io.File
 
+/**
+ * R-5.2 — Driver setup step 1, "Pièce d'identité".
+ *
+ * The CIN front slot uses [DocumentOcrCaptureSection] (file-based capture
+ * + OCR banner) so the CIN number can be auto-filled. The back slot stays
+ * on the legacy Bitmap path because the OCR endpoint only extracts data
+ * from the front side.
+ *
+ * Visual spec : `turbodrive_redesign/screens-setup.jsx:66-85` (Step1ID).
+ */
 @Composable
 internal fun DriverPersonalStep(
     cinFrontBmp: Bitmap?,
     cinBackBmp: Bitmap?,
     cinNumber: String,
     cinDeliveredAt: String,
-    onCinFrontClick: () -> Unit,
+    cinOcrProgress: OcrProgress?,
+    onCinFrontFileCaptured: (File, Bitmap) -> Unit,
+    onCinFrontRetake: () -> Unit,
     onCinBackClick: () -> Unit,
     onCinNumberChange: (String) -> Unit,
     onCinDateChange: (String) -> Unit,
@@ -48,28 +63,44 @@ internal fun DriverPersonalStep(
     Spacer(Modifier.height(24.dp))
 
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        UploadPlaceholderCard(
-            label = stringResource(R.string.driver_cin_front_label),
-            bitmap = cinFrontBmp,
-            onClick = onCinFrontClick,
-            modifier = Modifier.weight(1f),
-        )
-        UploadPlaceholderCard(
-            label = stringResource(R.string.driver_cin_back_label),
-            bitmap = cinBackBmp,
-            onClick = onCinBackClick,
-            modifier = Modifier.weight(1f),
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            DocumentOcrCaptureSection(
+                label = stringResource(R.string.driver_cin_front_label),
+                bitmap = cinFrontBmp,
+                ocrProgress = cinOcrProgress,
+                onFileCaptured = onCinFrontFileCaptured,
+                onRetake = onCinFrontRetake,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            UploadPlaceholderCard(
+                label = stringResource(R.string.driver_cin_back_label),
+                bitmap = cinBackBmp,
+                onClick = onCinBackClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
     Spacer(Modifier.height(20.dp))
 
-    Text(stringResource(R.string.driver_cin_number_label), color = OnboardingTitle, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+    Text(
+        stringResource(R.string.driver_cin_number_label),
+        color = OnboardingTitle,
+        fontSize = 15.sp,
+        fontWeight = FontWeight.SemiBold,
+    )
     Spacer(Modifier.height(8.dp))
     OutlinedTextField(
         value = cinNumber,
         onValueChange = { onCinNumberChange(it.filter { ch -> ch.isDigit() }.take(8)) },
         modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text(stringResource(R.string.driver_cin_number_hint), color = OnboardingLabel.copy(alpha = 0.65f)) },
+        placeholder = {
+            Text(
+                stringResource(R.string.driver_cin_number_hint),
+                color = OnboardingLabel.copy(alpha = 0.65f),
+            )
+        },
         singleLine = true,
         shape = RoundedCornerShape(14.dp),
         colors = onboardingFieldColors(),

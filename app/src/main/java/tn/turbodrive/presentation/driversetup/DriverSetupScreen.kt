@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +51,7 @@ import com.turbodrive.R
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.core.validation.DateParseResult
+import tn.turbodrive.domain.models.OcrDocType
 import tn.turbodrive.presentation.common.ScreenState
 
 @Composable
@@ -66,6 +68,8 @@ fun DriverSetupScreen(
     val titleFontSize = if (isCompact) 24.sp else 28.sp
 
     val state by viewModel.state.collectAsState()
+    val cinOcrProgress by viewModel.cinOcrProgress.collectAsState()
+    val cinOcrFields by viewModel.cinOcrFields.collectAsState()
     val loading: Boolean =
         when (state) {
             ScreenState.Loading -> true
@@ -108,6 +112,16 @@ fun DriverSetupScreen(
     var showSourcePicker by remember { mutableStateOf(false) }
 
     var submitError by remember { mutableStateOf<Int?>(null) }
+
+    // R-5.2 — Auto-fill CIN fields when OCR returns Ready. The user can still
+    // edit, but we only overwrite empty inputs so already-typed values win.
+    LaunchedEffect(cinOcrFields) {
+        val fields = cinOcrFields ?: return@LaunchedEffect
+        fields.numeroCin?.let { extracted ->
+            if (cinNumber.isBlank()) cinNumber = extracted.filter { ch -> ch.isDigit() }.take(8)
+        }
+        viewModel.consumeCinOcrFields()
+    }
 
     fun applyBitmap(bmp: Bitmap) =
         when (activeSlot) {
@@ -410,7 +424,14 @@ fun DriverSetupScreen(
                             cinBackBmp = cinBackBmp,
                             cinNumber = cinNumber,
                             cinDeliveredAt = cinDeliveredAt,
-                            onCinFrontClick = { openPhotoFor(PhotoSlot.CinFront) },
+                            cinOcrProgress = cinOcrProgress,
+                            onCinFrontFileCaptured = { file, bmp ->
+                                cinFrontBmp = bmp
+                                viewModel.uploadDocumentForOcr(file, OcrDocType.Cin)
+                            },
+                            onCinFrontRetake = {
+                                cinFrontBmp = null
+                            },
                             onCinBackClick = { openPhotoFor(PhotoSlot.CinBack) },
                             onCinNumberChange = { cinNumber = it },
                             onCinDateChange = { cinDeliveredAt = it },
