@@ -15,7 +15,7 @@
 | **S2** | Sealed ScreenState & nettoyage tokens | R-2.1 → R-2.4 | 22–34 | ~1 sem | Bloquant |
 | **S3** | Socket.IO + lifecycle ride | R-3.1 → R-3.6 | 40–60 | ~2 sem | Critique |
 | **S4** | Design system v2 (D0+D1) | R-4.1 → R-4.5 | 36–60 | ~2 sem | Bloquant |
-| **S5** | Écrans redesign auth/setup/map/home/négo (D2-D6) | R-5.1 → R-5.5 | 80–128 | ~3 sem | Critique |
+| **S5** | Écrans redesign auth/setup/map/home/négo (D2-D6) | R-5.1 🟡 → R-5.5 | 80–128 | ~3 sem | Critique |
 | **S6** | Écrans lifecycle + wallet (D7-D10 + P10) | R-6.1 → R-6.6 | 64–104 | ~2,5 sem | Important |
 | **S7** | Notifs, deeplinks, offline (P11+P12) | R-7.1 → R-7.4 | 32–48 | ~1,5 sem | Important |
 | **S8** | A11y, perf, mock, release (P13+P14+D11+D12) | R-8.1 → R-8.6 | 56–96 | ~2,5 sem | Important |
@@ -1371,27 +1371,36 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 
 ---
 
-### Phase R-5.1 — D2 Auth Redesign (S01-S08)
-**Objectif** : 8 écrans auth conformes `turbodrive_redesign/screens-auth.jsx`.
-**Sévérité** : Critique — **Effort** : 16–24 h
-**Dépendances** : R-4.4
-**Catégorie** : Design + missing feature (OTP channel badge)
+### Phase R-5.1 — D2 Auth Redesign (S01-S08) 🟡 (Session A done 2026-05-19)
 
-**Tâches**
-1. Audit écran par écran : Splash, Welcome, Onboarding, Phone, CountryPicker, OTP, Name, Role (S01-S08).
-2. Pour chaque : aligner layout, espacements, typo, icônes sur JSX redesign.
-3. Câbler OTP channel badge (WhatsApp/SMS) selon réponse backend.
-4. Tester Google Sign-In end-to-end (réel client ID staging).
-5. Snapshots Paparazzi : 8 écrans × 2 thèmes × 3 fontScales = 48 snapshots.
+**Effort plan** : 16-24h — **Effort réel Session A** : ~50 min (×3 gain) — **Reste Session B** : 3-4h
 
-**Fichiers touchés**
-- Modifiés : `presentation/auth/*` (~10 fichiers), `presentation/onboarding/`, `presentation/role/`, `presentation/splash/`
+**Session A ✅ (commits `a5f1c02`, `91f294f`, `4f293c2`, `5c42952`)** :
+- ✅ Audit complet des 8 écrans (table de diff JSX vs Kotlin)
+- ✅ S01 Splash refondu (brand mark 88→120dp)
+- ✅ S02 Onboarding refondu (dots 24×8 + gap 6dp + extraction `OnboardingScreenContent` stateless)
+- ✅ S03 Welcome refondu (card radius 32 + offset -32 + padding 40/24 + error border `errorSoft→error`)
+- ✅ S05 CountryPicker : SKIP (déjà équivalent UX en `ModalBottomSheet` inline dans PhoneScreen)
+- ✅ 7 snapshots Paparazzi (re-recorded + 1 nouveau test Onboarding + 1 nouveau errorBanner)
+- ✅ Test release build `assembleRelease` SUCCESSFUL — APK 55 MB inchangé, R8 stable
+- 📄 Bilan détaillé : `docs/R-5.1-session-a.md`
 
-**Critères d'acceptation**
+**Session B (à faire)** :
+- [ ] S04 Phone refonte (~30 min)
+- [ ] S06 OTP screen (refonte + extraction depuis PhoneScreen phase 2) (~30 min)
+- [ ] S07 NameEntry refonte (~20 min)
+- [ ] S08 RoleSelection refonte (~20 min)
+- [ ] OTP channel badge (WhatsApp/SMS) — câblage backend (~45 min, dépend de backend MVP-1)
+- [ ] Google Sign-In E2E test — bloqué tant que staging backend pas dispo
+- [ ] Extension à 3 fontScales sur les 8 écrans (~30 min)
+- [ ] Fix W1 : `Color.White` hard-codé dans PhoneScreen input field → token `surface` (~5 min)
+- [ ] Évaluer extraction `OtpScreenContent` séparé (W2 — PhoneScreen 1056 LOC)
+
+**Critères d'acceptation finaux**
+- [x] Session A : 3/8 écrans refondus + audit complet documenté
+- [ ] Session B : 5/8 restants + OTP badge + Google E2E
+- [ ] 48 snapshots Paparazzi (cible : 8 écrans × 2 thèmes × 3 fontScales)
 - [ ] Diff visuel < 5% vs JSX redesign sur les 8 écrans
-- [ ] OTP channel badge fonctionnel
-- [ ] Google Sign-In testé contre backend staging
-- [ ] 48 snapshots verts
 
 ---
 
