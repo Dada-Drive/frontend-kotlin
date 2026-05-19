@@ -3,7 +3,6 @@ package tn.turbodrive.data.storage
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -18,33 +17,26 @@ class TokenManager
     constructor(
         @ApplicationContext context: Context,
     ) : TokenStorage {
+        // SECURITY: fail fast — NO plain-SharedPreferences fallback.
+        // If hardware Keystore is unavailable (rooted device, OS bug), we throw
+        // rather than silently storing JWT tokens unencrypted on disk.
+        // Callers must handle SecurityException and show a "device security unavailable" error.
         private val prefs: SharedPreferences =
-            run {
-                try {
-                    val p =
-                        EncryptedSharedPreferences.create(
-                            context,
-                            ENCRYPTED_PREFS_NAME,
-                            MasterKey.Builder(context)
-                                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                                .build(),
-                            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-                        )
-                    Log.i("TURBODRIVE_BOOT", "TokenManager: chiffrement OK (EncryptedSharedPreferences)")
-                    p
-                } catch (e: Exception) {
-                    Log.e(
-                        "TokenManager",
-                        "EncryptedSharedPreferences indisponible (Keystore / ROM), repli clair. Cause: ${e.message}",
-                        e,
-                    )
-                    Log.w("TURBODRIVE_BOOT", "TokenManager: FICHIER CLAIR (fallback) — ${e::class.java.simpleName}")
-                    context.getSharedPreferences(
-                        "${ENCRYPTED_PREFS_NAME}_plain_fallback",
-                        Context.MODE_PRIVATE,
-                    )
-                }
+            try {
+                EncryptedSharedPreferences.create(
+                    context,
+                    ENCRYPTED_PREFS_NAME,
+                    MasterKey.Builder(context)
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build(),
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+                )
+            } catch (e: Exception) {
+                throw SecurityException(
+                    "Encrypted token storage unavailable — device Keystore may be compromised or unsupported.",
+                    e,
+                )
             }
 
         override fun saveTokens(
