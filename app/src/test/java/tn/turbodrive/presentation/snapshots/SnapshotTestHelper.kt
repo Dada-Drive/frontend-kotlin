@@ -16,9 +16,14 @@ import tn.turbodrive.core.theme.TurboDriveTheme
  * in `app/src/test/snapshots/images/`. These files form the **baseline v1**
  * that will be compared against future v2 design changes in R-4.5.
  */
-internal fun createPaparazzi(): Paparazzi =
+internal fun createPaparazzi(fontScale: Float = 1f): Paparazzi =
     Paparazzi(
-        deviceConfig = DeviceConfig.PIXEL_5,
+        deviceConfig =
+            if (fontScale == 1f) {
+                DeviceConfig.PIXEL_5
+            } else {
+                DeviceConfig.PIXEL_5.copy(fontScale = fontScale)
+            },
         theme = "Theme.TurboDrive",
     )
 
