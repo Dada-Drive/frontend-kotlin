@@ -101,7 +101,7 @@ fun RoleSelectionScreen(
                     Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color.White)
+                        .background(c.surface)
                         .border(1.dp, c.border, CircleShape)
                         .clickable(onClick = onBack),
                 contentAlignment = Alignment.Center,
@@ -109,7 +109,7 @@ fun RoleSelectionScreen(
                 Icon(
                     painter = painterResource(AppIcon.arrowLeft),
                     contentDescription = null,
-                    tint = Color.Black,
+                    tint = c.textPrimary,
                     modifier = Modifier.size(20.dp),
                 )
             }
@@ -117,7 +117,7 @@ fun RoleSelectionScreen(
                 text = stringResource(R.string.auth_registration_step, 4, 4),
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
-                color = Color.Black,
+                color = c.textPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -132,7 +132,7 @@ fun RoleSelectionScreen(
             Spacer(Modifier.height(20.dp))
             Text(
                 text = stringResource(R.string.role_selection_headline),
-                color = Color.Black,
+                color = c.textPrimary,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 lineHeight = 32.sp,
@@ -249,21 +249,37 @@ private fun TurboRoleCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val bg = if (selected) Color.Black else Color.White
-    val titleColor = if (selected) Color.White else Color.Black
     val c = LocalAppColors.current
-    val subColor = if (selected) Color.White.copy(alpha = 0.85f) else c.textSecondary
-    val iconBg = if (selected) c.textPrimary else c.surfaceAlt
-    val iconTint = if (selected) Color.White else Color.Black
+    // Selected = ink (dark pill) ; unselected = surface (theme-aware).
+    // Aligned with screens-auth.jsx:444-471 (card uses TD.color.ink when selected).
+    val bg = if (selected) c.textPrimary else c.surface
+    val titleColor = if (selected) Color.White else c.textPrimary
+    val subColor = if (selected) Color.White.copy(alpha = 0.75f) else c.textSecondary
+    // JSX selected icon bg = rgba(255,255,255,0.12) — semi-transparent white
+    // overlay on dark card. NOT c.textPrimary (would be same as card bg).
+    val iconBg = if (selected) Color.White.copy(alpha = 0.12f) else c.surfaceAlt
+    val iconTint = if (selected) Color.White else c.textPrimary
+    val cardShape = RoundedCornerShape(16.dp)
     Column(
         modifier =
             modifier
-                .shadow(6.dp, RoundedCornerShape(18.dp), ambientColor = Color(0x22000000), spotColor = Color(0x22000000))
-                .clip(RoundedCornerShape(18.dp))
+                .then(
+                    if (selected) {
+                        Modifier.shadow(
+                            elevation = 12.dp,
+                            shape = cardShape,
+                            ambientColor = Color(0x33000000),
+                            spotColor = Color(0x33000000),
+                        )
+                    } else {
+                        Modifier
+                    },
+                )
+                .clip(cardShape)
                 .background(bg)
-                .border(1.dp, if (selected) Color.Black else Color(0x11000000), RoundedCornerShape(18.dp))
+                .border(1.5.dp, if (selected) c.textPrimary else c.border, cardShape)
                 .clickable(onClick = onClick)
-                .padding(14.dp),
+                .padding(20.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -273,12 +289,17 @@ private fun TurboRoleCard(
             Box(
                 modifier =
                     Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp))
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(16.dp))
                         .background(iconBg),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(painterResource(icon), contentDescription = null, tint = iconTint, modifier = Modifier.size(22.dp))
+                Icon(
+                    painter = painterResource(icon),
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(28.dp),
+                )
             }
             if (selected) {
                 Box(
@@ -293,13 +314,13 @@ private fun TurboRoleCard(
                         painter = painterResource(AppIcon.check),
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(12.dp),
                     )
                 }
             }
         }
-        Spacer(Modifier.height(14.dp))
-        Text(title, color = titleColor, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        Spacer(Modifier.height(16.dp))
+        Text(title, color = titleColor, fontWeight = FontWeight.Bold, fontSize = 17.sp)
         Spacer(Modifier.height(4.dp))
         Text(subtitle, color = subColor, fontSize = 13.sp, lineHeight = 18.sp)
     }
