@@ -257,6 +257,7 @@ dependencies {
     testImplementation(libs.mockwebserver)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation("io.mockk:mockk:1.13.11")
+    testImplementation("com.corundumstudio.socketio:netty-socketio:2.0.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
