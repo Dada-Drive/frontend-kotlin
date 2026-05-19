@@ -1,4 +1,4 @@
-package tn.turbodrive.presentation.map
+package tn.turbodrive.presentation.riderhome
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -48,6 +48,7 @@ import com.turbodrive.R
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.presentation.components.BlackCloseIconButton
+import tn.turbodrive.presentation.map.AddressSearchHit
 
 @Composable
 internal fun RouteTextField(

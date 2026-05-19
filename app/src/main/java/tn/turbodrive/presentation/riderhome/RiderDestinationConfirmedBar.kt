@@ -1,4 +1,4 @@
-package tn.turbodrive.presentation.map
+package tn.turbodrive.presentation.riderhome
 
 import android.Manifest
 import android.content.Intent
@@ -62,6 +62,9 @@ import tn.turbodrive.domain.models.PassengerRideOffer
 import tn.turbodrive.domain.models.RideRating
 import tn.turbodrive.domain.models.RideStatus
 import tn.turbodrive.presentation.components.BlackCloseIconButton
+import tn.turbodrive.presentation.map.IntermediateStopDraft
+import tn.turbodrive.presentation.map.PassengerRouteOption
+import tn.turbodrive.presentation.map.formatAddressForDisplay
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

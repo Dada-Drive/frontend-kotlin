@@ -9,7 +9,7 @@
     <ID>CyclomaticComplexMethod:MapLocationController.kt$MapLocationController$private fun updateHeadingFromLocation(loc: Location)</ID>
     <ID>CyclomaticComplexMethod:MapRideOperations.kt$MapRideOperations$fun requestRide()</ID>
     <ID>CyclomaticComplexMethod:RouteHeadingSnapper.kt$RouteHeadingSnapper$fun match( position: GeoCoordinates, polylines: List&lt;GeoPolyline&gt;, referenceHeadingDeg: Float? = null, maxSnapMeters: Double = 30.0, maxReferenceDivergenceDeg: Float = 90f, ): Match?</ID>
-    <ID>ForEachOnRange:MapRiderDestinationConfirmedBar.kt$1..5</ID>
+    <ID>ForEachOnRange:RiderDestinationConfirmedBar.kt$1..5</ID>
     <ID>ForbiddenComment:MapScreen.kt$/* TODO: notifications */</ID>
     <ID>FunctionOnlyReturningConstant:TeardropPickupPinBitmap.kt$fun teardropPickupPinAnchorYNormalized(): Double</ID>
     <ID>FunctionParameterNaming:RidesRepositoryImpl.kt$RidesRepositoryImpl$_distanceKm: Double</ID>
@@ -136,21 +136,21 @@
     <ID>UnusedParameter:MapChrome.kt$onSearchClick: () -&gt; Unit = {}</ID>
     <ID>UnusedParameter:MapChrome.kt$showOfflineStatusBadge: Boolean = false</ID>
     <ID>UnusedParameter:MapChrome.kt$walletAmountText: String = "0"</ID>
-    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$driverRatingsStats: DriverRatingsStats</ID>
-    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$isLoadingOffers: Boolean</ID>
-    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$isLoadingScheduledRides: Boolean</ID>
-    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$onCancelRideRequest: () -&gt; Unit</ID>
-    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$scheduledRides: List&lt;ActiveRide&gt;</ID>
-    <ID>UnusedParameter:MapRiderDestinationConfirmedBar.kt$scheduledRidesError: String?</ID>
-    <ID>UnusedParameter:MapRouteInputComponents.kt$staticTextColor: Color? = null</ID>
-    <ID>UnusedParameter:MapRoutePickerComponents.kt$activeField: ActiveRouteField</ID>
-    <ID>UnusedParameter:MapRouteSheet.kt$onPickupNowToggle: () -&gt; Unit</ID>
-    <ID>UnusedParameter:MapRouteSheet.kt$pickupNow: Boolean</ID>
-    <ID>UnusedParameter:MapRouteSheet.kt$sheetState: SheetState? = null</ID>
     <ID>UnusedParameter:MapScreenUiComponents.kt$mapViewRef: MutableState&lt;HereMapView?&gt;</ID>
     <ID>UnusedParameter:MapStopUtils.kt$polylines: List&lt;GeoPolyline&gt;</ID>
     <ID>UnusedParameter:PickupPinOverlay.kt$isLoading: Boolean = false</ID>
+    <ID>UnusedParameter:RiderDestinationConfirmedBar.kt$driverRatingsStats: DriverRatingsStats</ID>
+    <ID>UnusedParameter:RiderDestinationConfirmedBar.kt$isLoadingOffers: Boolean</ID>
+    <ID>UnusedParameter:RiderDestinationConfirmedBar.kt$isLoadingScheduledRides: Boolean</ID>
+    <ID>UnusedParameter:RiderDestinationConfirmedBar.kt$onCancelRideRequest: () -&gt; Unit</ID>
+    <ID>UnusedParameter:RiderDestinationConfirmedBar.kt$scheduledRides: List&lt;ActiveRide&gt;</ID>
+    <ID>UnusedParameter:RiderDestinationConfirmedBar.kt$scheduledRidesError: String?</ID>
     <ID>UnusedParameter:RidesRepositoryImpl.kt$RidesRepositoryImpl$_distanceKm: Double</ID>
+    <ID>UnusedParameter:RouteInputComponents.kt$staticTextColor: Color? = null</ID>
+    <ID>UnusedParameter:RoutePickerComponents.kt$activeField: ActiveRouteField</ID>
+    <ID>UnusedParameter:RouteSheet.kt$onPickupNowToggle: () -&gt; Unit</ID>
+    <ID>UnusedParameter:RouteSheet.kt$pickupNow: Boolean</ID>
+    <ID>UnusedParameter:RouteSheet.kt$sheetState: SheetState? = null</ID>
     <ID>UnusedParameter:WelcomeScreen.kt$contentColor: Color</ID>
     <ID>UnusedParameter:WelcomeScreen.kt$onSkipClick: () -&gt; Unit = {}</ID>
     <ID>UnusedPrivateMember:AppTextField.kt$@Preview(showBackground = true) @Composable private fun AppTextFieldErrorPreview()</ID>
@@ -162,9 +162,9 @@
     <ID>UnusedPrivateMember:PrimaryButton.kt$@Preview(showBackground = true) @Composable private fun PrimaryButtonPreview()</ID>
     <ID>UnusedPrivateProperty:DriverHomeScreen.kt$val walletLoading by walletViewModel.isLoading.collectAsState()</ID>
     <ID>UnusedPrivateProperty:HereMapViewComposable.kt$var lastAppliedFitRouteRequestId by remember { mutableIntStateOf(0) }</ID>
-    <ID>UnusedPrivateProperty:MapRouteSheet.kt$private const val SCHEDULE_PICKUP_MIN_LEAD_MS = 30L * 60L * 1000L</ID>
     <ID>UnusedPrivateProperty:MapViewModel.kt$MapViewModel$private var intermediateStopSearchJob: Job? = null</ID>
     <ID>UnusedPrivateProperty:PhoneScreen.kt$val isDarkUi = false</ID>
+    <ID>UnusedPrivateProperty:RouteSheet.kt$private const val SCHEDULE_PICKUP_MIN_LEAD_MS = 30L * 60L * 1000L</ID>
     <ID>UnusedPrivateProperty:ScheduleForLaterSheet.kt$val now = remember { Calendar.getInstance() }</ID>
   </CurrentIssues>
 </SmellBaseline>

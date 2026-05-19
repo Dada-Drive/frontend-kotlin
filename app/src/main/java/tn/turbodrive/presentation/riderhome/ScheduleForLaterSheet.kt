@@ -1,4 +1,4 @@
-package tn.turbodrive.presentation.map
+package tn.turbodrive.presentation.riderhome
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

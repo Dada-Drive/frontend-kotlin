@@ -66,6 +66,9 @@ import tn.turbodrive.domain.models.RideStatus
 import tn.turbodrive.presentation.common.ScreenState
 import tn.turbodrive.presentation.components.FullScreenCoinIntroOverlay
 import tn.turbodrive.presentation.profile.ProfileViewModel
+import tn.turbodrive.presentation.riderhome.RiderBottomRouteEntryBar
+import tn.turbodrive.presentation.riderhome.RiderDestinationConfirmedBar
+import tn.turbodrive.presentation.riderhome.RiderDestinationRouteCardCollapsedPeek
 import tn.turbodrive.presentation.session.SessionState
 import tn.turbodrive.presentation.splash.SessionViewModel
 import tn.turbodrive.presentation.wallet.WalletViewModel

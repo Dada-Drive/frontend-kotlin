@@ -1,4 +1,4 @@
-package tn.turbodrive.presentation.map
+package tn.turbodrive.presentation.riderhome
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog

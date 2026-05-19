@@ -1,4 +1,4 @@
-package tn.turbodrive.presentation.map
+package tn.turbodrive.presentation.riderhome
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -59,6 +59,10 @@ import kotlinx.coroutines.delay
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.presentation.components.BlackCloseIconButton
+import tn.turbodrive.presentation.map.AddressSearchHit
+import tn.turbodrive.presentation.map.IntermediateStopDraft
+import tn.turbodrive.presentation.map.IntermediateStopValidity
+import tn.turbodrive.presentation.map.STOP_PIN_YELLOW_ARGB
 
 internal sealed class ActiveRouteField {
     data object Origin : ActiveRouteField()
