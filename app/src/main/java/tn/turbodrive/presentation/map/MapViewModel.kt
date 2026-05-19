@@ -25,6 +25,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import tn.turbodrive.core.pricing.RiderFareEstimate
 import tn.turbodrive.data.local.ActiveRideDraftCache
+import tn.turbodrive.data.location.GpsMode
+import tn.turbodrive.data.location.LocationServiceController
 import tn.turbodrive.data.socket.SocketEvent
 import tn.turbodrive.data.socket.SocketEventManager
 import tn.turbodrive.domain.models.ActiveRide
@@ -51,6 +53,7 @@ class MapViewModel
         private val ridesRepository: RidesRepository,
         private val activeRideDraftCache: ActiveRideDraftCache,
         private val socketEventManager: SocketEventManager,
+        private val locationServiceController: LocationServiceController,
     ) : ViewModel() {
         private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
@@ -358,6 +361,7 @@ class MapViewModel
             MapLocationController(
                 context = context,
                 fusedLocationClient = fusedLocationClient,
+                locationServiceController = locationServiceController,
                 scope = viewModelScope,
                 currentLocation = _currentLocation,
                 locationAccuracy = _locationAccuracy,
@@ -424,6 +428,13 @@ class MapViewModel
 
             viewModelScope.launch {
                 socketEventManager.events.collect(::handleSocketEvent)
+            }
+
+            // Adaptive GPS: switch to HIGH accuracy during active ride, COARSE when idle.
+            viewModelScope.launch {
+                _isRideMatched.collect { matched ->
+                    locationController.applyGpsMode(if (matched) GpsMode.HIGH else GpsMode.COARSE)
+                }
             }
 
             // Crash recovery: restore in-flight rider ride persisted before process death.

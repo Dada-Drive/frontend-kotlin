@@ -8,15 +8,15 @@ import android.os.Build
 import android.os.Looper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.Priority
 import com.here.sdk.core.GeoCoordinates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import tn.turbodrive.data.location.GpsMode
+import tn.turbodrive.data.location.LocationServiceController
 import java.util.Locale
 
 /**
@@ -25,6 +25,7 @@ import java.util.Locale
 internal class MapLocationController(
     private val context: Context,
     private val fusedLocationClient: FusedLocationProviderClient,
+    private val locationServiceController: LocationServiceController,
     private val scope: CoroutineScope,
     private val currentLocation: MutableStateFlow<GeoCoordinates?>,
     private val locationAccuracy: MutableStateFlow<Float?>,
@@ -35,6 +36,7 @@ internal class MapLocationController(
 ) {
     private var lastSampleLat: Double? = null
     private var lastSampleLng: Double? = null
+    private var lastRawLocation: Location? = null
 
     private val locationCallback =
         object : LocationCallback() {
@@ -86,6 +88,10 @@ internal class MapLocationController(
     }
 
     private fun applyFusedLocationUpdate(loc: Location) {
+        if (loc.accuracy > 50f) return
+        val prev = lastRawLocation
+        if (prev != null && loc.distanceTo(prev) < 8f) return
+        lastRawLocation = loc
         currentLocation.value = GeoCoordinates(loc.latitude, loc.longitude)
         locationAccuracy.value = loc.accuracy
         updateHeadingFromLocation(loc)
@@ -94,25 +100,28 @@ internal class MapLocationController(
     }
 
     @SuppressLint("MissingPermission")
-    fun startLocationUpdates() {
+    fun startLocationUpdates(mode: GpsMode = GpsMode.COARSE) {
         if (isTracking.value) return
 
         fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
             loc?.let { applyFusedLocationUpdate(it) }
         }
 
-        val request =
-            LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2_000L)
-                .setMinUpdateIntervalMillis(1_000L)
-                .setMinUpdateDistanceMeters(1f)
-                .build()
-
-        fusedLocationClient.requestLocationUpdates(
-            request,
-            locationCallback,
-            Looper.getMainLooper(),
-        )
+        val request = locationServiceController.buildRequest(mode) ?: return
+        fusedLocationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper())
         isTracking.value = true
+    }
+
+    @SuppressLint("MissingPermission")
+    fun applyGpsMode(mode: GpsMode) {
+        if (!isTracking.value) return
+        val request =
+            locationServiceController.buildRequest(mode) ?: run {
+                stopLocationUpdates()
+                return
+            }
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+        fusedLocationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper())
     }
 
     fun stopLocationUpdates() {
