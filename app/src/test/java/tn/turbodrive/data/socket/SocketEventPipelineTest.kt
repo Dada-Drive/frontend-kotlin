@@ -42,7 +42,12 @@ class SocketEventPipelineTest {
                 mockk<SocketService>(relaxed = true) {
                     every { events } returns upstream
                 }
-            val manager = SocketEventManager(socketService)
+            val manager =
+                SocketEventManager(
+                    socketService = socketService,
+                    resyncUseCase = mockk(relaxed = true),
+                    appScope = backgroundScope,
+                )
 
             val received = mutableListOf<SocketEvent>()
             val job =
@@ -103,7 +108,12 @@ class SocketEventPipelineTest {
                 mockk<SocketService>(relaxed = true) {
                     every { events } returns upstream
                 }
-            val manager = SocketEventManager(socketService)
+            val manager =
+                SocketEventManager(
+                    socketService = socketService,
+                    resyncUseCase = mockk(relaxed = true),
+                    appScope = backgroundScope,
+                )
 
             var received: SocketEvent? = null
             val job =
@@ -133,7 +143,12 @@ class SocketEventPipelineTest {
                 mockk<SocketService>(relaxed = true) {
                     every { events } returns upstream
                 }
-            val manager = SocketEventManager(socketService)
+            val manager =
+                SocketEventManager(
+                    socketService = socketService,
+                    resyncUseCase = mockk(relaxed = true),
+                    appScope = backgroundScope,
+                )
 
             // Emit before any collector subscribes — should not be replayed.
             val e1 = decoder.decode("ride:accepted", RIDE_ACCEPTED_JSON)!!

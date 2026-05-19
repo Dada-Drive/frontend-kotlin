@@ -1,7 +1,11 @@
 package tn.turbodrive.data.socket
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.launch
+import tn.turbodrive.di.ApplicationScope
 import tn.turbodrive.domain.models.Role
+import tn.turbodrive.domain.usecases.ResyncOnReconnectUseCase
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -10,21 +14,34 @@ import javax.inject.Singleton
  * with the Socket.IO channel.
  *
  * Forwards the typed event flow and the connect/disconnect/emit lifecycle
- * from [SocketService]. The indirection lets future enrichment (event
- * filtering, derived flows per VM, replay caches for crash recovery in
- * R-3.5) land here without touching call sites.
+ * from [SocketService]. On every [SocketEvent.Connected] (reconnect), fires
+ * [ResyncOnReconnectUseCase] in [appScope] and then emits
+ * [SocketEvent.ResyncCompleted] so consumers can refresh stale state.
  */
 @Singleton
 class SocketEventManager
     @Inject
     constructor(
         private val socketService: SocketService,
+        private val resyncUseCase: ResyncOnReconnectUseCase,
+        @ApplicationScope private val appScope: CoroutineScope,
     ) {
         /** Typed flow of all backend Socket.IO events + synthetic lifecycle. */
         val events: SharedFlow<SocketEvent> = socketService.events
 
         val isConnected: Boolean
             get() = socketService.isConnected
+
+        init {
+            appScope.launch {
+                socketService.events.collect { event ->
+                    if (event is SocketEvent.Connected) {
+                        runCatching { resyncUseCase() }
+                            .onSuccess { socketService.emitInternalSync(SocketEvent.ResyncCompleted) }
+                    }
+                }
+            }
+        }
 
         /** Connect using [role] (namespace `/riders` or `/drivers`). Idempotent. */
         fun connect(

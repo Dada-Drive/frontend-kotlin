@@ -110,6 +110,11 @@ class SocketService
             }
         }
 
+        /** Inject a synthetic event into the local events flow (e.g. [SocketEvent.ResyncCompleted]). */
+        fun emitInternalSync(event: SocketEvent) {
+            _events.tryEmit(event)
+        }
+
         private fun wireLifecycleHandlers(s: Socket) {
             s.on(Socket.EVENT_CONNECT) {
                 _events.tryEmit(SocketEvent.Connected)
