@@ -107,8 +107,8 @@ fun WelcomeScreen(
                 Modifier
                     .fillMaxWidth()
                     .weight(0.52f)
-                    .offset(y = (-20).dp),
-            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+                    .offset(y = (-32).dp),
+            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
             color = WelcomeCream,
             shadowElevation = 0.dp,
         ) {
@@ -117,8 +117,8 @@ fun WelcomeScreen(
                     Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 22.dp)
-                        .padding(top = 28.dp, bottom = 16.dp)
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 40.dp, bottom = 24.dp)
                         .navigationBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -144,7 +144,7 @@ fun WelcomeScreen(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(c.errorSoft)
-                                .border(1.dp, c.errorSoft, RoundedCornerShape(12.dp))
+                                .border(1.dp, c.error, RoundedCornerShape(12.dp))
                                 .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {

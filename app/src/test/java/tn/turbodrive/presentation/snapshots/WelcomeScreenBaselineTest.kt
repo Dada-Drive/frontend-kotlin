@@ -45,4 +45,22 @@ class WelcomeScreenBaselineTest {
             )
         }
     }
+
+    /**
+     * R-5.1 : verrouille la couleur du border de l'error badge (1dp solid `error`,
+     * pas `errorSoft` qui le rendait invisible). Cf. screens-auth.jsx:126-137.
+     */
+    @Test
+    fun welcomeScreen_errorBanner_light() {
+        paparazzi.snapshotLight {
+            WelcomeScreen(
+                onPhoneClick = {},
+                onGoogleClick = {},
+                onFacebookClick = {},
+                onSkipClick = {},
+                authState = AuthState.Error("Connexion impossible. Réessayez."),
+                googleCooldownSeconds = 0,
+            )
+        }
+    }
 }
