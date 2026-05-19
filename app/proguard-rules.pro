@@ -79,3 +79,12 @@
 # Firebase / Crashlytics
 -keep class com.google.firebase.** { *; }
 -dontwarn com.google.firebase.**
+
+# Strip debug/verbose/info log calls in release builds as defense-in-depth.
+# Prevents accidental metadata leakage (e.g. key lengths, internal state).
+# Note: error/warning logs are preserved (Log.e, Log.w) for Crashlytics.
+-assumenosideeffects class android.util.Log {
+    public static int d(...);
+    public static int v(...);
+    public static int i(...);
+}

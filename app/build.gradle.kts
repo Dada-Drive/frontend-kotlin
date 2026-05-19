@@ -66,6 +66,12 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        // TODO(security, post-MVP): Migrate sensitive keys away from buildConfigField.
+        // APK decompilation exposes all BuildConfig fields. Options:
+        //   1. GOOGLE_WEB_CLIENT_ID → Firebase Remote Config (runtime fetch, not bundled)
+        //   2. HERE keys → backend proxy (all map tile/routing calls routed through backend)
+        //   3. NDK obfuscation as last resort (limited protection only)
+        // Tracker: SEC-001
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",

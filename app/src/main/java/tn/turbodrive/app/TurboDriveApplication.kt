@@ -50,9 +50,6 @@ class TurboDriveApplication : Application() {
         val accessKeyId = BuildConfig.HERE_ACCESS_KEY_ID
         val accessKeySecret = BuildConfig.HERE_ACCESS_KEY_SECRET
 
-        AppLogger.d("HereSDK Key ID length: ${accessKeyId.length}")
-        AppLogger.d("HereSDK Key Secret length: ${accessKeySecret.length}")
-
         if (accessKeyId.isBlank() || accessKeySecret.isBlank()) {
             AppLogger.e("HereSDK clés HERE vides — vérifier local.properties + build.gradle")
             return
