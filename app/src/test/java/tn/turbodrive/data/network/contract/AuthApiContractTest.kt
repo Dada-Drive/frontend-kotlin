@@ -253,9 +253,11 @@ class AuthApiContractTest {
         }
 
     @Test
-    fun `send-otp rate-limited returns BackendException with retry_after details`() =
+    fun `send-otp rate-limited preserves envelope error code on HTTP 429 (A6 fix)`() =
         kotlinx.coroutines.runBlocking {
-            // Contract §6 + §8 : RATE_LIMITED on HTTP 429 with details.retry_after
+            // Contract §6 + §8 : RATE_LIMITED on HTTP 429 with details.retry_after.
+            // R-1.4 (A6) : the envelope error.code survives the HTTP error status — front
+            // surfaces OTP_RATE_LIMITED to the user, not the generic HTTP_429.
             server.enqueue(
                 ContractTestSupport.jsonError(
                     httpCode = 429,
@@ -279,14 +281,58 @@ class AuthApiContractTest {
 
             assertTrue(result.isFailure)
             val ex = result.exceptionOrNull() as BackendException
-            // ⚠️ Frontend behavior: HTTP 4xx ALWAYS maps to "HTTP_${code}" in unwrap(),
-            // ignoring any envelope-level error.code that may be present in the body.
-            // This is a known limitation of the current envelope implementation
-            // (see ApiCall.kt line 24-32). The richer error code from the body is lost.
-            // Tracked anomaly A6 — to fix when the real backend lands so 429 surfaces
-            // OTP_RATE_LIMITED to the user, not a generic HTTP_429.
-            assertEquals("HTTP_429", ex.apiError.code)
+            assertEquals("OTP_RATE_LIMITED", ex.apiError.code)
+            assertEquals("Trop de demandes, réessaie dans 60s", ex.apiError.message)
             assertEquals(429, ex.httpCode)
+            // Details map is preserved for callers needing retry_after / similar metadata
+            assertNotNull("Envelope details should be propagated", ex.apiError.details)
+        }
+
+    @Test
+    fun `HTTP 4xx without envelope falls back to HTTP_status (A6 fallback path)`() =
+        kotlinx.coroutines.runBlocking {
+            // Defensive : nginx/gateway errors / non-JSON bodies / empty bodies must NOT
+            // crash the unwrap path — they fall back to the legacy synthetic HTTP_$code.
+            server.enqueue(
+                ContractTestSupport.jsonError(
+                    httpCode = 502,
+                    body = "<html><body>Bad Gateway</body></html>",
+                ),
+            )
+
+            val result =
+                api.sendOtp(SendOtpRequest(phone = "+21698123456")).unwrap()
+
+            val ex = result.exceptionOrNull() as BackendException
+            assertEquals("HTTP_502", ex.apiError.code)
+            assertEquals(502, ex.httpCode)
+        }
+
+    @Test
+    fun `HTTP 5xx with backend envelope surfaces INTERNAL_ERROR (A6)`() =
+        kotlinx.coroutines.runBlocking {
+            // A well-behaved backend may still envelope its 5xx — the fix preserves that code
+            // too, not just 4xx. Ensures the entire 4xx/5xx range benefits.
+            server.enqueue(
+                ContractTestSupport.jsonError(
+                    httpCode = 500,
+                    body =
+                        """
+                        {
+                          "success": false,
+                          "data": null,
+                          "error": { "code": "INTERNAL_ERROR", "message": "Unexpected server error" }
+                        }
+                        """.trimIndent(),
+                ),
+            )
+
+            val result =
+                api.sendOtp(SendOtpRequest(phone = "+21698123456")).unwrap()
+
+            val ex = result.exceptionOrNull() as BackendException
+            assertEquals("INTERNAL_ERROR", ex.apiError.code)
+            assertEquals(500, ex.httpCode)
         }
 
     @Test

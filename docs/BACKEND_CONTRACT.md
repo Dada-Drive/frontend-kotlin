@@ -440,7 +440,7 @@ Par ordre de priorité pour débloquer le frontend :
 | A3 | `getMyRides` existe dans `RidesApiService` ET `DriverApiService` avec même path `/rides/my` | les deux | Confirmer : un seul endpoint qui filtre par role automatiquement ? |
 | A4 | Conventions de casing mixtes : `accessToken` (camelCase) vs `full_name` (snake_case) dans les DTOs | tous DTOs | Tolérer l'incohérence ou faire une passe d'uniformisation |
 | A5 | `GET /rides/fare` et `GET /driver/nearby` utilisent query params snake_case (`distance_km`, `radius_km`) — confirmer | `RidesApiService.kt` | Aligner |
-| A6 | HTTP 4xx/5xx écrase tout `error.code` du body : `unwrap()` retourne systématiquement `HTTP_${status}` au lieu de propager le code envelope. Conséquence : un 429 avec `error.code = OTP_RATE_LIMITED` est exposé au front comme `HTTP_429`, perdant le mapping localisé. | `ApiCall.kt:24-32` | Lire le body sur 4xx et préférer `error.code` quand présent. À fixer en R-1.4 ou R-5.1. |
+| A6 ✅ | ~~HTTP 4xx/5xx écrase tout `error.code` du body : `unwrap()` retourne systématiquement `HTTP_${status}` au lieu de propager le code envelope.~~ **Résolu 2026-05-19 (R-1.4)** — `ApiCall.kt` parse maintenant `errorBody()` sur les réponses non-2xx via `parseEnvelopeFromErrorBody()`. Fallback `HTTP_${code}` préservé pour body non-JSON (nginx HTML, gateway timeouts). 3 tests contract verrouillent : OTP_RATE_LIMITED sur 429, INTERNAL_ERROR sur 500, fallback HTTP_502 sur HTML. | `ApiCall.kt` | ✅ Fixé |
 
 ## 12. Tests de contrat (verrouillage front-side)
 
