@@ -646,5 +646,18 @@
     <string name="rider_home_shortcut_home">Maison</string>
     <string name="rider_home_shortcut_work">Travail</string>
     <string name="rider_home_shortcut_favorites">Favoris</string>
+    <!-- R-5.4 Search Destination (S11) -->
+    <string name="search_destination_back">Retour</string>
+    <string name="search_destination_close">Fermer</string>
+    <string name="search_destination_title">Votre course</string>
+    <string name="search_destination_for_me">Pour moi</string>
+    <string name="search_destination_for_other">Pour quelqu\'un</string>
+    <string name="search_destination_passenger_name">Nom du passager</string>
+    <string name="search_destination_origin_hint">Av. Habib Bourguiba, Tunis</string>
+    <string name="search_destination_destination_hint">Vers où ?</string>
+    <string name="search_destination_add_stop">Ajouter un arrêt</string>
+    <string name="search_destination_now">Maintenant</string>
+    <string name="search_destination_schedule">Programmer</string>
+    <string name="search_destination_map_picker_cta">Choisir le départ sur la carte</string>
 </resources>
 
