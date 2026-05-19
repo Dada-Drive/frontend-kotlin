@@ -232,11 +232,14 @@ class DriverSetupViewModelTest {
         appContext: Context = mockk(relaxed = true),
         profileUseCase: CreateDriverProfileUseCase = mockk(relaxed = true),
         vehicleUseCase: CreateVehicleUseCase = mockk(relaxed = true),
+        ocrUseCase: tn.turbodrive.domain.usecases.driver.UploadAndPollOcrUseCase =
+            mockk(relaxed = true),
         mapper: PresentableErrorMapper = mockk(relaxed = true),
     ) = DriverSetupViewModel(
         appContext = appContext,
         createDriverProfileUseCase = profileUseCase,
         createVehicleUseCase = vehicleUseCase,
+        uploadAndPollOcrUseCase = ocrUseCase,
         errorMapper = mapper,
     )
 }
