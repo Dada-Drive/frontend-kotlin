@@ -102,7 +102,7 @@ fun NameEntryScreen(
                     Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color.White)
+                        .background(c.surface)
                         .border(1.dp, c.border, CircleShape)
                         .clickable(onClick = onBack),
                 contentAlignment = Alignment.Center,
@@ -110,7 +110,7 @@ fun NameEntryScreen(
                 Icon(
                     painter = painterResource(AppIcon.arrowLeft),
                     contentDescription = null,
-                    tint = Color.Black,
+                    tint = c.textPrimary,
                     modifier = Modifier.size(20.dp),
                 )
             }
@@ -118,7 +118,7 @@ fun NameEntryScreen(
                 text = stringResource(R.string.auth_registration_step, 3, 4),
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
-                color = Color.Black,
+                color = c.textPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -134,7 +134,7 @@ fun NameEntryScreen(
             Spacer(Modifier.height(16.dp))
             Text(
                 stringResource(R.string.name_entry_title),
-                color = Color.Black,
+                color = c.textPrimary,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
             )
@@ -148,7 +148,7 @@ fun NameEntryScreen(
             Spacer(Modifier.height(28.dp))
             Text(
                 stringResource(R.string.auth_full_name),
-                color = Color.Black,
+                color = c.textPrimary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
             )
@@ -161,22 +161,22 @@ fun NameEntryScreen(
                 leadingIcon = {
                     Icon(painterResource(AppIcon.user), null, tint = Muted)
                 },
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors =
                     OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.Black,
+                        focusedBorderColor = c.inkSoft,
                         unfocusedBorderColor = c.border,
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black,
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        cursorColor = Color.Black,
+                        focusedTextColor = c.textPrimary,
+                        unfocusedTextColor = c.textPrimary,
+                        focusedContainerColor = c.surface,
+                        unfocusedContainerColor = c.surface,
+                        cursorColor = c.textPrimary,
                     ),
             )
             Spacer(Modifier.height(20.dp))
             Text(
                 stringResource(R.string.name_email_optional_label),
-                color = Color.Black,
+                color = c.textPrimary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
             )
@@ -191,16 +191,16 @@ fun NameEntryScreen(
                     Icon(painterResource(AppIcon.mail), null, tint = Muted)
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors =
                     OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = c.border,
                         unfocusedBorderColor = c.border,
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black,
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        cursorColor = Color.Black,
+                        focusedTextColor = c.textPrimary,
+                        unfocusedTextColor = c.textPrimary,
+                        focusedContainerColor = c.surface,
+                        unfocusedContainerColor = c.surface,
+                        cursorColor = c.textPrimary,
                     ),
             )
             Text(
