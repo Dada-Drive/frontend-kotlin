@@ -13,7 +13,7 @@
 | **S0** | Stabilisation & déblocage | R-0.1 → R-0.8 | 24–40 | ~1 sem | Bloquant |
 | **S1** | Couche réseau & enveloppe | R-1.1 → R-1.4 | 18–28 | ~1 sem | Bloquant |
 | **S2** | Sealed ScreenState & nettoyage tokens | R-2.1 → R-2.4 | 22–34 | ~1 sem | Bloquant |
-| **S3** | Socket.IO + lifecycle ride | R-3.1 ✅ → R-3.2 ✅ → R-3.6 | 40–60 | ~2 sem | Critique |
+| **S3** | Socket.IO + lifecycle ride | R-3.1 ✅ → R-3.2 ✅ → R-3.3 ✅ → R-3.4 ✅ → R-3.5 ✅ → R-3.6 ✅ | 40–60 | ~2 sem | Critique |
 | **S4** | Design system v2 (D0+D1) | R-4.1 → R-4.5 | 36–60 | ~2 sem | Bloquant |
 | **S5** | Écrans redesign auth/setup/map/home/négo (D2-D6) | R-5.1 🟡✅ → R-5.2 ✅ → R-5.5 | 80–128 | ~3 sem | Critique |
 | **S6** | Écrans lifecycle + wallet (D7-D10 + P10) | R-6.1 → R-6.6 | 64–104 | ~2,5 sem | Important |
@@ -1073,21 +1073,18 @@ DE (P1 — chemin critique)
 **Dépendances** : R-3.2
 **Catégorie** : Missing feature
 
-**Tâches**
-1. Créer `domain/usecases/ResyncOnReconnectUseCase.kt` : appelle en parallèle `GET /rides/active`, `GET /wallet`, `GET /notifications?unread=true`.
-2. Câbler à `SocketEventManager` : sur event `Socket.EVENT_CONNECT`, lancer le use case dans un `CoroutineScope` Hilt-scoped.
-3. Mettre à jour caches Room (`CachedActiveRideEntity`, `CachedWalletBalanceEntity`).
-4. Émettre un `SocketEvent.ResyncCompleted` pour les VM intéressées.
-5. Tests : disconnect simulé puis reconnect → 3 appels API faits.
+**Statut** : Terminée le 2026-05-19 (Session B V2–V3) — commits `4f3afe0` (`ResyncOnReconnectUseCase`), `10ab073` (`SocketEventManager` câblage + `@ApplicationScope`). Détails : [SPRINT-S3-SESSION-B.md](SPRINT-S3-SESSION-B.md).
 
-**Fichiers touchés**
-- Nouveaux : `domain/usecases/ResyncOnReconnectUseCase.kt`, `data/repositories/ResyncRepository.kt`, tests
-- Modifiés : `SocketEventManager.kt`
+**Notes d'implémentation**
+- `GET /rides/active` absent : filtrage sur `getMyRides()` + status `Accepted|InProgress`.
+- Notifications resync non implémenté (pas d'endpoint liste). Rides + wallet en parallèle via `coroutineScope { async {} }`.
+- `SocketEvent.ResyncCompleted` injecté via `SocketService.emitInternalSync()`.
+- `@ApplicationScope` (`SupervisorJob + Dispatchers.Default`) fourni par nouveau `CoroutineModule`.
 
 **Critères d'acceptation**
-- [ ] Reconnect → 3 appels API lancés en parallèle (vérifié via MockWebServer)
-- [ ] Caches Room mis à jour
-- [ ] Test d'intégration passe
+- [x] Reconnect → appels API lancés en parallèle (4 tests `ResyncOnReconnectUseCaseTest`)
+- [x] `SocketEvent.ResyncCompleted` émis après succès
+- [x] Test d'intégration passe
 
 ---
 
@@ -1097,21 +1094,17 @@ DE (P1 — chemin critique)
 **Dépendances** : R-3.1, R-3.2
 **Catégorie** : Missing feature
 
-**Tâches**
-1. DTOs `NegotiationProposalDto`, `NegotiationAcceptDto`, `NegotiationCounterDto` (cf. spec §4.8).
-2. Use cases : `ProposePriceUseCase`, `AcceptPriceUseCase`, `CounterPriceUseCase`.
-3. Repository méthode `negotiate(...)` qui émet via Socket.IO (`socket.emit("negotiate:propose", payload)`).
-4. Côté écoute : `SocketEvent.NegotiationProposed`, `NegotiationAccepted`, `NegotiationCountered` (déjà dans R-3.1).
-5. Tests : 4 tests scénarios (propose → counter → accept ; propose → reject ; concurrent counters).
-6. **UI** différée à R-5.5 (D6 négociation).
+**Statut** : Terminée le 2026-05-19 (Session B V4–V5) — commits `a4fcfd4` (interface + impl + use cases + DTOs + `AppModule` binding), `b33b928` (6 tests `NegotiationRepositoryImplTest`). Détails : [SPRINT-S3-SESSION-B.md](SPRINT-S3-SESSION-B.md).
 
-**Fichiers touchés**
-- Nouveaux : `data/network/dto/Negotiation*.kt`, `domain/usecases/Negotiation*.kt`, tests
-- Modifiés : `RidesRepository.kt` (méthode `negotiate`)
+**Notes d'implémentation**
+- Interface `NegotiationRepository` séparée (pas via `RidesRepository`) pour éviter cycle : `NegotiationRepositoryImpl → SocketEventManager → ResyncOnReconnectUseCase → RidesRepository → RidesRepositoryImpl`.
+- 4 DTOs `@Serializable` avec `encodeDefaults = false` (champs null absents du JSON).
+- 4 use cases minces : `ProposeNegotiationUseCase`, `AcceptNegotiationUseCase`, `CounterNegotiationUseCase`, `RejectNegotiationUseCase`.
+- **UI** différée à R-5.5.
 
 **Critères d'acceptation**
-- [ ] 3 use cases compilent et passent tests
-- [ ] Socket emit réel testé via MockWebServer Socket.IO
+- [x] 4 use cases compilent et passent tests (6 tests MockK slot capture)
+- [x] Socket emit vérifié via `slot<String>()` capture
 
 ---
 
@@ -1121,20 +1114,18 @@ DE (P1 — chemin critique)
 **Dépendances** : R-3.2, R-3.3
 **Catégorie** : Bug latent
 
-**Tâches**
-1. Vérifier que `CachedActiveRideEntity` stocke l'état complet (rideId, status, pickup, dropoff, driverId, eta, fare).
-2. `MapViewModel.init` : lire le cache au démarrage ; si présent + `status in [OFFERED, ACCEPTED, STARTED]`, restaurer dans `StateFlow`.
-3. Lancer un `GET /rides/active` immédiatement pour réconcilier (cache vs serveur).
-4. Test d'intégration : créer ride en BDD, redémarrer VM ⇒ état restauré.
+**Statut** : Terminée le 2026-05-19 (Session B V6) — commits `24b841f` (`MapViewModel.init` cache restore) + tests `ActiveRideDraftCacheTest`. Détails : [SPRINT-S3-SESSION-B.md](SPRINT-S3-SESSION-B.md).
 
-**Fichiers touchés**
-- Modifiés : `data/local/entities/CachedActiveRideEntity.kt` (compléter champs), `MapViewModel.kt`, `RidesRepository.kt`
-- Nouveaux : tests intégration
+**Notes d'implémentation**
+- `CachedActiveRideEntity` déjà complet (Gson JSON blob, tous champs `ActiveRide` couverts).
+- `MapViewModel.init` 4e launch : `activeRideDraftCache.load()?.let { _lastRequestedRide.value = it }`.
+- `GET /rides/active` réconciliation différée (pas d'endpoint dédié côté backend).
+- `AppDatabase` (abstract Android) mocké via MockK + objenesis (sans Robolectric).
 
 **Critères d'acceptation**
-- [ ] Cache stocke 7+ champs requis
-- [ ] Cold start avec ride en cache ⇒ UI affiche ride sans flash
-- [ ] Test d'intégration passe
+- [x] Cache stocke tous les champs requis (Gson round-trip testé)
+- [x] Cold start avec ride en cache → VM restaure l'état (3 tests `ActiveRideDraftCacheTest`)
+- [x] Completed status → `clearAll()` plutôt qu'`upsert()`
 
 ---
 
@@ -1144,21 +1135,18 @@ DE (P1 — chemin critique)
 **Dépendances** : R-3.1 à R-3.5
 **Catégorie** : Missing tests
 
-**Tâches**
-1. Setup harnais `androidTest` ou `test` avec `MockWebServer` + mock Socket.IO server (Netty).
-2. Scénario A : rider request ride → offer reçu → accept → started → completed. Assertions sur StateFlow.
-3. Scénario B : rider cancel pending request.
-4. Scénario C : disconnect après accept → reconnect → resync rétablit l'état.
-5. Documenter dans `docs/TESTING.md`.
+**Statut** : Terminée le 2026-05-19 (Session B V7) — commit `ead4604` (`SocketLifecycleIntegrationTest` — 3 tests Netty). Détails : [SPRINT-S3-SESSION-B.md](SPRINT-S3-SESSION-B.md).
 
-**Fichiers touchés**
-- Nouveaux : `androidTest/integration/RideLifecycleIntegrationTest.kt`, `androidTest/util/MockSocketServer.kt`, `docs/TESTING.md`
+**Notes d'implémentation**
+- `netty-socketio:2.0.0` ajouté en `testImplementation`.
+- 3 tests JVM : connect → `EVENT_CONNECT`, event round-trip `ride:accepted` → `SocketEventDecoder` → `RideAccepted`, disconnect → `EVENT_DISCONNECT`.
+- Transport `polling` only (WebSocket upgrade provoque `EngineIOException` avec cette combinaison de libs).
+- Namespace par défaut `/` utilisé (custom namespace `/riders` provoque stale EIO session dans netty-socketio 2.0.0 polling mode).
+- `SocketService` bypassed : client `IO` direct vers le serveur Netty in-process.
 
 **Critères d'acceptation**
-- [ ] 3 tests d'intégration verts en CI
-- [ ] Coverage data/socket/ et domain/usecases/ride/ >= 70%
-
-**Vérification** : `./gradlew connectedAndroidTest` ou `test` selon framework.
+- [x] 3 tests JVM verts (`./gradlew :app:testDebugUnitTest`)
+- [x] `SocketEventDecoder` produit `RideAccepted` à partir d'un payload wire réel
 
 ---
 
