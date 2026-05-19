@@ -49,7 +49,7 @@ Voir [BACKEND_CONTRACT.md](BACKEND_CONTRACT.md) — extrait du code frontend : 4
 | 🔴 P0 | Donner `docs/BACKEND_CONTRACT.md` au dev backend comme spec | n/a |
 | 🟠 P1 | Soit attendre backend MVP avant S5, soit développer S5 contre `MockWebServer` puis valider en S6 | n/a |
 | 🟠 P1 | Enregistrer le domaine `turbodrive.tn` (ou décider du vrai TLD) | 1h |
-| 🟢 P2 | Setup `MockWebServer` en tests d'intégration pour figer le contrat côté front | 3-4h |
+| ✅ DONE | Setup `MockWebServer` en tests d'intégration pour figer le contrat côté front — 12 tests verts (`data/network/contract/`) | 2026-05-19 |
 
 ## Verdict pour S5
 

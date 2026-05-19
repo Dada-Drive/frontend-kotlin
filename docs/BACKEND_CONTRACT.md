@@ -440,6 +440,21 @@ Par ordre de priorité pour débloquer le frontend :
 | A3 | `getMyRides` existe dans `RidesApiService` ET `DriverApiService` avec même path `/rides/my` | les deux | Confirmer : un seul endpoint qui filtre par role automatiquement ? |
 | A4 | Conventions de casing mixtes : `accessToken` (camelCase) vs `full_name` (snake_case) dans les DTOs | tous DTOs | Tolérer l'incohérence ou faire une passe d'uniformisation |
 | A5 | `GET /rides/fare` et `GET /driver/nearby` utilisent query params snake_case (`distance_km`, `radius_km`) — confirmer | `RidesApiService.kt` | Aligner |
+| A6 | HTTP 4xx/5xx écrase tout `error.code` du body : `unwrap()` retourne systématiquement `HTTP_${status}` au lieu de propager le code envelope. Conséquence : un 429 avec `error.code = OTP_RATE_LIMITED` est exposé au front comme `HTTP_429`, perdant le mapping localisé. | `ApiCall.kt:24-32` | Lire le body sur 4xx et préférer `error.code` quand présent. À fixer en R-1.4 ou R-5.1. |
+
+## 12. Tests de contrat (verrouillage front-side)
+
+Tests d'intégration MockWebServer qui figent le contrat décrit dans ce doc côté front (cf. `app/src/test/java/tn/turbodrive/data/network/contract/`) :
+
+| Test | Couvre |
+|---|---|
+| [`AuthApiContractTest`](../app/src/test/java/tn/turbodrive/data/network/contract/AuthApiContractTest.kt) | 8 cases — send-otp / verify-otp (existing + new user) / me / logout / OTP_INVALID / OTP_EXPIRED / RATE_LIMITED |
+| [`IdempotencyContractTest`](../app/src/test/java/tn/turbodrive/data/network/contract/IdempotencyContractTest.kt) | 4 cases — header injection sur `@Idempotent`, absence sur non-annoté, préservation lors de replay (retry), nom lowercase |
+| [`ApiCallTest`](../app/src/test/java/tn/turbodrive/data/network/envelope/ApiCallTest.kt) (pré-existant) | Mécanique d'enveloppe pure |
+| [`RefreshTokenExecutorTest`](../app/src/test/java/tn/turbodrive/data/network/authenticator/RefreshTokenExecutorTest.kt) (pré-existant) | Refresh raw OkHttp |
+| [`TokenAuthenticatorRefreshIntegrationTest`](../app/src/test/java/tn/turbodrive/data/network/authenticator/TokenAuthenticatorRefreshIntegrationTest.kt) (pré-existant) | Flow 401 → refresh → retry / force logout |
+
+À chaque nouveau DTO ou endpoint MVP-N, ajouter le test contract correspondant dans le même répertoire. Pattern : `ContractTestSupport.retrofitService(server)` pour avoir une instance Retrofit branchée sur MockWebServer avec la Gson production.
 
 ---
 
