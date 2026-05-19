@@ -88,7 +88,7 @@ internal fun SplashScreenLayout(alpha: Float) {
                     .alpha(alpha)
                     .padding(bottom = 56.dp),
         ) {
-            TurboBrandMark(size = 88.dp)
+            TurboBrandMark(size = 120.dp)
 
             Spacer(modifier = Modifier.height(28.dp))
 
