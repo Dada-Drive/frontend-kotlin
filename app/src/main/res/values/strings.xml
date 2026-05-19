@@ -659,5 +659,11 @@
     <string name="search_destination_now">Maintenant</string>
     <string name="search_destination_schedule">Programmer</string>
     <string name="search_destination_map_picker_cta">Choisir le départ sur la carte</string>
+    <!-- R-5.4 Route Preview (S12/S14) -->
+    <string name="route_preview_title">Récapitulatif</string>
+    <string name="route_preview_change_category">Modifier</string>
+    <string name="route_preview_estimated_price_label">PRIX ESTIMÉ</string>
+    <string name="route_preview_payment_cash">Espèces</string>
+    <string name="route_preview_request_cta">Demander une course</string>
 </resources>
 
