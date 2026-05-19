@@ -19,6 +19,7 @@ import tn.turbodrive.data.network.api.AuthApiService
 import tn.turbodrive.data.network.api.DriverApiService
 import tn.turbodrive.data.network.api.NotificationApiService
 import tn.turbodrive.data.network.api.RidesApiService
+import tn.turbodrive.data.network.api.UploadApiService
 import tn.turbodrive.data.network.api.WalletApiService
 import tn.turbodrive.data.network.authenticator.TokenAuthenticator
 import tn.turbodrive.data.network.interceptor.AuthInterceptor
@@ -147,4 +148,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideWalletApiService(retrofit: Retrofit): WalletApiService = retrofit.create(WalletApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideUploadApiService(retrofit: Retrofit): UploadApiService = retrofit.create(UploadApiService::class.java)
 }
