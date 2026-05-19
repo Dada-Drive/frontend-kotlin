@@ -16,6 +16,8 @@ import kotlinx.coroutines.launch
 import tn.turbodrive.core.constants.Constants
 import tn.turbodrive.data.local.ActiveRideDraftCache
 import tn.turbodrive.data.network.error.PresentableErrorMapper
+import tn.turbodrive.data.socket.SocketEvent
+import tn.turbodrive.data.socket.SocketEventManager
 import tn.turbodrive.domain.models.ActiveRide
 import tn.turbodrive.domain.models.AvailableRide
 import tn.turbodrive.domain.models.CompleteRideResult
@@ -70,6 +72,7 @@ class DriverViewModel
         private val cancelRideUseCase: CancelRideUseCase,
         private val activeRideDraftCache: ActiveRideDraftCache,
         private val errorMapper: PresentableErrorMapper,
+        private val socketEventManager: SocketEventManager,
     ) : ViewModel() {
         private val maxOfferDistanceKm = 3.0
 
@@ -96,8 +99,42 @@ class DriverViewModel
         private val _showCompleteResult = MutableStateFlow(false)
         val showCompleteResult: StateFlow<Boolean> = _showCompleteResult.asStateFlow()
 
+        /**
+         * Last driver-scoped Socket.IO event observed (ride:new_request,
+         * ride:offer_rejected, ride:cancelled, shared:*). Composables may
+         * collect this to drive in-app prompts. Authoritative ride state
+         * still flows through the existing polling for now — full
+         * socket-driven state updates land in R-3.5.
+         */
+        private val _lastSocketEvent = MutableStateFlow<SocketEvent?>(null)
+        val lastSocketEvent: StateFlow<SocketEvent?> = _lastSocketEvent.asStateFlow()
+
         private var pollJob: Job? = null
         private var driverLocation: GeoCoordinates? = null
+
+        init {
+            viewModelScope.launch {
+                socketEventManager.events.collect(::handleSocketEvent)
+            }
+        }
+
+        private fun handleSocketEvent(event: SocketEvent) {
+            when (event) {
+                is SocketEvent.RideNewRequest,
+                is SocketEvent.RideOfferRejected,
+                is SocketEvent.RideAccepted,
+                is SocketEvent.RideStatusChanged,
+                is SocketEvent.RideCompleted,
+                is SocketEvent.RideCancelled,
+                is SocketEvent.SharedPassengerJoined,
+                is SocketEvent.SharedPassengerLeft,
+                is SocketEvent.SharedPassengerPickedUp,
+                is SocketEvent.SharedPassengerDroppedOff,
+                is SocketEvent.SharedRideCompleted,
+                -> _lastSocketEvent.value = event
+                else -> Unit
+            }
+        }
 
         private val currentIsOnline: Boolean
             get() = _onlineState.value.dataOrNull() == true

@@ -4,6 +4,8 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -14,6 +16,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import tn.turbodrive.data.local.ActiveRideDraftCache
 import tn.turbodrive.data.network.error.PresentableErrorMapper
+import tn.turbodrive.data.socket.SocketEventManager
 import tn.turbodrive.domain.models.ActiveRide
 import tn.turbodrive.domain.models.AvailableRide
 import tn.turbodrive.domain.models.DriverProfile
@@ -220,6 +223,15 @@ class DriverViewModelTest {
         cancelRideUseCase: CancelRideUseCase = mockk(relaxed = true),
         activeRideDraftCache: ActiveRideDraftCache = mockk(relaxed = true),
         errorMapper: PresentableErrorMapper = mockk(relaxed = true),
+        socketEventManager: SocketEventManager =
+            mockk(relaxed = true) {
+                every { events } returns
+                    MutableSharedFlow(
+                        replay = 0,
+                        extraBufferCapacity = 1,
+                        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+                    )
+            },
     ) = DriverViewModel(
         setOnlineStatusUseCase = setOnlineStatusUseCase,
         getAvailableRidesUseCase = getAvailableRidesUseCase,
@@ -231,5 +243,6 @@ class DriverViewModelTest {
         cancelRideUseCase = cancelRideUseCase,
         activeRideDraftCache = activeRideDraftCache,
         errorMapper = errorMapper,
+        socketEventManager = socketEventManager,
     )
 }

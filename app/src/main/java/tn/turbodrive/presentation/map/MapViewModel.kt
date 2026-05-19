@@ -25,6 +25,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import tn.turbodrive.core.pricing.RiderFareEstimate
 import tn.turbodrive.data.local.ActiveRideDraftCache
+import tn.turbodrive.data.socket.SocketEvent
+import tn.turbodrive.data.socket.SocketEventManager
 import tn.turbodrive.domain.models.ActiveRide
 import tn.turbodrive.domain.models.DriverRatingsStats
 import tn.turbodrive.domain.models.NearbyTaxi
@@ -48,6 +50,7 @@ class MapViewModel
         @ApplicationContext private val context: Context,
         private val ridesRepository: RidesRepository,
         private val activeRideDraftCache: ActiveRideDraftCache,
+        private val socketEventManager: SocketEventManager,
     ) : ViewModel() {
         private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
@@ -373,6 +376,16 @@ class MapViewModel
         private var nearbyTaxisPollingJob: Job? = null
         private var nearbyTaxisEnabled = true
 
+        /**
+         * Last rider-scoped Socket.IO event observed (ride:* + shared:* +
+         * negotiate:*). Composables may collect this to drive snackbars,
+         * driver pin updates, or negotiation prompts. Authoritative ride
+         * lifecycle still flows through [rideOps] polling for now —
+         * full socket-driven state updates land in R-3.5 + R-5.5.
+         */
+        private val _lastSocketEvent = MutableStateFlow<SocketEvent?>(null)
+        val lastSocketEvent: StateFlow<SocketEvent?> = _lastSocketEvent.asStateFlow()
+
         /** Throttles GPS-driven fetches so we do not hammer /driver/nearby on every 1–2 s fix. */
         private var lastNearbyTaxisFetchElapsedMs = 0L
 
@@ -407,6 +420,34 @@ class MapViewModel
                     _snappedDriverLocation.value = snappedLocation
                     _effectiveHeadingDegrees.value = heading
                 }
+            }
+
+            viewModelScope.launch {
+                socketEventManager.events.collect(::handleSocketEvent)
+            }
+        }
+
+        private fun handleSocketEvent(event: SocketEvent) {
+            when (event) {
+                is SocketEvent.RideNewOffer,
+                is SocketEvent.RideAccepted,
+                is SocketEvent.RideOfferRejected,
+                is SocketEvent.RideDriverArrived,
+                is SocketEvent.RideStatusChanged,
+                is SocketEvent.RideCompleted,
+                is SocketEvent.RideCancelled,
+                is SocketEvent.RideDriverLocation,
+                is SocketEvent.NegotiationProposed,
+                is SocketEvent.NegotiationAccepted,
+                is SocketEvent.NegotiationCountered,
+                is SocketEvent.NegotiationRejected,
+                is SocketEvent.SharedPassengerJoined,
+                is SocketEvent.SharedPassengerLeft,
+                is SocketEvent.SharedPassengerPickedUp,
+                is SocketEvent.SharedPassengerDroppedOff,
+                is SocketEvent.SharedRideCompleted,
+                -> _lastSocketEvent.value = event
+                else -> Unit
             }
         }
 
