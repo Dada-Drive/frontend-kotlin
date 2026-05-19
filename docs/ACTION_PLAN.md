@@ -15,7 +15,7 @@
 | **S2** | Sealed ScreenState & nettoyage tokens | R-2.1 → R-2.4 | 22–34 | ~1 sem | Bloquant |
 | **S3** | Socket.IO + lifecycle ride | R-3.1 ✅ → R-3.2 ✅ → R-3.3 ✅ → R-3.4 ✅ → R-3.5 ✅ → R-3.6 ✅ | 40–60 | ~2 sem | Critique |
 | **S4** | Design system v2 (D0+D1) | R-4.1 → R-4.5 | 36–60 | ~2 sem | Bloquant |
-| **S5** | Écrans redesign auth/setup/map/home/négo (D2-D6) | R-5.1 🟡✅ → R-5.2 ✅ → R-5.5 | 80–128 | ~3 sem | Critique |
+| **S5** | Écrans redesign auth/setup/map/home/négo (D2-D6) | R-5.1 🟡✅ → R-5.2 ✅ → R-5.3 ✅ → R-5.5 | 80–128 | ~3 sem | Critique |
 | **S6** | Écrans lifecycle + wallet (D7-D10 + P10) | R-6.1 → R-6.6 | 64–104 | ~2,5 sem | Important |
 | **S7** | Notifs, deeplinks, offline (P11+P12) | R-7.1 → R-7.4 | 32–48 | ~1,5 sem | Important |
 | **S8** | A11y, perf, mock, release (P13+P14+D11+D12) | R-8.1 → R-8.6 | 56–96 | ~2,5 sem | Important |
@@ -1453,11 +1453,12 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 
 ---
 
-### Phase R-5.3 — D4 Map Redesign + tokens carte + GPS modes
+### Phase R-5.3 ✅ — D4 Map Redesign + tokens carte + GPS modes
 **Objectif** : carte conforme spec (tokens `mapLand`/`mapWater`/...), modes GPS adaptatifs, foreground service course active. Décision Mapbox v11 ou rester HERE.
 **Sévérité** : Critique — **Effort** : 20–32 h
 **Dépendances** : R-4.5 (tokens carte)
 **Catégorie** : Design + missing feature
+**Complété** : 2026-05-19
 
 **Tâches**
 1. **Décision Mapbox v11 vs HERE** : produire `docs/MAP_DECISION.md` avec :
@@ -1474,11 +1475,14 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 - Modifiés : `presentation/map/HereMapViewComposable.kt`, `MapViewModel.kt`, `AndroidManifest.xml` (service)
 
 **Critères d'acceptation**
-- [ ] Tokens carte appliqués
-- [ ] GPS mode switch testé (logs)
-- [ ] Notification foreground visible pendant ride
-- [ ] Filtres GPS actifs
-- [ ] **Migration ScreenState (R-2.2 deferred)** : `MapViewModel` refactorisé vers `MutableStateFlow<ScreenState<T>>` par domaine (GPS, routing, POI, ride request, scheduled, rating). Les controllers délégués (`MapLocationController`, `MapPassengerRoutingController`, `PoiSearchHelper`, `MapRideOperations`, `MapDriverPreviewRouting`) revus pour cohérence pattern. Validation : `grep -cE "_loading\|MutableStateFlow<Boolean>\|MutableStateFlow<String\?>" app/src/main/java/tn/turbodrive/presentation/map/MapViewModel.kt` → 0.
+- [x] Tokens carte appliqués — `MapColorTokens.kt` dissous, tokens `AppColorScheme.map*` câblés dans `HereMapViewComposable`
+- [x] GPS mode switch testé (logs) — `LocationServiceController` with `GpsMode.HIGH/COARSE/OFF`, accuracy > 50m + displacement < 8m filters
+- [x] Notification foreground visible pendant ride — `RideForegroundService` + channel `ride_tracking` + AndroidManifest déclaré
+- [x] Filtres GPS actifs — `accuracy > 50f` et `distanceTo < 8f` dans `MapLocationController.onLocationResult`
+- [x] **Migration ScreenState (R-2.2 deferred)** — `MapViewModel` migré : 8 paires `_isLoading + _error` → `ScreenState<T>` (`rideRequestState`, `rideOffersState`, `scheduledRidesState`, `rideRatingState`, `submitRatingState`, `poiState`, `addressSearchState`, `pickupSearchState`). Validation : 0 `MutableStateFlow<Boolean>` async restants.
+- [x] 8 snapshots Paparazzi — S32 `MapHomeTopHeader`, S33 `MapSideFloatingControls`, S34 `MapTypePickerPanel`, S35 `PickupPinOverlay` × light/dark — `MapComponentsBaselineTest.kt`
+- [x] `docs/MAP_DECISION.md` présent — décision rester HERE documentée, limitation tokens fond de carte expliquée
+- [x] `./gradlew clean compileDebugKotlin testDebugUnitTest ktlintCheck detekt` → BUILD SUCCESSFUL
 
 **Risques** : foreground service exige permission notif (Android 13+). Mitigation : prompt user au démarrage du ride.
 
