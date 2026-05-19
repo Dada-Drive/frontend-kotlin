@@ -528,223 +528,31 @@ fun PhoneScreen(
                     Spacer(Modifier.height(24.dp))
                 }
             } else {
-                val otpPhoneDisplay = otpFlowPhone.orEmpty()
-                val otpErr = phase2Error != null
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .statusBarsPadding()
-                            .padding(horizontal = 20.dp),
-                ) {
-                    Spacer(Modifier.height(4.dp))
-                    Box(Modifier.fillMaxWidth()) {
-                        Box(
-                            modifier =
-                                Modifier
-                                    .align(Alignment.CenterStart)
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(appColors.surface)
-                                    .border(1.dp, appColors.border, CircleShape)
-                                    .clickable {
-                                        otpCode = ""
-                                        authViewModel.resetOtpState()
-                                    },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                painter = painterResource(AppIcon.arrowLeft),
-                                contentDescription = stringResource(R.string.cd_back),
-                                tint = fg,
-                                modifier = Modifier.size(20.dp),
-                            )
+                OtpEntryPhaseContent(
+                    displayPhone = otpFlowPhone.orEmpty(),
+                    otpCode = otpCode,
+                    onOtpCodeChange = { otpCode = it },
+                    isError = phase2Error != null,
+                    errorMessage = phase2Error,
+                    resendCooldown = resendCooldown,
+                    onBack = {
+                        otpCode = ""
+                        authViewModel.resetOtpState()
+                    },
+                    onResend = {
+                        otpCode = ""
+                        prevOtpLen = 0
+                        otpFlowPhone?.let { authViewModel.sendOtp(it) }
+                    },
+                    onKeypadDigit = { d ->
+                        if (otpCode.length < Constants.PHONE_CODE_LENGTH) {
+                            otpCode += d.toString()
                         }
-                        Text(
-                            text = stringResource(R.string.auth_registration_step, 2, 4),
-                            modifier = Modifier.align(Alignment.Center),
-                            color = fg,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
-                    Spacer(Modifier.height(24.dp))
-                    Text(
-                        text = stringResource(R.string.otp_title_whatsapp),
-                        color = fg,
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = 32.sp,
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        text = stringResource(R.string.otp_instruction_prefix),
-                        color = muted,
-                        fontSize = 14.sp,
-                    )
-                    Text(
-                        text = otpPhoneDisplay,
-                        color = fg,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Row(
-                        modifier =
-                            Modifier
-                                .clip(RoundedCornerShape(999.dp))
-                                .background(appColors.accentSoft)
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_whatsapp),
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            stringResource(R.string.otp_sent_via_whatsapp),
-                            color = appColors.accent,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
-                    Spacer(Modifier.height(24.dp))
-                    val otpBoxWidth = 52.dp
-                    val otpBoxHeight = 60.dp
-                    val otpGap = 10.dp
-                    Box(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .height(otpBoxHeight),
-                    ) {
-                        BasicTextField(
-                            value = otpCode,
-                            onValueChange = { input ->
-                                val digits = input.filter { it.isDigit() }
-                                if (digits.length <= Constants.PHONE_CODE_LENGTH) {
-                                    otpCode = digits
-                                }
-                            },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                            cursorBrush = SolidColor(Color.Transparent),
-                            textStyle = TextStyle(color = Color.Transparent, fontSize = 1.sp),
-                            singleLine = true,
-                            modifier =
-                                Modifier
-                                    .fillMaxSize()
-                                    .alpha(0f),
-                        )
-                        Row(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .align(Alignment.Center),
-                            horizontalArrangement = Arrangement.spacedBy(otpGap, Alignment.CenterHorizontally),
-                        ) {
-                            repeat(Constants.PHONE_CODE_LENGTH) { index ->
-                                val digit = otpCode.getOrNull(index)?.toString().orEmpty()
-                                val isFocused = index == otpCode.length
-                                val isFilled = digit.isNotEmpty()
-                                val borderColor =
-                                    when {
-                                        otpErr -> appColors.error
-                                        isFilled || isFocused -> Color.Black
-                                        else -> appColors.border
-                                    }
-                                Box(
-                                    modifier =
-                                        Modifier
-                                            .width(otpBoxWidth)
-                                            .height(otpBoxHeight)
-                                            .clip(RoundedCornerShape(14.dp))
-                                            .background(appColors.surface)
-                                            .border(1.5.dp, borderColor, RoundedCornerShape(14.dp)),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    if (isFilled) {
-                                        Text(
-                                            text = digit,
-                                            color = if (otpErr) appColors.error else fg,
-                                            style = AppTypography.monoM,
-                                            textAlign = TextAlign.Center,
-                                        )
-                                    } else if (isFocused) {
-                                        Text(
-                                            text = "|",
-                                            color = fg.copy(alpha = 0.35f),
-                                            fontSize = 22.sp,
-                                            fontWeight = FontWeight.Light,
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Spacer(Modifier.height(16.dp))
-                    AnimatedVisibility(visible = otpErr, enter = fadeIn(), exit = fadeOut()) {
-                        Row(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(appColors.errorSoft)
-                                    .border(1.dp, appColors.errorSoft, RoundedCornerShape(12.dp))
-                                    .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text("!", color = appColors.error, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.width(10.dp))
-                            Text(
-                                text = phase2Error.orEmpty(),
-                                color = appColors.error,
-                                fontSize = 13.sp,
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(12.dp))
-                    val mm = resendCooldown / 60
-                    val ss = resendCooldown % 60
-                    if (resendCooldown > 0) {
-                        Text(
-                            text = stringResource(R.string.otp_resend_timer, mm, ss),
-                            color = muted,
-                            fontSize = 14.sp,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                        )
-                    } else {
-                        TextButton(
-                            onClick = {
-                                otpCode = ""
-                                prevOtpLen = 0
-                                otpFlowPhone?.let { authViewModel.sendOtp(it) }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(
-                                stringResource(R.string.otp_resend),
-                                color = appColors.accent,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                    }
-                    Spacer(Modifier.weight(1f))
-                    OtpNumericKeypad(
-                        onDigit = { d ->
-                            if (otpCode.length < Constants.PHONE_CODE_LENGTH) {
-                                otpCode += d.toString()
-                            }
-                        },
-                        onBackspace = {
-                            if (otpCode.isNotEmpty()) otpCode = otpCode.dropLast(1)
-                        },
-                    )
-                    Spacer(Modifier.height(12.dp))
-                }
+                    },
+                    onKeypadBackspace = {
+                        if (otpCode.isNotEmpty()) otpCode = otpCode.dropLast(1)
+                    },
+                )
             }
         }
 
@@ -862,6 +670,243 @@ fun PhoneScreen(
                 }
             }
         }
+    }
+}
+
+/**
+ * OTP phase body (S06) extracted from [PhoneScreen] for Paparazzi testability and
+ * to align with the W2 finding from R-5.1 Session A audit (file was 1055 LOC, mixing
+ * phone phase + OTP phase + country picker sheet).
+ *
+ * Stateless — all state coordination (5 LaunchedEffects) stays in [PhoneScreen];
+ * this fn just renders the OTP UI given the current state and exposes callbacks.
+ * Snapshot pattern mirrors [tn.turbodrive.presentation.onboarding.OnboardingScreenContent].
+ */
+@Composable
+internal fun OtpEntryPhaseContent(
+    displayPhone: String,
+    otpCode: String,
+    onOtpCodeChange: (String) -> Unit,
+    isError: Boolean,
+    errorMessage: String?,
+    resendCooldown: Int,
+    onBack: () -> Unit,
+    onResend: () -> Unit,
+    onKeypadDigit: (Char) -> Unit,
+    onKeypadBackspace: () -> Unit,
+) {
+    val appColors = LocalAppColors.current
+    val muted = appColors.textSecondary
+    val fg = Color.Black
+    Column(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(horizontal = 20.dp),
+    ) {
+        Spacer(Modifier.height(4.dp))
+        Box(Modifier.fillMaxWidth()) {
+            Box(
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterStart)
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(appColors.surface)
+                        .border(1.dp, appColors.border, CircleShape)
+                        .clickable(onClick = onBack),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(AppIcon.arrowLeft),
+                    contentDescription = stringResource(R.string.cd_back),
+                    tint = fg,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Text(
+                text = stringResource(R.string.auth_registration_step, 2, 4),
+                modifier = Modifier.align(Alignment.Center),
+                color = fg,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        Spacer(Modifier.height(24.dp))
+        Text(
+            text = stringResource(R.string.otp_title_whatsapp),
+            color = fg,
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            lineHeight = 32.sp,
+        )
+        Spacer(Modifier.height(10.dp))
+        Text(
+            text = stringResource(R.string.otp_instruction_prefix),
+            color = muted,
+            fontSize = 15.sp,
+        )
+        Text(
+            text = displayPhone,
+            color = fg,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.height(12.dp))
+        // TODO(R-5.5 or R-6.5): OTP channel badge — switch icon/text based on
+        // backend response {channel: "whatsapp" | "sms"} from /auth/request-otp.
+        // Currently hard-coded WhatsApp. Backend MVP-1 must ship channel field
+        // (cf. docs/BACKEND_CONTRACT.md §7.1 SendOtpResponse) before wiring.
+        Row(
+            modifier =
+                Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(appColors.accentSoft)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ic_whatsapp),
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(
+                stringResource(R.string.otp_sent_via_whatsapp),
+                color = appColors.accent,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        Spacer(Modifier.height(24.dp))
+        val otpBoxWidth = 64.dp
+        val otpBoxHeight = 72.dp
+        val otpGap = 10.dp
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(otpBoxHeight),
+        ) {
+            BasicTextField(
+                value = otpCode,
+                onValueChange = { input ->
+                    val digits = input.filter { it.isDigit() }
+                    if (digits.length <= Constants.PHONE_CODE_LENGTH) {
+                        onOtpCodeChange(digits)
+                    }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                cursorBrush = SolidColor(Color.Transparent),
+                textStyle = TextStyle(color = Color.Transparent, fontSize = 1.sp),
+                singleLine = true,
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .alpha(0f),
+            )
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center),
+                horizontalArrangement = Arrangement.spacedBy(otpGap, Alignment.CenterHorizontally),
+            ) {
+                repeat(Constants.PHONE_CODE_LENGTH) { index ->
+                    val digit = otpCode.getOrNull(index)?.toString().orEmpty()
+                    val isFocused = index == otpCode.length
+                    val isFilled = digit.isNotEmpty()
+                    val borderColor =
+                        when {
+                            isError -> appColors.error
+                            isFilled || isFocused -> Color.Black
+                            else -> appColors.border
+                        }
+                    Box(
+                        modifier =
+                            Modifier
+                                .width(otpBoxWidth)
+                                .height(otpBoxHeight)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (isFilled) appColors.surface else Color.Transparent)
+                                .border(2.dp, borderColor, RoundedCornerShape(12.dp)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (isFilled) {
+                            Text(
+                                text = digit,
+                                color = if (isError) appColors.error else fg,
+                                style = AppTypography.monoM,
+                                textAlign = TextAlign.Center,
+                            )
+                        } else if (isFocused) {
+                            Text(
+                                text = "|",
+                                color = fg.copy(alpha = 0.35f),
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Light,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        AnimatedVisibility(visible = isError, enter = fadeIn(), exit = fadeOut()) {
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(appColors.errorSoft)
+                        .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = painterResource(AppIcon.alertTriangle),
+                    contentDescription = null,
+                    tint = appColors.error,
+                    modifier = Modifier.size(16.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = errorMessage.orEmpty(),
+                    color = appColors.error,
+                    fontSize = 13.sp,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        val mm = resendCooldown / 60
+        val ss = resendCooldown % 60
+        if (resendCooldown > 0) {
+            Text(
+                text = stringResource(R.string.otp_resend_timer, mm, ss),
+                color = muted,
+                fontSize = 14.sp,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+            )
+        } else {
+            TextButton(
+                onClick = onResend,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    stringResource(R.string.otp_resend),
+                    color = appColors.accent,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        OtpNumericKeypad(
+            onDigit = { d -> onKeypadDigit(d.toString().single()) },
+            onBackspace = onKeypadBackspace,
+        )
+        Spacer(Modifier.height(12.dp))
     }
 }
 
