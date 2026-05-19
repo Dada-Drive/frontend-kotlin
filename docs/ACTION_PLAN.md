@@ -1999,6 +1999,24 @@ cd frontend-kotlin
 
 ---
 
+## Fixes sécurité critiques — Audit Senior ✅ (closed 2026-05-19)
+
+**Effort réel** : ~2h
+
+| # | Critique | Commit | Statut |
+|---|---|---|---|
+| 1 | TokenManager fail-fast (no plain SharedPreferences fallback) | `b9cdbfa` | ✅ |
+| 2 | Room migrations explicites + exportSchema=true + schemas/1.json | `32e5170` | ✅ |
+| 3 | Logs longueur clés HERE SDK retirés + ProGuard strip release + TODO SEC-001 | `6a1a9e0` | ✅ |
+
+**Status production** : 🟢 PRÊT MVP (sous réserve rotation clés HERE/Google si jamais exposées publiquement)
+
+**Différé SEC-001 (post-MVP)** : migration clés hors BuildConfig (Firebase Remote Config / backend proxy).
+
+Documentation complète : [docs/SECURITY_FIXES.md](SECURITY_FIXES.md)
+
+---
+
 ## Prochaine action attendue
 
 Le plan est exécutable. Quand tu valides, je commence par **Phase R-0.1** (réactiver gates ktlint/detekt). Tu peux aussi me dire :
