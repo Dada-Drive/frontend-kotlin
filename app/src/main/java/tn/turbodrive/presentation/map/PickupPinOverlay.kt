@@ -76,7 +76,6 @@ import tn.turbodrive.core.designsystem.spacing.AppSpacing
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.AppTypography
 import tn.turbodrive.core.theme.LocalAppColors
-import tn.turbodrive.core.theme.MapColorTokens
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -587,10 +586,10 @@ private fun PickupConfirmButton(
             isOutOfBounds -> colors.error
             disabled ->
                 when {
-                    isIntermediateStop -> MapColorTokens.pinIntermediate.copy(alpha = 0.55f)
+                    isIntermediateStop -> colors.textPrimary.copy(alpha = 0.55f)
                     else -> Color.White.copy(alpha = 0.55f)
                 }
-            isIntermediateStop -> MapColorTokens.pinIntermediate
+            isIntermediateStop -> colors.textPrimary
             else -> Color.White
         }
 

@@ -61,7 +61,6 @@ import kotlinx.coroutines.delay
 import tn.turbodrive.app.AppProcessLifecycleEntryPoint
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
-import tn.turbodrive.core.theme.MapColorTokens
 import tn.turbodrive.core.utils.playCoinSoundEffect
 import tn.turbodrive.domain.models.RideStatus
 import tn.turbodrive.presentation.components.FullScreenCoinIntroOverlay
@@ -331,7 +330,7 @@ fun MapScreen(
             }
         val mapMainRouteColor =
             if (isRideMatched && driverPreviewRouteGeometries.isNotEmpty()) {
-                MapColorTokens.routeActiveBlue
+                LocalAppColors.current.primary
             } else {
                 LocalAppColors.current.primary
             }
@@ -375,7 +374,7 @@ fun MapScreen(
             passengerTrafficSpans = if (mapPickerMode && !isIntermediatePickMode) emptyList() else mapTrafficSpans,
             selectedPassengerRouteIndex = mapSelectedRouteIndex,
             sequentialRouteLegs = isRideMatched && driverPreviewRouteGeometries.size >= 2,
-            secondLegRouteColor = MapColorTokens.routeSecondLeg,
+            secondLegRouteColor = LocalAppColors.current.mapRoad,
             sceneLoaded = sceneLoaded,
             useDarkMap = useDarkMap,
             mapDisplayMode = mapDisplayMode,

@@ -47,7 +47,6 @@ import com.turbodrive.R
 import kotlinx.coroutines.flow.distinctUntilChanged
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
-import tn.turbodrive.core.theme.MapColorTokens
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -167,7 +166,7 @@ internal fun ScheduleForLaterSheet(
     }
     val isValid = selectedEpochMs >= minCalendar.timeInMillis
 
-    val accent = MapColorTokens.scheduleAccent
+    val accent = c.info
     val disabledAccent = accent.copy(alpha = 0.45f)
 
     ModalBottomSheet(

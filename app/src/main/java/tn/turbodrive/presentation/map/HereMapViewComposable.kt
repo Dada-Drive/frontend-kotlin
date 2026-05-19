@@ -79,7 +79,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
-import tn.turbodrive.core.theme.MapColorTokens
 import tn.turbodrive.domain.models.NearbyTaxi
 import kotlin.math.PI
 import kotlin.math.cos
@@ -124,7 +123,7 @@ internal fun HereMapViewComposable(
      * index 1 uses [secondLegRouteColor]; both use the primary line width.
      */
     sequentialRouteLegs: Boolean = false,
-    secondLegRouteColor: Color = MapColorTokens.routeSecondLeg,
+    secondLegRouteColor: Color = LocalAppColors.current.mapRoad,
     /**
      * Rider-entered intermediate stops. Each entry includes its on-route validity; invalid
      * stops render as a yellow pin with a red forbidden overlay (same base design as the

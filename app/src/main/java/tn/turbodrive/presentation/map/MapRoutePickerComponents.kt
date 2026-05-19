@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.turbodrive.R
 import tn.turbodrive.core.theme.LocalAppColors
-import tn.turbodrive.core.theme.MapColorTokens
 import java.util.Calendar
 
 private const val MINI_MAPS_ASSET_PATH = "mini-maps.png"
@@ -143,7 +142,7 @@ internal fun RouteConnectorIcon(
     modifier: Modifier = Modifier,
 ) {
     val totalSegments = 1 + intermediateCount
-    val connectorColor = MapColorTokens.connectorGrey
+    val connectorColor = LocalAppColors.current.textSubtle
     val finalDestColor = LocalAppColors.current.error
     val iconHeight by animateDpAsState(
         targetValue = (56 * (1 + intermediateCount) + 8 * totalSegments).dp,

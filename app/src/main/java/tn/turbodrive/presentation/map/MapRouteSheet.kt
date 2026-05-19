@@ -58,7 +58,6 @@ import com.turbodrive.R
 import kotlinx.coroutines.delay
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
-import tn.turbodrive.core.theme.MapColorTokens
 import tn.turbodrive.presentation.components.BlackCloseIconButton
 
 internal sealed class ActiveRouteField {
@@ -572,7 +571,7 @@ private fun PassengerInfoFields(
     val phoneBorderColor = if (phoneFocused) activeBorder else inactiveBorder
     val phoneBorderWidth = if (phoneFocused) 1.6.dp else 1.dp
 
-    val rowBg = if (darkItinerary) MapColorTokens.darkPanelSurface else c.surface
+    val rowBg = if (darkItinerary) c.surfaceDeep else c.surface
     val iconTint = if (darkItinerary) Color.White.copy(alpha = 0.72f) else c.textSecondary
 
     val corner = 16.dp
@@ -767,7 +766,7 @@ private fun SwiftStyleRouteField(
             else -> c.dividerGrey.copy(alpha = 0.50f)
         }
     val borderWidth = if (isActive) 1.6.dp else 1.dp
-    val pillSurface = if (darkItineraryStyle) MapColorTokens.darkPanelSurface else c.surface
+    val pillSurface = if (darkItineraryStyle) c.surfaceDeep else c.surface
     val pillCorner = 16.dp
     Row(
         modifier =
@@ -974,7 +973,7 @@ private fun ScheduleForLaterButton(
     darkItinerary: Boolean = false,
 ) {
     val c = LocalAppColors.current
-    val bg = if (darkItinerary) MapColorTokens.darkPanelSurface else c.surface
+    val bg = if (darkItinerary) c.surfaceDeep else c.surface
     val borderCol = if (darkItinerary) Color.White.copy(alpha = 0.20f) else c.dividerGrey.copy(alpha = 0.45f)
     val titleCol = if (darkItinerary) Color.White else c.textPrimary
     val subtitleCol = if (darkItinerary) Color.White.copy(alpha = 0.68f) else c.textSecondary

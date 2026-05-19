@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import com.turbodrive.R
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
-import tn.turbodrive.core.theme.MapColorTokens
 import tn.turbodrive.presentation.components.BlackCloseIconButton
 
 @Composable
@@ -114,7 +113,7 @@ internal fun RouteTextField(
                 modifier =
                     Modifier
                         .size(20.dp)
-                        .background(MapColorTokens.connectorGrey, CircleShape),
+                        .background(c.textSubtle, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -187,7 +186,7 @@ internal fun RouteSheetSuggestionBlock(
     onHit: (AddressSearchHit) -> Unit,
 ) {
     val c = LocalAppColors.current
-    val panelBg = if (darkItineraryStyle) MapColorTokens.darkPanelSurface else c.surface
+    val panelBg = if (darkItineraryStyle) c.surfaceDeep else c.surface
     val panelBorder = if (darkItineraryStyle) Color.White.copy(alpha = 0.18f) else c.dividerGrey.copy(alpha = 0.35f)
     val hitText = if (darkItineraryStyle) Color.White else c.textPrimary
     val iconBg = if (darkItineraryStyle) Color.White.copy(alpha = 0.10f) else c.surfaceAlt
