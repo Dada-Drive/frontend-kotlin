@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Camera capture targets the app cacheDir (auto-cleaned, no permission needed) -->
+    <cache-path
+        name="ocr_camera_cache"
+        path="ocr_captures/" />
+</paths>

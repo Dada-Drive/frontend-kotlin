@@ -624,5 +624,16 @@
     <!-- Phase 0 roadmap: empty placeholder strings (reserved; not used in UI) -->
     <string name="phase0_placeholder_1" translatable="true"></string>
     <string name="phase0_placeholder_2" translatable="true"></string>
+
+    <!-- R-5.2 OCR capture + progress -->
+    <string name="driver_photo_take_camera">Camera</string>
+    <string name="driver_photo_take_gallery">Gallery</string>
+    <string name="driver_ocr_uploading">Uploading photo…</string>
+    <string name="driver_ocr_processing">Reading document…</string>
+    <string name="driver_ocr_ready">Fields detected, please review.</string>
+    <string name="driver_ocr_upload_failed">Upload failed. Tap to retake.</string>
+    <string name="driver_ocr_poll_failed">Network error. Tap to retake.</string>
+    <string name="driver_ocr_failed">Couldn\'t read the document. Fill in manually.</string>
+    <string name="driver_ocr_timeout">Reading took too long. Fill in manually.</string>
 </resources>
 

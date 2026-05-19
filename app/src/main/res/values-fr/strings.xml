@@ -622,5 +622,16 @@
     <!-- Phase 0 roadmap: empty placeholder strings -->
     <string name="phase0_placeholder_1" translatable="true"></string>
     <string name="phase0_placeholder_2" translatable="true"></string>
+
+    <!-- R-5.2 OCR capture + progress -->
+    <string name="driver_photo_take_camera">Appareil photo</string>
+    <string name="driver_photo_take_gallery">Galerie</string>
+    <string name="driver_ocr_uploading">Envoi de la photo…</string>
+    <string name="driver_ocr_processing">Lecture du document…</string>
+    <string name="driver_ocr_ready">Champs détectés, vérifiez SVP.</string>
+    <string name="driver_ocr_upload_failed">Échec de l\'envoi. Touchez pour reprendre.</string>
+    <string name="driver_ocr_poll_failed">Erreur réseau. Touchez pour reprendre.</string>
+    <string name="driver_ocr_failed">Lecture impossible. Saisissez manuellement.</string>
+    <string name="driver_ocr_timeout">Lecture trop longue. Saisissez manuellement.</string>
 </resources>
 
