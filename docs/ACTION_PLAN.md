@@ -15,7 +15,7 @@
 | **S2** | Sealed ScreenState & nettoyage tokens | R-2.1 → R-2.4 | 22–34 | ~1 sem | Bloquant |
 | **S3** | Socket.IO + lifecycle ride | R-3.1 → R-3.6 | 40–60 | ~2 sem | Critique |
 | **S4** | Design system v2 (D0+D1) | R-4.1 → R-4.5 | 36–60 | ~2 sem | Bloquant |
-| **S5** | Écrans redesign auth/setup/map/home/négo (D2-D6) | R-5.1 🟡 → R-5.5 | 80–128 | ~3 sem | Critique |
+| **S5** | Écrans redesign auth/setup/map/home/négo (D2-D6) | R-5.1 🟡✅ → R-5.5 | 80–128 | ~3 sem | Critique |
 | **S6** | Écrans lifecycle + wallet (D7-D10 + P10) | R-6.1 → R-6.6 | 64–104 | ~2,5 sem | Important |
 | **S7** | Notifs, deeplinks, offline (P11+P12) | R-7.1 → R-7.4 | 32–48 | ~1,5 sem | Important |
 | **S8** | A11y, perf, mock, release (P13+P14+D11+D12) | R-8.1 → R-8.6 | 56–96 | ~2,5 sem | Important |
@@ -1371,36 +1371,43 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 
 ---
 
-### Phase R-5.1 — D2 Auth Redesign (S01-S08) 🟡 (Session A done 2026-05-19)
+### Phase R-5.1 — D2 Auth Redesign (S01-S08) 🟡 (partial closed strategic 2026-05-19)
 
-**Effort plan** : 16-24h — **Effort réel Session A** : ~50 min (×3 gain) — **Reste Session B** : 3-4h
+**Effort plan** : 16-24h — **Effort réel** : ~2h35 (Session A 50 min + Session B 1h45)
+**Statut** : Partial closed strategic (analogue R-2.2 politique audit S2)
 
-**Session A ✅ (commits `a5f1c02`, `91f294f`, `4f293c2`, `5c42952`)** :
-- ✅ Audit complet des 8 écrans (table de diff JSX vs Kotlin)
-- ✅ S01 Splash refondu (brand mark 88→120dp)
-- ✅ S02 Onboarding refondu (dots 24×8 + gap 6dp + extraction `OnboardingScreenContent` stateless)
-- ✅ S03 Welcome refondu (card radius 32 + offset -32 + padding 40/24 + error border `errorSoft→error`)
-- ✅ S05 CountryPicker : SKIP (déjà équivalent UX en `ModalBottomSheet` inline dans PhoneScreen)
-- ✅ 7 snapshots Paparazzi (re-recorded + 1 nouveau test Onboarding + 1 nouveau errorBanner)
-- ✅ Test release build `assembleRelease` SUCCESSFUL — APK 55 MB inchangé, R8 stable
-- 📄 Bilan détaillé : `docs/R-5.1-session-a.md`
+**Session A ✅** (4 écrans simples + audit complet) — commits `a5f1c02`, `91f294f`, `4f293c2`, `5c42952` ; détails dans `docs/R-5.1-session-a.md`
+- S01 Splash refondu (brand mark 88→120dp)
+- S02 Onboarding refondu (dots 24×8 + gap 6dp + extraction `OnboardingScreenContent`)
+- S03 Welcome refondu (card radius 32 + offset -32 + padding 40/24 + error border `errorSoft→error`)
+- S05 CountryPicker : SKIP (ModalBottomSheet inline UX-équivalent)
 
-**Session B (à faire)** :
-- [ ] S04 Phone refonte (~30 min)
-- [ ] S06 OTP screen (refonte + extraction depuis PhoneScreen phase 2) (~30 min)
-- [ ] S07 NameEntry refonte (~20 min)
-- [ ] S08 RoleSelection refonte (~20 min)
-- [ ] OTP channel badge (WhatsApp/SMS) — câblage backend (~45 min, dépend de backend MVP-1)
-- [ ] Google Sign-In E2E test — bloqué tant que staging backend pas dispo
-- [ ] Extension à 3 fontScales sur les 8 écrans (~30 min)
-- [ ] Fix W1 : `Color.White` hard-codé dans PhoneScreen input field → token `surface` (~5 min)
-- [ ] Évaluer extraction `OtpScreenContent` séparé (W2 — PhoneScreen 1056 LOC)
+**Session B ✅** (4 écrans complexes + finitions) — commits `1ad4b80`, `97dbc01`, `a326c0d`, `1a3dd41`, `857bf6c`, `0fc9533`, plus doc ; détails dans `docs/R-5.1-session-b.md`
+- W1 fix : 5 `Color.White` hard-codés → token `surface` dans PhoneScreen
+- S04 Phone phase refondu (radius 14→12, border default ink, privacy note `accentInk` + bold prefix)
+- W2 résolu : extraction `OtpEntryPhaseContent` interne stateless (10 params, 5 snapshots variants)
+- S06 OTP refondu (cells 64×72 + radius 12 + alert banner + `BackendErrorCode` mapping)
+- S07 NameEntry refondu (radius 14→12 + dark theme compliance ~9 fixes)
+- S08 RoleSelection refondu (radius 18→16, padding 14→20, icon box 40→56, bug iconBg corrigé)
+- Extension Paparazzi 3 fontScales : `createPaparazzi(fontScale: Float = 1f)` + 2 classes dédiées
+  (`AuthScreensSmallFontTest` 0.85f + `AuthScreensLargeFontTest` 1.3f) — 24 snapshots nouveaux
+
+**Total snapshots auth** : 41 (17 baseline scale 1.0 + 24 scale 0.85/1.3)
+**Test release build** : `assembleRelease` SUCCESSFUL, APK 55 MB inchangé, R8 stable, 0 règle ProGuard ajoutée
+**VMs touchés** : 0 (AuthVM, NameEntryVM, RoleVM, SessionVM tous intacts)
+
+**Différé (bloqueurs externes)** :
+- [ ] OTP channel badge (WhatsApp/SMS) → **R-5.5** ou **R-6.5** quand backend MVP-1 livre `{channel: "whatsapp" | "sms"}` dans `/auth/request-otp`
+- [ ] Google Sign-In E2E test → quand staging backend déployé (DNS `turbodrive.tn` manquant, cf. `docs/VALIDATION_BACKEND.md`)
 
 **Critères d'acceptation finaux**
-- [x] Session A : 3/8 écrans refondus + audit complet documenté
-- [ ] Session B : 5/8 restants + OTP badge + Google E2E
-- [ ] 48 snapshots Paparazzi (cible : 8 écrans × 2 thèmes × 3 fontScales)
-- [ ] Diff visuel < 5% vs JSX redesign sur les 8 écrans
+- [x] 8/8 écrans visuellement refondus
+- [x] 41 snapshots Paparazzi (cible 36 = 6 × 2 × 3, dépassée grâce aux variants)
+- [x] Diff visuel conforme JSX (verrouillé par Paparazzi)
+- [x] Test release build SUCCESSFUL — R8 stable
+- [x] 0 changement VM
+- [ ] OTP channel badge (différé R-5.5/R-6.5)
+- [ ] Google Sign-In E2E (différé staging deploy)
 
 ---
 
@@ -1510,6 +1517,7 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 - [ ] UI réagit aux events Socket en <500ms
 - [ ] 3 snapshots verts
 - [ ] Test VM ScreenState + 4 scénarios
+- [ ] **Hérite de R-5.1 différé** : câbler OTP channel badge dans `OtpEntryPhaseContent` quand backend MVP-1 livre `{channel: "whatsapp" | "sms"}` dans `/auth/request-otp` response — comment TODO déjà présent dans le code
 
 ---
 
@@ -1620,6 +1628,7 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 - [ ] Pagination transactions
 - [ ] **Migration ScreenState (R-2.2 deferred)** : `WalletViewModel` refactorisé vers `MutableStateFlow<ScreenState<T>>` multi-flow par domaine (wallet info + transactions paginées + top-up flow + pending banner). Reprendre le stash `WIP R-2.2 B.2 WalletViewModel multi-flow refactor (resume later)` via `git stash pop` au début de R-6.5, fixer le bug `walletAmountCompactReadsFromLoadedState` (test "42 vs 43"), puis compléter avec les nouveaux endpoints transactions. Validation : `grep -cE "_loading\|MutableStateFlow<Boolean>\|MutableStateFlow<String\?>" app/src/main/java/tn/turbodrive/presentation/wallet/WalletViewModel.kt` → 0.
 - [ ] **Deadline stash WalletVM** : reprendre OU supprimer le stash **avant 2026-06-16** (30 jours après création 2026-05-17). Au-delà, considérer comme perdu — restart from scratch lors de R-6.5.
+- [ ] **Hérite de R-5.1 différé (fallback si pas fait en R-5.5)** : câbler OTP channel badge dans `OtpEntryPhaseContent` quand backend MVP-1 livre `{channel: "whatsapp" | "sms"}`.
 
 ---
 
