@@ -32,11 +32,14 @@ import tn.turbodrive.data.socket.SocketEvent
 import tn.turbodrive.data.socket.SocketEventManager
 import tn.turbodrive.domain.models.ActiveRide
 import tn.turbodrive.domain.models.DriverRatingsStats
+import tn.turbodrive.domain.models.ErrorCategory
 import tn.turbodrive.domain.models.NearbyTaxi
 import tn.turbodrive.domain.models.PassengerRideOffer
+import tn.turbodrive.domain.models.PresentableError
 import tn.turbodrive.domain.models.RideRating
 import tn.turbodrive.domain.models.RideStop
 import tn.turbodrive.domain.protocols.RidesRepository
+import tn.turbodrive.presentation.common.ScreenState
 import tn.turbodrive.presentation.services.RideForegroundService
 import java.util.Locale
 import javax.inject.Inject
@@ -118,17 +121,11 @@ class MapViewModel
         private val _pickupOverrideLabel = MutableStateFlow<String?>(null)
         val pickupOverrideLabel: StateFlow<String?> = _pickupOverrideLabel.asStateFlow()
 
-        private val _addressSearchResults = MutableStateFlow<List<AddressSearchHit>>(emptyList())
-        val addressSearchResults: StateFlow<List<AddressSearchHit>> = _addressSearchResults.asStateFlow()
+        private val _addressSearchState = MutableStateFlow<ScreenState<List<AddressSearchHit>>>(ScreenState.Idle)
+        val addressSearchState: StateFlow<ScreenState<List<AddressSearchHit>>> = _addressSearchState.asStateFlow()
 
-        private val _addressSearchLoading = MutableStateFlow(false)
-        val addressSearchLoading: StateFlow<Boolean> = _addressSearchLoading.asStateFlow()
-
-        private val _pickupSearchResults = MutableStateFlow<List<AddressSearchHit>>(emptyList())
-        val pickupSearchResults: StateFlow<List<AddressSearchHit>> = _pickupSearchResults.asStateFlow()
-
-        private val _pickupSearchLoading = MutableStateFlow(false)
-        val pickupSearchLoading: StateFlow<Boolean> = _pickupSearchLoading.asStateFlow()
+        private val _pickupSearchState = MutableStateFlow<ScreenState<List<AddressSearchHit>>>(ScreenState.Idle)
+        val pickupSearchState: StateFlow<ScreenState<List<AddressSearchHit>>> = _pickupSearchState.asStateFlow()
 
         private val _riderFareEstimate = MutableStateFlow<RiderFareEstimate?>(null)
         val riderFareEstimate: StateFlow<RiderFareEstimate?> = _riderFareEstimate.asStateFlow()
@@ -148,11 +145,8 @@ class MapViewModel
         private val _selectedPassengerRouteIndex = MutableStateFlow(0)
         val selectedPassengerRouteIndex: StateFlow<Int> = _selectedPassengerRouteIndex.asStateFlow()
 
-        private val _poiResults = MutableStateFlow<List<Place>>(emptyList())
-        val poiResults: StateFlow<List<Place>> = _poiResults.asStateFlow()
-
-        private val _isPoiLoading = MutableStateFlow(false)
-        val isPoiLoading: StateFlow<Boolean> = _isPoiLoading.asStateFlow()
+        private val _poiState = MutableStateFlow<ScreenState<List<Place>>>(ScreenState.Idle)
+        val poiState: StateFlow<ScreenState<List<Place>>> = _poiState.asStateFlow()
 
         private val _selectedPoiCategory = MutableStateFlow<PoiCategory?>(null)
         val selectedPoiCategory: StateFlow<PoiCategory?> = _selectedPoiCategory.asStateFlow()
@@ -166,17 +160,11 @@ class MapViewModel
         private val _tappedPoi = MutableStateFlow<Pair<Place, PoiCategory>?>(null)
         val tappedPoi: StateFlow<Pair<Place, PoiCategory>?> = _tappedPoi.asStateFlow()
 
-        private val _poiSearchError = MutableStateFlow<String?>(null)
-        val poiSearchError: StateFlow<String?> = _poiSearchError.asStateFlow()
-
         private val _driverPreviewRouteGeometries = MutableStateFlow<List<GeoPolyline>>(emptyList())
         val driverPreviewRouteGeometries: StateFlow<List<GeoPolyline>> = _driverPreviewRouteGeometries.asStateFlow()
 
-        private val _isRequestingRide = MutableStateFlow(false)
-        val isRequestingRide: StateFlow<Boolean> = _isRequestingRide.asStateFlow()
-
-        private val _rideRequestError = MutableStateFlow<String?>(null)
-        val rideRequestError: StateFlow<String?> = _rideRequestError.asStateFlow()
+        private val _rideRequestState = MutableStateFlow<ScreenState<Unit>>(ScreenState.Idle)
+        val rideRequestState: StateFlow<ScreenState<Unit>> = _rideRequestState.asStateFlow()
 
         private val _lastRequestedRide = MutableStateFlow<ActiveRide?>(null)
         val lastRequestedRide: StateFlow<ActiveRide?> = _lastRequestedRide.asStateFlow()
@@ -196,11 +184,8 @@ class MapViewModel
         private val _passengerBookingPhone = MutableStateFlow("")
         val passengerBookingPhone: StateFlow<String> = _passengerBookingPhone.asStateFlow()
 
-        private val _incomingRideOffers = MutableStateFlow<List<PassengerRideOffer>>(emptyList())
-        val incomingRideOffers: StateFlow<List<PassengerRideOffer>> = _incomingRideOffers.asStateFlow()
-
-        private val _isLoadingRideOffers = MutableStateFlow(false)
-        val isLoadingRideOffers: StateFlow<Boolean> = _isLoadingRideOffers.asStateFlow()
+        private val _rideOffersState = MutableStateFlow<ScreenState<List<PassengerRideOffer>>>(ScreenState.Idle)
+        val rideOffersState: StateFlow<ScreenState<List<PassengerRideOffer>>> = _rideOffersState.asStateFlow()
 
         private val _pickingOfferId = MutableStateFlow<String?>(null)
         val pickingOfferId: StateFlow<String?> = _pickingOfferId.asStateFlow()
@@ -211,29 +196,14 @@ class MapViewModel
         private val _isRideMatched = MutableStateFlow(false)
         val isRideMatched: StateFlow<Boolean> = _isRideMatched.asStateFlow()
 
-        private val _scheduledRides = MutableStateFlow<List<ActiveRide>>(emptyList())
-        val scheduledRides: StateFlow<List<ActiveRide>> = _scheduledRides.asStateFlow()
+        private val _scheduledRidesState = MutableStateFlow<ScreenState<List<ActiveRide>>>(ScreenState.Idle)
+        val scheduledRidesState: StateFlow<ScreenState<List<ActiveRide>>> = _scheduledRidesState.asStateFlow()
 
-        private val _isLoadingScheduledRides = MutableStateFlow(false)
-        val isLoadingScheduledRides: StateFlow<Boolean> = _isLoadingScheduledRides.asStateFlow()
+        private val _rideRatingState = MutableStateFlow<ScreenState<RideRating>>(ScreenState.Idle)
+        val rideRatingState: StateFlow<ScreenState<RideRating>> = _rideRatingState.asStateFlow()
 
-        private val _scheduledRidesError = MutableStateFlow<String?>(null)
-        val scheduledRidesError: StateFlow<String?> = _scheduledRidesError.asStateFlow()
-
-        private val _rideRating = MutableStateFlow<RideRating?>(null)
-        val rideRating: StateFlow<RideRating?> = _rideRating.asStateFlow()
-
-        private val _isLoadingRideRating = MutableStateFlow(false)
-        val isLoadingRideRating: StateFlow<Boolean> = _isLoadingRideRating.asStateFlow()
-
-        private val _rideRatingError = MutableStateFlow<String?>(null)
-        val rideRatingError: StateFlow<String?> = _rideRatingError.asStateFlow()
-
-        private val _isSubmittingRideRating = MutableStateFlow(false)
-        val isSubmittingRideRating: StateFlow<Boolean> = _isSubmittingRideRating.asStateFlow()
-
-        private val _submitRideRatingError = MutableStateFlow<String?>(null)
-        val submitRideRatingError: StateFlow<String?> = _submitRideRatingError.asStateFlow()
+        private val _submitRatingState = MutableStateFlow<ScreenState<Unit>>(ScreenState.Idle)
+        val submitRatingState: StateFlow<ScreenState<Unit>> = _submitRatingState.asStateFlow()
 
         private val _driverRatingsStats = MutableStateFlow(DriverRatingsStats(avgRating = 0.0, totalRatings = 0))
         val driverRatingsStats: StateFlow<DriverRatingsStats> = _driverRatingsStats.asStateFlow()
@@ -316,22 +286,15 @@ class MapViewModel
                 rideScheduledAtEpochMs = _rideScheduledAtEpochMs,
                 passengerBookingName = _passengerBookingName,
                 passengerBookingPhone = _passengerBookingPhone,
-                isRequestingRide = _isRequestingRide,
-                rideRequestError = _rideRequestError,
+                rideRequestState = _rideRequestState,
                 lastRequestedRide = _lastRequestedRide,
-                incomingRideOffers = _incomingRideOffers,
-                isLoadingRideOffers = _isLoadingRideOffers,
+                rideOffersState = _rideOffersState,
                 pickingOfferId = _pickingOfferId,
                 matchedRideOffer = _matchedRideOffer,
                 isRideMatched = _isRideMatched,
-                scheduledRides = _scheduledRides,
-                isLoadingScheduledRides = _isLoadingScheduledRides,
-                scheduledRidesError = _scheduledRidesError,
-                rideRating = _rideRating,
-                isLoadingRideRating = _isLoadingRideRating,
-                rideRatingError = _rideRatingError,
-                isSubmittingRideRating = _isSubmittingRideRating,
-                submitRideRatingError = _submitRideRatingError,
+                scheduledRidesState = _scheduledRidesState,
+                rideRatingState = _rideRatingState,
+                submitRatingState = _submitRatingState,
                 driverRatingsStats = _driverRatingsStats,
                 pendingIntermediateStopsProvider = {
                     _intermediateStopDrafts.value
@@ -563,7 +526,7 @@ class MapViewModel
             rideOps.stopRideStatusPolling()
             _confirmedDestination.value = null
             passengerRouting.clearPassengerRouteState()
-            _incomingRideOffers.value = emptyList()
+            _rideOffersState.value = ScreenState.Idle
             _lastRequestedRide.value = null
             _pickingOfferId.value = null
             _matchedRideOffer.value = null
@@ -607,13 +570,11 @@ class MapViewModel
             forwardSearchJob?.cancel()
             val trimmed = query.trim()
             if (trimmed.length < 3) {
-                _addressSearchResults.value = emptyList()
-                _addressSearchLoading.value = false
+                _addressSearchState.value = ScreenState.Idle
                 return
             }
             geocodingHelper.cachedForwardGeocode(trimmed)?.let { cached ->
-                _addressSearchResults.value = cached
-                _addressSearchLoading.value = false
+                _addressSearchState.value = ScreenState.Loaded(cached)
                 return
             }
             forwardSearchJob =
@@ -623,20 +584,18 @@ class MapViewModel
                     val loadingReveal =
                         launch {
                             delay(MapViewModelConstants.ADDRESS_SEARCH_LOADING_GRACE_MS)
-                            if (isActive) _addressSearchLoading.value = true
+                            if (isActive) _addressSearchState.value = ScreenState.Loading
                         }
                     val list = geocodingHelper.forwardGeocode(trimmed)
                     loadingReveal.cancel()
                     if (!isActive) return@launch
-                    _addressSearchResults.value = list
-                    _addressSearchLoading.value = false
+                    _addressSearchState.value = ScreenState.Loaded(list)
                 }
         }
 
         fun clearAddressSearchResults() {
             forwardSearchJob?.cancel()
-            _addressSearchResults.value = emptyList()
-            _addressSearchLoading.value = false
+            _addressSearchState.value = ScreenState.Idle
         }
 
         fun onSearchQueryChanged(
@@ -655,35 +614,31 @@ class MapViewModel
                 return
             }
             val queryKey = "${field.name}|${category.name}|${trimmed.lowercase(Locale.ROOT)}"
-            if (queryKey == lastPoiQueryKey && _poiResults.value.isNotEmpty()) return
+            if (queryKey == lastPoiQueryKey && (_poiState.value as? ScreenState.Loaded)?.value?.isNotEmpty() == true) return
             lastPoiQueryKey = queryKey
             // Fallback Grand Tunis si GPS absent.
             val userLocation =
                 _currentLocation.value
                     ?: GeoCoordinates(36.8065, 10.1815)
             _selectedPoiCategory.value = category
-            _isPoiLoading.value = true
+            _poiState.value = ScreenState.Loading
             poiSearchHelper.searchByCategory(
                 category = category,
                 userLocation = userLocation,
                 radius = 35000,
                 maxResults = 80,
                 onSuccess = { places ->
-                    _isPoiLoading.value = false
-                    _poiResults.value = places
+                    _poiState.value = ScreenState.Loaded(places)
                     _selectedPoiCategory.value = category
                 },
                 onError = { message ->
-                    _isPoiLoading.value = false
-                    _poiResults.value = emptyList()
-                    _poiSearchError.value = message
+                    _poiState.value = ScreenState.Error(PresentableError(message, ErrorCategory.Server, false))
                 },
             )
         }
 
         fun clearPoiResults() {
-            _poiResults.value = emptyList()
-            _isPoiLoading.value = false
+            _poiState.value = ScreenState.Idle
             _selectedPoiCategory.value = null
             _poiSearchField.value = null
             _poiSelectionTarget.value = null
@@ -709,24 +664,21 @@ class MapViewModel
                     is PoiSelectionTarget.IntermediateStop -> "I${target.index}"
                 }
             val queryKey = "trg|$targetKey|${category.name}"
-            if (queryKey == lastPoiQueryKey && _poiResults.value.isNotEmpty()) return
+            if (queryKey == lastPoiQueryKey && (_poiState.value as? ScreenState.Loaded)?.value?.isNotEmpty() == true) return
             lastPoiQueryKey = queryKey
             _selectedPoiCategory.value = category
-            _isPoiLoading.value = true
+            _poiState.value = ScreenState.Loading
             poiSearchHelper.searchByCategory(
                 category = category,
                 userLocation = userLocation,
                 radius = 35000,
                 maxResults = 80,
                 onSuccess = { places ->
-                    _isPoiLoading.value = false
-                    _poiResults.value = places
+                    _poiState.value = ScreenState.Loaded(places)
                     _selectedPoiCategory.value = category
                 },
                 onError = { message ->
-                    _isPoiLoading.value = false
-                    _poiResults.value = emptyList()
-                    _poiSearchError.value = message
+                    _poiState.value = ScreenState.Error(PresentableError(message, ErrorCategory.Server, false))
                 },
             )
         }
@@ -762,7 +714,7 @@ class MapViewModel
         }
 
         fun consumePoiSearchError() {
-            _poiSearchError.value = null
+            if (_poiState.value is ScreenState.Error) _poiState.value = ScreenState.Idle
         }
 
         fun applySearchDestination(hit: AddressSearchHit) {
@@ -797,13 +749,11 @@ class MapViewModel
             pickupForwardSearchJob?.cancel()
             val trimmed = query.trim()
             if (trimmed.length < 3) {
-                _pickupSearchResults.value = emptyList()
-                _pickupSearchLoading.value = false
+                _pickupSearchState.value = ScreenState.Idle
                 return
             }
             geocodingHelper.cachedForwardGeocode(trimmed)?.let { cached ->
-                _pickupSearchResults.value = cached
-                _pickupSearchLoading.value = false
+                _pickupSearchState.value = ScreenState.Loaded(cached)
                 return
             }
             pickupForwardSearchJob =
@@ -813,20 +763,18 @@ class MapViewModel
                     val loadingReveal =
                         launch {
                             delay(MapViewModelConstants.ADDRESS_SEARCH_LOADING_GRACE_MS)
-                            if (isActive) _pickupSearchLoading.value = true
+                            if (isActive) _pickupSearchState.value = ScreenState.Loading
                         }
                     val list = geocodingHelper.forwardGeocode(trimmed)
                     loadingReveal.cancel()
                     if (!isActive) return@launch
-                    _pickupSearchResults.value = list
-                    _pickupSearchLoading.value = false
+                    _pickupSearchState.value = ScreenState.Loaded(list)
                 }
         }
 
         fun clearPickupSearchResults() {
             pickupForwardSearchJob?.cancel()
-            _pickupSearchResults.value = emptyList()
-            _pickupSearchLoading.value = false
+            _pickupSearchState.value = ScreenState.Idle
         }
 
         // ── Intermediate stops ───────────────────────────────────────────────────
@@ -975,8 +923,8 @@ class MapViewModel
 
         fun requestRide() = rideOps.requestRide()
 
-        fun clearRideRequestError() {
-            _rideRequestError.value = null
+        fun resetRideRequestState() {
+            _rideRequestState.value = ScreenState.Idle
         }
 
         fun pickRideOffer(offerId: String) = rideOps.pickRideOffer(offerId)

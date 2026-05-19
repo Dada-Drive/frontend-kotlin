@@ -63,6 +63,7 @@ import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
 import tn.turbodrive.core.utils.playCoinSoundEffect
 import tn.turbodrive.domain.models.RideStatus
+import tn.turbodrive.presentation.common.ScreenState
 import tn.turbodrive.presentation.components.FullScreenCoinIntroOverlay
 import tn.turbodrive.presentation.profile.ProfileViewModel
 import tn.turbodrive.presentation.session.SessionState
@@ -101,23 +102,29 @@ fun MapScreen(
     val passengerTrafficSpans by viewModel.passengerTrafficSpans.collectAsState()
     val passengerRouteOptions by viewModel.passengerRouteOptions.collectAsState()
     val selectedPassengerRouteIndex by viewModel.selectedPassengerRouteIndex.collectAsState()
-    val isRequestingRide by viewModel.isRequestingRide.collectAsState()
-    val rideRequestError by viewModel.rideRequestError.collectAsState()
+    val rideRequestState by viewModel.rideRequestState.collectAsState()
+    val rideOffersState by viewModel.rideOffersState.collectAsState()
+    val scheduledRidesState by viewModel.scheduledRidesState.collectAsState()
+    val rideRatingState by viewModel.rideRatingState.collectAsState()
+    val submitRatingState by viewModel.submitRatingState.collectAsState()
     val lastRequestedRide by viewModel.lastRequestedRide.collectAsState()
-    val incomingRideOffers by viewModel.incomingRideOffers.collectAsState()
-    val isLoadingRideOffers by viewModel.isLoadingRideOffers.collectAsState()
     val pickingOfferId by viewModel.pickingOfferId.collectAsState()
     val matchedRideOffer by viewModel.matchedRideOffer.collectAsState()
     val isRideMatched by viewModel.isRideMatched.collectAsState()
-    val scheduledRides by viewModel.scheduledRides.collectAsState()
-    val isLoadingScheduledRides by viewModel.isLoadingScheduledRides.collectAsState()
-    val scheduledRidesError by viewModel.scheduledRidesError.collectAsState()
-    val rideRating by viewModel.rideRating.collectAsState()
-    val isLoadingRideRating by viewModel.isLoadingRideRating.collectAsState()
-    val rideRatingError by viewModel.rideRatingError.collectAsState()
-    val isSubmittingRideRating by viewModel.isSubmittingRideRating.collectAsState()
-    val submitRideRatingError by viewModel.submitRideRatingError.collectAsState()
     val driverRatingsStats by viewModel.driverRatingsStats.collectAsState()
+    // Destructure ScreenState into local vals for composable params
+    val isRequestingRide = rideRequestState is ScreenState.Loading
+    val rideRequestError = (rideRequestState as? ScreenState.Error)?.error?.message
+    val incomingRideOffers = (rideOffersState as? ScreenState.Loaded)?.value.orEmpty()
+    val isLoadingRideOffers = rideOffersState is ScreenState.Loading
+    val scheduledRides = (scheduledRidesState as? ScreenState.Loaded)?.value.orEmpty()
+    val isLoadingScheduledRides = scheduledRidesState is ScreenState.Loading
+    val scheduledRidesError = (scheduledRidesState as? ScreenState.Error)?.error?.message
+    val rideRating = (rideRatingState as? ScreenState.Loaded)?.value
+    val isLoadingRideRating = rideRatingState is ScreenState.Loading
+    val rideRatingError = (rideRatingState as? ScreenState.Error)?.error?.message
+    val isSubmittingRideRating = submitRatingState is ScreenState.Loading
+    val submitRideRatingError = (submitRatingState as? ScreenState.Error)?.error?.message
     val intermediateStopDrafts by viewModel.intermediateStopDrafts.collectAsState()
     val intermediateStopPickerIndex by viewModel.intermediateStopPickerIndex.collectAsState()
     val user by profileViewModel.user.collectAsState()
@@ -128,7 +135,8 @@ fun MapScreen(
     var showWalletCoinIntro by remember { mutableStateOf(false) }
     val fitRouteToBoundsRequestId by viewModel.fitRouteToBoundsRequestId.collectAsState()
     val sessionState by sessionViewModel.sessionState.collectAsState()
-    val poiResults by viewModel.poiResults.collectAsState()
+    val poiState by viewModel.poiState.collectAsState()
+    val poiResults = (poiState as? ScreenState.Loaded)?.value.orEmpty()
     val selectedPoiCategory by viewModel.selectedPoiCategory.collectAsState()
     val poiSearchField by viewModel.poiSearchField.collectAsState()
     val poiSelectionTarget by viewModel.poiSelectionTarget.collectAsState()
@@ -168,12 +176,12 @@ fun MapScreen(
         }
     }
 
-    LaunchedEffect(rideRequestError) {
-        val raw = rideRequestError ?: return@LaunchedEffect
-        val normalized = raw.lowercase(Locale.getDefault())
+    LaunchedEffect(rideRequestState) {
+        val err = (rideRequestState as? ScreenState.Error)?.error?.message ?: return@LaunchedEffect
+        val normalized = err.lowercase(Locale.getDefault())
         if ("not authorized" in normalized || "no token" in normalized || "unauthorized" in normalized) {
             showGuestAccountRequiredDialog = true
-            viewModel.clearRideRequestError()
+            viewModel.resetRideRequestState()
         }
     }
 

@@ -67,6 +67,7 @@ import com.here.sdk.core.Point2D
 import com.turbodrive.R
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
+import tn.turbodrive.presentation.common.ScreenState
 import kotlin.math.roundToInt
 import com.here.sdk.mapview.MapView as HereMapView
 
@@ -90,16 +91,18 @@ internal fun PassengerRouteSearchBottomSheet(
     val passengerBookingName by viewModel.passengerBookingName.collectAsState()
     val passengerBookingPhone by viewModel.passengerBookingPhone.collectAsState()
     val intermediateStopDrafts by viewModel.intermediateStopDrafts.collectAsState()
-    val poiSearchError by viewModel.poiSearchError.collectAsState()
-    val pickupSearchResults by viewModel.pickupSearchResults.collectAsState()
-    val pickupSearchLoading by viewModel.pickupSearchLoading.collectAsState()
-    val addressSearchResults by viewModel.addressSearchResults.collectAsState()
-    val addressSearchLoading by viewModel.addressSearchLoading.collectAsState()
+    val poiState by viewModel.poiState.collectAsState()
+    val pickupSearchState by viewModel.pickupSearchState.collectAsState()
+    val addressSearchState by viewModel.addressSearchState.collectAsState()
+    val pickupSearchResults = (pickupSearchState as? ScreenState.Loaded)?.value.orEmpty()
+    val pickupSearchLoading = pickupSearchState is ScreenState.Loading
+    val addressSearchResults = (addressSearchState as? ScreenState.Loaded)?.value.orEmpty()
+    val addressSearchLoading = addressSearchState is ScreenState.Loading
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
 
-    LaunchedEffect(poiSearchError) {
-        val msg = poiSearchError ?: return@LaunchedEffect
+    LaunchedEffect(poiState) {
+        val msg = (poiState as? ScreenState.Error)?.error?.message ?: return@LaunchedEffect
         snackbarHostState.showSnackbar("Erreur POI: $msg")
         viewModel.consumePoiSearchError()
     }

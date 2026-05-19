@@ -15,11 +15,14 @@ import tn.turbodrive.core.pricing.RiderFareEstimate
 import tn.turbodrive.data.local.ActiveRideDraftCache
 import tn.turbodrive.domain.models.ActiveRide
 import tn.turbodrive.domain.models.DriverRatingsStats
+import tn.turbodrive.domain.models.ErrorCategory
 import tn.turbodrive.domain.models.PassengerRideOffer
+import tn.turbodrive.domain.models.PresentableError
 import tn.turbodrive.domain.models.RideRating
 import tn.turbodrive.domain.models.RideStatus
 import tn.turbodrive.domain.models.RideStop
 import tn.turbodrive.domain.protocols.RidesRepository
+import tn.turbodrive.presentation.common.ScreenState
 import java.net.UnknownHostException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -47,22 +50,15 @@ internal class MapRideOperations(
     private val rideScheduledAtEpochMs: MutableStateFlow<Long?>,
     private val passengerBookingName: MutableStateFlow<String>,
     private val passengerBookingPhone: MutableStateFlow<String>,
-    private val isRequestingRide: MutableStateFlow<Boolean>,
-    private val rideRequestError: MutableStateFlow<String?>,
+    private val rideRequestState: MutableStateFlow<ScreenState<Unit>>,
     private val lastRequestedRide: MutableStateFlow<ActiveRide?>,
-    private val incomingRideOffers: MutableStateFlow<List<PassengerRideOffer>>,
-    private val isLoadingRideOffers: MutableStateFlow<Boolean>,
+    private val rideOffersState: MutableStateFlow<ScreenState<List<PassengerRideOffer>>>,
     private val pickingOfferId: MutableStateFlow<String?>,
     private val matchedRideOffer: MutableStateFlow<PassengerRideOffer?>,
     private val isRideMatched: MutableStateFlow<Boolean>,
-    private val scheduledRides: MutableStateFlow<List<ActiveRide>>,
-    private val isLoadingScheduledRides: MutableStateFlow<Boolean>,
-    private val scheduledRidesError: MutableStateFlow<String?>,
-    private val rideRating: MutableStateFlow<RideRating?>,
-    private val isLoadingRideRating: MutableStateFlow<Boolean>,
-    private val rideRatingError: MutableStateFlow<String?>,
-    private val isSubmittingRideRating: MutableStateFlow<Boolean>,
-    private val submitRideRatingError: MutableStateFlow<String?>,
+    private val scheduledRidesState: MutableStateFlow<ScreenState<List<ActiveRide>>>,
+    private val rideRatingState: MutableStateFlow<ScreenState<RideRating>>,
+    private val submitRatingState: MutableStateFlow<ScreenState<Unit>>,
     private val driverRatingsStats: MutableStateFlow<DriverRatingsStats>,
     /** Supplies any rider-entered intermediate stops, filtered to only on-route ones. */
     private val pendingIntermediateStopsProvider: () -> List<RideStop> = { emptyList() },
@@ -72,10 +68,12 @@ internal class MapRideOperations(
     private var rideStatusPollingJob: Job? = null
     private val tag = "MapRideOperations"
 
+    private fun errState(msg: String): ScreenState.Error = ScreenState.Error(PresentableError(msg, ErrorCategory.Server, false))
+
     fun stopRideOffersPolling() {
         rideOffersPollingJob?.cancel()
         rideOffersPollingJob = null
-        isLoadingRideOffers.value = false
+        if (rideOffersState.value is ScreenState.Loading) rideOffersState.value = ScreenState.Idle
     }
 
     fun stopRideStatusPolling() {
@@ -103,22 +101,22 @@ internal class MapRideOperations(
     fun requestRide() {
         val pickup =
             passengerRouting.effectivePickupGeo() ?: run {
-                rideRequestError.value = context.getString(R.string.map_error_pickup_location_missing)
+                rideRequestState.value = errState(context.getString(R.string.map_error_pickup_location_missing))
                 return
             }
         val destination =
             confirmedDestination.value ?: run {
-                rideRequestError.value = context.getString(R.string.map_error_destination_missing)
+                rideRequestState.value = errState(context.getString(R.string.map_error_destination_missing))
                 return
             }
         val pickupAddress =
             pickupOverrideLabel.value ?: currentAddress.value ?: run {
-                rideRequestError.value = context.getString(R.string.map_error_pickup_address_missing)
+                rideRequestState.value = errState(context.getString(R.string.map_error_pickup_address_missing))
                 return
             }
         val destinationAddress =
             destinationLabel.value ?: run {
-                rideRequestError.value = context.getString(R.string.map_error_destination_address_missing)
+                rideRequestState.value = errState(context.getString(R.string.map_error_destination_address_missing))
                 return
             }
         val routeOption =
@@ -132,17 +130,17 @@ internal class MapRideOperations(
                     )
                 }
                 ?: run {
-                    rideRequestError.value = context.getString(R.string.map_error_route_not_ready)
+                    rideRequestState.value = errState(context.getString(R.string.map_error_route_not_ready))
                     return
                 }
         val normalizedPickupAddress = pickupAddress.trim()
         val normalizedDestinationAddress = destinationAddress.trim()
         if (normalizedPickupAddress.isBlank()) {
-            rideRequestError.value = context.getString(R.string.map_error_pickup_address_missing)
+            rideRequestState.value = errState(context.getString(R.string.map_error_pickup_address_missing))
             return
         }
         if (normalizedDestinationAddress.isBlank()) {
-            rideRequestError.value = context.getString(R.string.map_error_destination_address_missing)
+            rideRequestState.value = errState(context.getString(R.string.map_error_destination_address_missing))
             return
         }
         val normalizedDistanceKm =
@@ -167,16 +165,15 @@ internal class MapRideOperations(
         if (!forMe) {
             val phone = passengerBookingPhone.value.trim()
             if (phone.isEmpty()) {
-                rideRequestError.value = context.getString(R.string.map_error_passenger_phone_required)
+                rideRequestState.value = errState(context.getString(R.string.map_error_passenger_phone_required))
                 return
             }
         }
 
         scope.launch {
-            isRequestingRide.value = true
-            rideRequestError.value = null
+            rideRequestState.value = ScreenState.Loading
             lastRequestedRide.value = null
-            incomingRideOffers.value = emptyList()
+            rideOffersState.value = ScreenState.Idle
             pickingOfferId.value = null
             matchedRideOffer.value = null
             isRideMatched.value = false
@@ -208,44 +205,40 @@ internal class MapRideOperations(
                     fetchScheduledRides()
                 }
             }.onFailure { err ->
-                rideRequestError.value = err.message
-                    ?: context.getString(R.string.map_error_request_ride_failed)
+                rideRequestState.value = errState(err.message ?: context.getString(R.string.map_error_request_ride_failed))
             }
 
-            isRequestingRide.value = false
+            if (rideRequestState.value is ScreenState.Loading) rideRequestState.value = ScreenState.Idle
         }
     }
 
     fun pickRideOffer(offerId: String) {
         val rideId = lastRequestedRide.value?.id ?: return
-        val selectedOffer = incomingRideOffers.value.firstOrNull { it.id == offerId }
+        val selectedOffer = (rideOffersState.value as? ScreenState.Loaded)?.value?.firstOrNull { it.id == offerId }
         scope.launch {
-            isRequestingRide.value = true
-            rideRequestError.value = null
+            rideRequestState.value = ScreenState.Loading
             pickingOfferId.value = offerId
             ridesRepository.pickRideOffer(rideId, offerId)
                 .onSuccess {
                     stopRideOffersPolling()
-                    incomingRideOffers.value = emptyList()
+                    rideOffersState.value = ScreenState.Idle
                     matchedRideOffer.value = selectedOffer
                     isRideMatched.value = true
                     startRideStatusPolling(rideId)
                     selectedOffer?.driverId?.let { fetchDriverRatings(it) }
                 }
                 .onFailure { err ->
-                    rideRequestError.value = err.message
-                        ?: context.getString(R.string.map_error_pick_driver_failed)
+                    rideRequestState.value = errState(err.message ?: context.getString(R.string.map_error_pick_driver_failed))
                 }
             pickingOfferId.value = null
-            isRequestingRide.value = false
+            if (rideRequestState.value is ScreenState.Loading) rideRequestState.value = ScreenState.Idle
         }
     }
 
     fun cancelRequestedRide() {
         val rideId = lastRequestedRide.value?.id ?: return
         scope.launch {
-            isRequestingRide.value = true
-            rideRequestError.value = null
+            rideRequestState.value = ScreenState.Loading
             ridesRepository.cancelRideRequest(rideId, "rider_cancelled_from_offer_picker")
                 .onSuccess {
                     stopRideOffersPolling()
@@ -254,32 +247,32 @@ internal class MapRideOperations(
                     fetchScheduledRides()
                 }
                 .onFailure { err ->
-                    rideRequestError.value = err.message
-                        ?: context.getString(R.string.map_error_cancel_ride_failed)
+                    rideRequestState.value = errState(err.message ?: context.getString(R.string.map_error_cancel_ride_failed))
                 }
-            isRequestingRide.value = false
+            if (rideRequestState.value is ScreenState.Loading) rideRequestState.value = ScreenState.Idle
         }
     }
 
     fun dismissIncomingOffer(offerId: String) {
-        incomingRideOffers.value = incomingRideOffers.value.filterNot { it.id == offerId }
+        val current = (rideOffersState.value as? ScreenState.Loaded)?.value ?: emptyList()
+        rideOffersState.value = ScreenState.Loaded(current.filterNot { it.id == offerId })
     }
 
     fun fetchScheduledRides() {
         scope.launch {
-            isLoadingScheduledRides.value = true
-            scheduledRidesError.value = null
+            scheduledRidesState.value = ScreenState.Loading
             ridesRepository.getScheduledRides()
                 .onSuccess { rides ->
-                    scheduledRides.value =
-                        rides
-                            .filter { it.status == RideStatus.Scheduled }
-                            .sortedBy { it.scheduledAt ?: "" }
+                    scheduledRidesState.value =
+                        ScreenState.Loaded(
+                            rides
+                                .filter { it.status == RideStatus.Scheduled }
+                                .sortedBy { it.scheduledAt ?: "" },
+                        )
                 }
                 .onFailure {
-                    scheduledRidesError.value = context.getString(R.string.map_error_load_scheduled_rides_failed)
+                    scheduledRidesState.value = errState(context.getString(R.string.map_error_load_scheduled_rides_failed))
                 }
-            isLoadingScheduledRides.value = false
         }
     }
 
@@ -295,7 +288,7 @@ internal class MapRideOperations(
                                 stopRideOffersPolling()
                                 stopRideStatusPolling()
                                 clearActiveRideState()
-                                rideRequestError.value = context.getString(R.string.map_ride_cancelled_by_driver)
+                                rideRequestState.value = errState(context.getString(R.string.map_ride_cancelled_by_driver))
                                 return@launch
                             }
                             lastRequestedRide.value = current
@@ -310,7 +303,7 @@ internal class MapRideOperations(
                                     stopRideOffersPolling()
                                     stopRideStatusPolling()
                                     clearActiveRideState()
-                                    rideRequestError.value = context.getString(R.string.map_ride_cancelled_by_driver)
+                                    rideRequestState.value = errState(context.getString(R.string.map_ride_cancelled_by_driver))
                                     return@launch
                                 }
                                 else -> Unit
@@ -322,7 +315,7 @@ internal class MapRideOperations(
     }
 
     private fun clearActiveRideState() {
-        incomingRideOffers.value = emptyList()
+        rideOffersState.value = ScreenState.Idle
         lastRequestedRide.value = null
         pickingOfferId.value = null
         matchedRideOffer.value = null
@@ -332,15 +325,12 @@ internal class MapRideOperations(
 
     fun fetchRideRating(rideId: String) {
         scope.launch {
-            isLoadingRideRating.value = true
-            rideRatingError.value = null
+            rideRatingState.value = ScreenState.Loading
             ridesRepository.getRideRating(rideId)
-                .onSuccess { rating -> rideRating.value = rating }
+                .onSuccess { rating -> rideRatingState.value = ScreenState.Loaded(rating) }
                 .onFailure { err ->
-                    rideRating.value = null
-                    rideRatingError.value = err.message
+                    rideRatingState.value = errState(err.message ?: "")
                 }
-            isLoadingRideRating.value = false
         }
     }
 
@@ -351,14 +341,15 @@ internal class MapRideOperations(
     ) {
         if (score !in 1..5) return
         scope.launch {
-            isSubmittingRideRating.value = true
-            submitRideRatingError.value = null
+            submitRatingState.value = ScreenState.Loading
             ridesRepository.submitRideRating(rideId = rideId, score = score, comment = comment)
-                .onSuccess { rating -> rideRating.value = rating }
-                .onFailure { err ->
-                    submitRideRatingError.value = err.message
+                .onSuccess { rating ->
+                    rideRatingState.value = ScreenState.Loaded(rating)
+                    submitRatingState.value = ScreenState.Idle
                 }
-            isSubmittingRideRating.value = false
+                .onFailure { err ->
+                    submitRatingState.value = errState(err.message ?: "")
+                }
         }
     }
 
@@ -383,10 +374,10 @@ internal class MapRideOperations(
             scope.launch {
                 var nextDelayMs = OFFERS_POLL_BASE_DELAY_MS
                 while (isActive) {
-                    isLoadingRideOffers.value = true
+                    rideOffersState.value = ScreenState.Loading
                     ridesRepository.getRideOffers(rideId)
                         .onSuccess { offers ->
-                            incomingRideOffers.value = offers
+                            rideOffersState.value = ScreenState.Loaded(offers)
                             nextDelayMs = OFFERS_POLL_BASE_DELAY_MS
                             Log.d(tag, "offers polling success count=${offers.size} rideId=$rideId")
                         }
@@ -395,13 +386,12 @@ internal class MapRideOperations(
                                 // Ride no longer belongs to this session / role, or is no longer accessible.
                                 // Continuing to poll here creates an infinite error loop that can freeze UI.
                                 Log.w(tag, "stopping offers polling due to HTTP ${err.code()} rideId=$rideId")
-                                incomingRideOffers.value = emptyList()
-                                isLoadingRideOffers.value = false
+                                rideOffersState.value = ScreenState.Idle
                                 stopRideOffersPolling()
                                 return@launch
                             }
-                            rideRequestError.value = err.message
-                                ?: context.getString(R.string.map_error_load_offers_failed)
+                            rideOffersState.value = ScreenState.Idle
+                            rideRequestState.value = errState(err.message ?: context.getString(R.string.map_error_load_offers_failed))
                             nextDelayMs =
                                 when (err) {
                                     is UnknownHostException -> (nextDelayMs * 2).coerceAtMost(OFFERS_POLL_MAX_DELAY_MS)
@@ -409,7 +399,7 @@ internal class MapRideOperations(
                                 }
                             Log.e(tag, "offers polling failed rideId=$rideId", err)
                         }
-                    isLoadingRideOffers.value = false
+                    if (rideOffersState.value is ScreenState.Loading) rideOffersState.value = ScreenState.Idle
                     delay(nextDelayMs)
                 }
             }
