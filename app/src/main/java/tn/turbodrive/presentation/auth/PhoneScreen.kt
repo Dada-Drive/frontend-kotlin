@@ -64,13 +64,16 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.turbodrive.R
@@ -174,6 +177,25 @@ private class PhoneMaskVisualTransformation(private val mask: String) : VisualTr
 }
 
 private fun defaultPhoneCountry(): Country = commonCountries.find { it.dialCode == "+216" } ?: commonCountries.first()
+
+/**
+ * S04 privacy note (screens-auth.jsx:222) : "<b>Confidentialité garantie.</b> ..."
+ * Bolds the first sentence (up to and including the first period) for the visual
+ * emphasis specified in the redesign. Falls back to plain text if no period found
+ * (defensive — should not happen with the three locale strings ar/fr/en).
+ */
+private fun privacyNoteAnnotated(raw: String): AnnotatedString =
+    buildAnnotatedString {
+        val periodIndex = raw.indexOf('.')
+        if (periodIndex < 0) {
+            append(raw)
+        } else {
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                append(raw.substring(0, periodIndex + 1))
+            }
+            append(raw.substring(periodIndex + 1))
+        }
+    }
 
 // ─────────────────────────────────────────────────────────
 // PHONE SCREEN
@@ -386,15 +408,15 @@ fun PhoneScreen(
                     val phoneBorderColor =
                         when {
                             phase1Error != null || showLocalPhoneError -> appColors.error
-                            else -> appColors.border
+                            else -> appColors.inkSoft
                         }
                     Row(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(12.dp))
                                 .background(appColors.surface)
-                                .border(1.5.dp, phoneBorderColor, RoundedCornerShape(14.dp))
+                                .border(1.5.dp, phoneBorderColor, RoundedCornerShape(12.dp))
                                 .padding(horizontal = 14.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -492,13 +514,13 @@ fun PhoneScreen(
                         Icon(
                             painter = painterResource(AppIcon.lock),
                             contentDescription = null,
-                            tint = appColors.accent,
+                            tint = appColors.accentInk,
                             modifier = Modifier.size(20.dp).padding(top = 2.dp),
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = stringResource(R.string.phone_privacy_note),
-                            color = appColors.accent,
+                            text = privacyNoteAnnotated(stringResource(R.string.phone_privacy_note)),
+                            color = appColors.accentInk,
                             fontSize = 13.sp,
                             lineHeight = 19.sp,
                         )
