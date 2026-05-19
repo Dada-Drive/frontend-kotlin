@@ -425,6 +425,11 @@ class MapViewModel
             viewModelScope.launch {
                 socketEventManager.events.collect(::handleSocketEvent)
             }
+
+            // Crash recovery: restore in-flight rider ride persisted before process death.
+            viewModelScope.launch {
+                activeRideDraftCache.load()?.let { _lastRequestedRide.value = it }
+            }
         }
 
         private fun handleSocketEvent(event: SocketEvent) {
