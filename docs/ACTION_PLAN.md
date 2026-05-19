@@ -13,7 +13,7 @@
 | **S0** | Stabilisation & déblocage | R-0.1 → R-0.8 | 24–40 | ~1 sem | Bloquant |
 | **S1** | Couche réseau & enveloppe | R-1.1 → R-1.4 | 18–28 | ~1 sem | Bloquant |
 | **S2** | Sealed ScreenState & nettoyage tokens | R-2.1 → R-2.4 | 22–34 | ~1 sem | Bloquant |
-| **S3** | Socket.IO + lifecycle ride | R-3.1 → R-3.6 | 40–60 | ~2 sem | Critique |
+| **S3** | Socket.IO + lifecycle ride | R-3.1 ✅ → R-3.2 ✅ → R-3.6 | 40–60 | ~2 sem | Critique |
 | **S4** | Design system v2 (D0+D1) | R-4.1 → R-4.5 | 36–60 | ~2 sem | Bloquant |
 | **S5** | Écrans redesign auth/setup/map/home/négo (D2-D6) | R-5.1 🟡✅ → R-5.2 ✅ → R-5.5 | 80–128 | ~3 sem | Critique |
 | **S6** | Écrans lifecycle + wallet (D7-D10 + P10) | R-6.1 → R-6.6 | 64–104 | ~2,5 sem | Important |
@@ -45,7 +45,7 @@
 | 15 | 14 ViewModels en `Boolean+String?` | Refactor | Critique | R-2.2 | 12–18h |
 | 16 | 137 hex en dur dans presentation/ | Design drift | Important | R-2.3 | 4–6h |
 | 17 | Couverture tests <10% | Missing tests | Critique | continu | inclus |
-| 18 | `SocketService` handlers vides | Missing feature | Bloquant | R-3.1+R-3.2 | 16–24h |
+| 18 | `SocketService` handlers vides ✅ | Missing feature | Bloquant | R-3.1+R-3.2 | 16–24h |
 | 19 | Pas de resync §4.7 | Missing feature | Critique | R-3.3 | 6–8h |
 | 20 | Négociation §4.8 absente | Missing feature | Critique | R-3.4 | 8–12h |
 | 21 | Crash recovery active ride flou | Bug latent | Important | R-3.5 | 4–6h |
@@ -1010,10 +1010,19 @@ DE (P1 — chemin critique)
 - Ajouter `kotlinx-serialization` au `libs.versions.toml` si absent
 
 **Critères d'acceptation**
-- [ ] ≥15 sous-classes typed
-- [ ] 5 tests parsing passent
+- [x] ≥15 sous-classes typed — **24 livrés** (21 typed + 3 synthetic : `Connected`, `Disconnected`, `ResyncCompleted`)
+- [x] 5 tests parsing passent — **9 tests** (`SocketEventDecoderTest`)
 
 **Vérification** : mock server émet un `ride:offer` → decoder produit `SocketEvent.RideOffer(payload)`.
+
+**Statut** : Terminée le 2026-05-19 (Session A V2+V3) — commits `d00fe5e` (sealed + 12 payloads + `enum Role`), `23cdc11` (decoder + tests). Commits **locaux**, 0 push. Détails : [SPRINT-S3-SESSION-A.md](SPRINT-S3-SESSION-A.md).
+
+**Notes d'implémentation**
+- Convention `@SerialName` : **camelCase** (cohérent avec les 9 payloads pré-existants ; `rideId`, `pickupLat`…). À valider avec le backend Node en R-3.6.
+- Noms d'events : reprise des noms implicites des 10 payloads pré-existants (`ride:new_request`, `ride:new_offer`, `ride:status_changed`, etc.) + ajout `negotiate:*`, `wallet:*`, `shared:*`, `notification:new`. À valider backend.
+- `kotlinx.serialization` configuré `ignoreUnknownKeys + isLenient + coerceInputValues` — tolérant aux ajouts backend non modélisés.
+- `domain/models/Role.kt` (RIDER / DRIVER) introduit pour la sélection de namespace en R-3.2.
+- File location : `data/socket/SocketEvent.kt` (vs `domain/models/socket/` initialement proposé) — préserve le voisinage avec `SocketClientEvent` (outbound) déjà présent dans le même package.
 
 ---
 
@@ -1039,11 +1048,22 @@ DE (P1 — chemin critique)
 - 4 ViewModels : subscription au flow
 
 **Critères d'acceptation**
-- [ ] `grep "s.on(.*) {}" data/socket/SocketService.kt` ⇒ 0 handler vide
-- [ ] Namespaces `/riders` et `/drivers` activés selon `Role`
-- [ ] Tests : 3 events émis → 3 reçus
+- [x] `grep "s.on(.*) {}" data/socket/SocketService.kt` ⇒ 0 handler vide — 21 events backend câblés via `BUSINESS_EVENT_NAMES` + 3 lifecycle handlers (`Connected`, `Disconnected`, `CONNECT_ERROR` → `crashReporting`)
+- [x] Namespaces `/riders` et `/drivers` activés selon `Role` — extension privée `Role.namespace()` dans `SocketService`
+- [x] Tests : 3 events émis → 3 reçus — `SocketEventPipelineTest` (4 tests : ordre, filtre VM scope, identité, no-replay)
 
-**Vérification** : connecter à staging, émettre un `ride:offer` côté backend → MapViewModel state change.
+**Vérification** : connecter à staging, émettre un `ride:offer` côté backend → MapViewModel state change. _(Différé R-3.6 — Netty mock socket server)._
+
+**Statut** : Terminée le 2026-05-19 (Session A V4–V7) — commits `ddaeec3` (refactor SocketService + Role + 21 handlers), `91ed4e4` (SocketEventManager façade), `4ec9eb9` (3 VMs branchés), `c9fbcd5` (tests pipeline + doc). Commits **locaux**, 0 push. Détails : [SPRINT-S3-SESSION-A.md](SPRINT-S3-SESSION-A.md).
+
+**Notes d'implémentation**
+- **3 VMs branchés** (vs 4 prévus) : `MapViewModel`, `DriverViewModel`, `WalletViewModel`. `NotificationsViewModel` exclu — n'existe pas dans le repo (FCM push gère les notifs background ; un VM dédié in-app sera créé en R-5.x/S7).
+- **Pattern VM conservateur** : chaque VM expose `lastSocketEvent: StateFlow<SocketEvent?>` (whitelist par scope) plutôt que muter les états existants déjà alimentés par polling. Évite races/double-emit. Authoritative state reste polling/REST jusqu'à R-3.5 + R-5.5. Exception : `WalletVM` déclenche `refresh()` sur event wallet:* (polling user-triggered, pas de course).
+- **Pas de SocketModule** créé : `SocketService` + `SocketEventManager` utilisent `@Inject constructor` + `@Singleton`, Hilt les résout via `SingletonComponent` par défaut.
+- **Pas de `@Named("socket_base_url")`** : `SocketUrl.build()` (pré-existant) dérive déjà l'URL du `Constants.BASE_URL`.
+- `SocketLifecycleController` non modifié — son contrat `onAppBackgrounded/Foregrounded` est préservé (mémorisation `lastToken` + `lastRole` au lieu de `lastNamespace`).
+- `android.util.Log.w()` wrappé dans `runCatching` (natif → `UnsatisfiedLinkError` en JVM unit tests).
+- Release build R8 vert : rules `kotlinx.serialization` déjà présentes dans `proguard-rules.pro` couvrent les nouveaux `tn.turbodrive.data.socket.*Payload$$serializer`.
 
 ---
 
