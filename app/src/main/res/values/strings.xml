@@ -637,5 +637,14 @@
     <string name="driver_ocr_timeout">Reading took too long. Fill in manually.</string>
     <string name="ride_tracking_channel_name">Ride Tracking</string>
     <string name="ride_tracking_notification_title">Ride in progress</string>
+    <!-- R-5.4 Rider Home (S10) -->
+    <string name="rider_home_greeting_named">Bonjour %s 👋</string>
+    <string name="rider_home_greeting_generic">Bonjour 👋</string>
+    <string name="rider_home_subtitle">Où allez-vous aujourd\'hui ?</string>
+    <string name="rider_home_search_hint">Où allez-vous ?</string>
+    <string name="rider_home_schedule_badge">Plus tard</string>
+    <string name="rider_home_shortcut_home">Maison</string>
+    <string name="rider_home_shortcut_work">Travail</string>
+    <string name="rider_home_shortcut_favorites">Favoris</string>
 </resources>
 
