@@ -36,7 +36,6 @@ internal class MapLocationController(
 ) {
     private var lastSampleLat: Double? = null
     private var lastSampleLng: Double? = null
-    private var lastRawLocation: Location? = null
 
     private val locationCallback =
         object : LocationCallback() {
@@ -88,10 +87,7 @@ internal class MapLocationController(
     }
 
     private fun applyFusedLocationUpdate(loc: Location) {
-        if (loc.accuracy > 50f) return
-        val prev = lastRawLocation
-        if (prev != null && loc.distanceTo(prev) < 8f) return
-        lastRawLocation = loc
+        if (!locationServiceController.shouldAcceptLocation(loc)) return
         currentLocation.value = GeoCoordinates(loc.latitude, loc.longitude)
         locationAccuracy.value = loc.accuracy
         updateHeadingFromLocation(loc)
@@ -102,6 +98,7 @@ internal class MapLocationController(
     @SuppressLint("MissingPermission")
     fun startLocationUpdates(mode: GpsMode = GpsMode.COARSE) {
         if (isTracking.value) return
+        locationServiceController.setMode(mode)
 
         fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
             loc?.let { applyFusedLocationUpdate(it) }
@@ -114,6 +111,7 @@ internal class MapLocationController(
 
     @SuppressLint("MissingPermission")
     fun applyGpsMode(mode: GpsMode) {
+        locationServiceController.setMode(mode)
         if (!isTracking.value) return
         val request =
             locationServiceController.buildRequest(mode) ?: run {
@@ -127,6 +125,7 @@ internal class MapLocationController(
     fun stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
         isTracking.value = false
+        locationServiceController.setMode(GpsMode.OFF)
     }
 
     @SuppressLint("MissingPermission")
