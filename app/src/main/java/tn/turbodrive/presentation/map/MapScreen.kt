@@ -61,6 +61,7 @@ import kotlinx.coroutines.delay
 import tn.turbodrive.app.AppProcessLifecycleEntryPoint
 import tn.turbodrive.core.designsystem.tokens.AppIcon
 import tn.turbodrive.core.theme.LocalAppColors
+import tn.turbodrive.core.utils.PermissionHelper
 import tn.turbodrive.core.utils.playCoinSoundEffect
 import tn.turbodrive.domain.models.RideStatus
 import tn.turbodrive.presentation.common.ScreenState
@@ -221,6 +222,15 @@ fun MapScreen(
 
     LaunchedEffect(locationPermissionGranted) {
         if (locationPermissionGranted) viewModel.fetchLastLocation()
+    }
+
+    val notificationPermissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+    LaunchedEffect(Unit) {
+        if (!PermissionHelper.hasNotificationPermission(context)) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
