@@ -636,7 +636,9 @@
     <string name="driver_ocr_failed">Couldn\'t read the document. Fill in manually.</string>
     <string name="driver_ocr_timeout">Reading took too long. Fill in manually.</string>
     <string name="ride_tracking_channel_name">Ride Tracking</string>
+    <string name="ride_tracking_channel_description">Notifications shown during an active ride to maintain GPS tracking.</string>
     <string name="ride_tracking_notification_title">Ride in progress</string>
+    <string name="ride_tracking_notification_text">Tap to open the app</string>
     <!-- R-5.4 Rider Home (S10) -->
     <string name="rider_home_greeting_named">Bonjour %s 👋</string>
     <string name="rider_home_greeting_generic">Bonjour 👋</string>

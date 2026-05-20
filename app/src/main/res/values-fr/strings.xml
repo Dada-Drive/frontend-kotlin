@@ -633,5 +633,9 @@
     <string name="driver_ocr_poll_failed">Erreur réseau. Touchez pour reprendre.</string>
     <string name="driver_ocr_failed">Lecture impossible. Saisissez manuellement.</string>
     <string name="driver_ocr_timeout">Lecture trop longue. Saisissez manuellement.</string>
+    <string name="ride_tracking_channel_name">Suivi de course</string>
+    <string name="ride_tracking_channel_description">Notifications affichées pendant une course active pour maintenir le suivi GPS.</string>
+    <string name="ride_tracking_notification_title">Course en cours</string>
+    <string name="ride_tracking_notification_text">Tapotez pour ouvrir l\'application</string>
 </resources>
 

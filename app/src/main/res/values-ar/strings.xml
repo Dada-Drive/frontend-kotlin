@@ -610,4 +610,8 @@
     <string name="driver_ocr_poll_failed">خطأ في الشبكة. اضغط للإعادة.</string>
     <string name="driver_ocr_failed">تعذرت قراءة الوثيقة. أدخل البيانات يدوياً.</string>
     <string name="driver_ocr_timeout">القراءة استغرقت وقتاً طويلاً. أدخل يدوياً.</string>
+    <string name="ride_tracking_channel_name">تتبع الرحلة</string>
+    <string name="ride_tracking_channel_description">إشعارات تُعرض خلال الرحلة النشطة للحفاظ على تتبع GPS.</string>
+    <string name="ride_tracking_notification_title">الرحلة جارية</string>
+    <string name="ride_tracking_notification_text">انقر لفتح التطبيق</string>
 </resources>

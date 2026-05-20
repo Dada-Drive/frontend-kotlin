@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -32,13 +33,18 @@ class RideForegroundService : Service() {
         ensureChannel()
         val notification =
             NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.ic_notification_ride)
                 .setContentTitle(getString(R.string.ride_tracking_notification_title))
+                .setContentText(getString(R.string.ride_tracking_notification_text))
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .build()
-        startForeground(NOTIFICATION_ID, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
     }
 
     private fun ensureChannel() {
@@ -50,7 +56,9 @@ class RideForegroundService : Service() {
                 CHANNEL_ID,
                 getString(R.string.ride_tracking_channel_name),
                 NotificationManager.IMPORTANCE_LOW,
-            )
+            ).apply {
+                description = getString(R.string.ride_tracking_channel_description)
+            }
         manager.createNotificationChannel(channel)
     }
 
