@@ -324,12 +324,14 @@ fun DriverHomeScreen(
             }
         }
 
-        if (showCompleteToast && completeResult != null) {
-            CompleteResultOverlay(
-                result = completeResult!!,
-                onDismiss = { driverViewModel.dismissCompleteToast() },
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
-            )
+        if (showCompleteToast) {
+            completeResult?.let { result ->
+                CompleteResultOverlay(
+                    result = result,
+                    onDismiss = { driverViewModel.dismissCompleteToast() },
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
+                )
+            }
         }
 
         if (showDriverMenu) {
@@ -387,7 +389,7 @@ fun DriverHomeScreen(
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             ) {
                 ActiveRideSheetContent(
-                    ride = activeRide!!,
+                    ride = activeRide,
                     onStart = { driverViewModel.startRide() },
                     onComplete = { driverViewModel.completeRide() },
                     onCancel = { driverViewModel.cancelRide() },

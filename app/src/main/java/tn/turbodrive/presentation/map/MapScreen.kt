@@ -534,10 +534,10 @@ fun MapScreen(
             PoiCategoryHorizontalBar(
                 selectedCategory = selectedPoiCategory,
                 onCategoryClick = { category ->
+                    val stopIdx = intermediateStopPickerIndex
                     val target =
                         when {
-                            intermediateStopPickerIndex != null ->
-                                PoiSelectionTarget.IntermediateStop(intermediateStopPickerIndex!!)
+                            stopIdx != null -> PoiSelectionTarget.IntermediateStop(stopIdx)
                             pickerIsDestination -> PoiSelectionTarget.Destination
                             else -> PoiSelectionTarget.Pickup
                         }
@@ -753,10 +753,10 @@ fun MapScreen(
             FullScreenCoinIntroOverlay(modifier = Modifier.fillMaxSize())
         }
 
-        if (tappedPoi != null) {
+        tappedPoi?.let { poi ->
             PoiBottomSheet(
-                place = tappedPoi!!.first,
-                category = tappedPoi!!.second,
+                place = poi.first,
+                category = poi.second,
                 preferredField = poiSearchField,
                 selectionTarget = poiSelectionTarget,
                 userLocation = currentLocation,

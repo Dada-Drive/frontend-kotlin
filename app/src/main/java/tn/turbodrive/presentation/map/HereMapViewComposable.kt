@@ -860,8 +860,9 @@ internal fun HereMapViewComposable(
         }
     }
 
-    if (mapError != null) {
-        MapLoadErrorContent(message = mapError!!)
+    val currentMapError = mapError
+    if (currentMapError != null) {
+        MapLoadErrorContent(message = currentMapError)
     } else {
         AndroidView(
             factory = {
