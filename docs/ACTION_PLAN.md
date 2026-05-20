@@ -1484,7 +1484,22 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 - [x] `docs/MAP_DECISION.md` présent — décision rester HERE documentée, limitation tokens fond de carte expliquée
 - [x] `./gradlew clean compileDebugKotlin testDebugUnitTest ktlintCheck detekt` → BUILD SUCCESSFUL
 
-**Risques** : foreground service exige permission notif (Android 13+). Mitigation : prompt user au démarrage du ride.
+**Session A ✅** (map tokens + S32-S35 snapshots) — commits inclus dans R-5.3-session-a
+
+**Session B ✅** (GPS hardening + foreground service API 34+ + permissions) — commits `6be21a2`, `a6f80e5`, `3b384e6` ; détails dans `docs/R-5.3-session-b.md`
+
+**Critères additionnels Session B**
+- [x] `LocationServiceController.StateFlow<GpsMode>` + `setMode()` + `shouldAcceptLocation()` + `resetLastLocation()`
+- [x] Filtres GPS délégués au controller (testables unitairement) — `MapLocationController` délègue à `shouldAcceptLocation()`
+- [x] 10 tests unitaires `LocationServiceControllerTest` — mode state, accuracy boundary 50.1m, displacement, OFF, reset
+- [x] `RideForegroundService` API 34+ : `startForeground(id, notif, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)`
+- [x] `ic_notification_ride.xml` (blanc 24dp fill, system-tintable) remplace `ic_launcher_foreground`
+- [x] Strings `ride_tracking_channel_description` + `ride_tracking_notification_text` — EN/FR/AR
+- [x] `android:stopWithTask="false"` — GPS survit au swipe-away
+- [x] `PermissionHelper.hasNotificationPermission()` + `hasLocationPermission()` dans `core/utils/`
+- [x] POST_NOTIFICATIONS runtime prompt dans `MapScreen` — `LaunchedEffect(Unit)` + `rememberLauncherForActivityResult`
+
+**Risques** : ~~foreground service exige permission notif (Android 13+)~~ → ✅ Mitigé — `PermissionHelper` + prompt Compose au premier lancement de `MapScreen`. Fallback silencieux si refusé (service GPS actif, notification UI absente).
 
 ---
 
