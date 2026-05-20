@@ -665,5 +665,11 @@
     <string name="route_preview_estimated_price_label">PRIX ESTIMÉ</string>
     <string name="route_preview_payment_cash">Espèces</string>
     <string name="route_preview_request_cta">Demander une course</string>
+
+    <!-- S13 WaitingDriverScreen — R-5.4 Session B -->
+    <string name="waiting_driver_title">Recherche de chauffeurs&#8230;</string>
+    <string name="waiting_driver_subtitle">Temps moyen : 1 min 20 s</string>
+    <string name="waiting_driver_view_cta">Voir les chauffeurs disponibles</string>
+    <string name="waiting_driver_cancel">Annuler la recherche</string>
 </resources>
 
