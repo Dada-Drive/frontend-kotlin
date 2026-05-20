@@ -15,7 +15,7 @@
 | **S2** | Sealed ScreenState & nettoyage tokens | R-2.1 → R-2.4 | 22–34 | ~1 sem | Bloquant |
 | **S3** | Socket.IO + lifecycle ride | R-3.1 ✅ → R-3.2 ✅ → R-3.3 ✅ → R-3.4 ✅ → R-3.5 ✅ → R-3.6 ✅ | 40–60 | ~2 sem | Critique |
 | **S4** | Design system v2 (D0+D1) | R-4.1 → R-4.5 | 36–60 | ~2 sem | Bloquant |
-| **S5** | Écrans redesign auth/setup/map/home/négo (D2-D6) | R-5.1 🟡✅ → R-5.2 ✅ → R-5.3 ✅ → R-5.4 🟡 → R-5.5 | 80–128 | ~3 sem | Critique |
+| **S5** | Écrans redesign auth/setup/map/home/négo (D2-D6) | R-5.1 🟡✅ → R-5.2 ✅ → R-5.3 ✅ → R-5.4 ✅ → R-5.5 | 80–128 | ~3 sem | Critique |
 | **S6** | Écrans lifecycle + wallet (D7-D10 + P10) | R-6.1 → R-6.6 | 64–104 | ~2,5 sem | Important |
 | **S7** | Notifs, deeplinks, offline (P11+P12) | R-7.1 → R-7.4 | 32–48 | ~1,5 sem | Important |
 | **S8** | A11y, perf, mock, release (P13+P14+D11+D12) | R-8.1 → R-8.6 | 56–96 | ~2,5 sem | Important |
@@ -1488,7 +1488,7 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 
 ---
 
-### Phase R-5.4 🟡 — D5 Rider Home (S10-S14) + extract `presentation/riderhome/`
+### Phase R-5.4 ✅ — D5 Rider Home (S10-S14) + extract `presentation/riderhome/`
 **Objectif** : extraire le flux passager de `presentation/map/` dans `presentation/riderhome/` ; refonte conforme JSX.
 **Sévérité** : Critique — **Effort** : 12–20 h
 **Dépendances** : R-5.3
@@ -1508,17 +1508,15 @@ ls -lh app/src/main/res/font/inter_variable.ttf   # → 856 KB
 **Critères d'acceptation**
 - [x] Package `riderhome/` créé avec ≥5 fichiers — **9 fichiers** (6 déplacés + 3 créés) — commit `cb75d88`
 - [x] `presentation/map/` ne contient plus de logique passager — 6 fichiers rider-only extraits — commit `cb75d88`
-- [ ] 10 snapshots verts — **Session A : 6/10** (S10 ✅ S11 ✅ S12 ✅ — S13/S14 Session B)
+- [x] 10 snapshots verts — **10/10 PNG ✅** (S10 S11 S12 S13 S14 × 2 thèmes)
 
 **Session A ✅** (3/5 écrans — S10/S11/S12) — commits `cb75d88`, `d7ece5c`, `16361a9`, `d4a2b12`, `444b4c0` ; détails dans `docs/R-5.4-session-a.md`
 
-**Session B 🔜** (2/5 écrans différés) :
-- S13 `SchedulePickerScreen` (wheel date/time picker)
-- S14 `WaitingDriverScreen` (post ride-request)
-- 4 snapshots restants (S13 × 2 + S14 × 2)
-- ACTION_PLAN final + bilan total R-5.4
+**Session B ✅** (2/5 écrans — S13/S14) — commits `37900e0`, `3dbbff0` ; détails dans `docs/R-5.4-session-b.md`
 
-**Complété partiellement** : 2026-05-20 (Session A)
+**Effort plan** : 12-20h — **Effort réel** : ~6-7h (Session A ~4h + Session B ~2-3h)
+
+**Complété** : 2026-05-20 (Session A + B) — assembleRelease ✅ (55 MB, R8 stable)
 
 ---
 
